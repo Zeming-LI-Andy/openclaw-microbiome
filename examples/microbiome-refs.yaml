@@ -1,0 +1,74 @@
+# User-owned reference DB map for openclaw-microbiome.
+# Copy to ~/.openclaw/microbiome-refs.yaml (or set plugins.entries.microbiome.config.refsConfig).
+#
+# Prefer one whole-tree bind:
+#   Host:      /data/refdb
+#   Container: /refdb   →  OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
+#
+# Then list each DB as relative_path under that tree.
+# On gateway start (or `npm run sync-refs`), the plugin writes
+# workspace/registry/references.yaml with a single `path` per id.
+
+version: 1
+
+refdb_root:
+  host_path: /data/refdb
+  container_path: /refdb
+
+references:
+  # ── 16S / QIIME 2 (SILVA) ──────────────────────────────────────────────────
+  silva_ssu_nr99_seqs:
+    relative_path: silva/silva-138.2-ssu-nr99-full-seqs.qza
+  silva_ssu_nr99_tax:
+    relative_path: silva/silva-138.2-ssu-nr99-tax.qza
+  silva_v4_seqs:
+    relative_path: silva/silva-138.2-v4-515F-806R-seqs.qza
+  silva_v4_tax:
+    relative_path: silva/silva-138.2-v4-515F-806R-tax.qza
+  silva_v34_seqs:
+    relative_path: silva/silva-138.2-v34-341F-806R-seqs.qza
+  silva_v34_tax:
+    relative_path: silva/silva-138.2-v34-341F-806R-tax.qza
+
+  # ── Shotgun / bioBakery ────────────────────────────────────────────────────
+  kneaddata_db_human_genome:
+    relative_path: kneaddata/hg37dec_v0.1
+  metaphlan_bowtie2_db:
+    relative_path: metaphlan
+  humann_chocophlan:
+    relative_path: humann/chocophlan
+  humann_uniref:
+    relative_path: humann/uniref
+  humann_utility_mapping:
+    relative_path: humann/utility_mapping
+
+  # ── Annotation DBs ─────────────────────────────────────────────────────────
+  eggnog_mapper_data:
+    relative_path: eggnog
+  eggnog_bact_arch_dmnd:
+    relative_path: eggnog/bact_arch.dmnd
+  vfdb_dmnd:
+    relative_path: vfdb/VFDB.dmnd
+  card_db:
+    relative_path: card
+
+  # ── Aviary ─────────────────────────────────────────────────────────────────
+  aviary_gtdb:
+    relative_path: aviary/gtdb
+  aviary_checkm2:
+    relative_path: aviary/checkm2db
+  aviary_eggnog:
+    relative_path: aviary/eggnog
+  aviary_singlem:
+    relative_path: aviary/singlem
+
+  # ── KEGG local maps ────────────────────────────────────────────────────────
+  kegg_ko_link:
+    relative_path: kegg/kegg_link_ko_pathway.txt
+  kegg_pathway_list:
+    relative_path: kegg/kegg_list_pathway_ko.txt
+
+  # Tree-exception example (uncomment and adjust):
+  # my_custom_db:
+  #   host_path: /other/place/custom_db
+  #   container_path: /refdb/custom/custom_db

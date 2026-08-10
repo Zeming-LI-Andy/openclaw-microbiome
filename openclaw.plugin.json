@@ -1,0 +1,48 @@
+{
+  "id": "microbiome",
+  "name": "Microbiome Tools",
+  "description": "Session job bootstrap for 16S/metagenomics (one OpenClaw session ↔ one job_id). Skills + Bash run the analysis.",
+  "version": "0.1.0",
+  "activation": {
+    "onStartup": true
+  },
+  "skills": [
+    "./skills"
+  ],
+  "contracts": {
+    "tools": [
+      "mgx_create_job"
+    ]
+  },
+  "toolMetadata": {},
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "jobsRoot": {
+        "type": "string",
+        "description": "Root directory for analysis jobs (default: OPENCLAW_JOBS_ROOT or ./jobs)."
+      },
+      "workspaceRoot": {
+        "type": "string",
+        "description": "Workspace checkout that stores .current_job_id and registry/references.yaml."
+      },
+      "catalogDir": {
+        "type": "string"
+      },
+      "refsConfig": {
+        "type": "string",
+        "description": "Path to user microbiome-refs.yaml (default: ~/.openclaw/microbiome-refs.yaml)."
+      },
+      "refsMode": {
+        "type": "string",
+        "enum": [
+          "auto",
+          "docker",
+          "host"
+        ],
+        "description": "Emit host or container paths into references.yaml (auto detects Docker)."
+      }
+    }
+  }
+}

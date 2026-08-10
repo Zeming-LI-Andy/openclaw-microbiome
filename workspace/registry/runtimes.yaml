@@ -1,0 +1,102 @@
+# Host conda runtimes and allowlisted CLIs / packages for microbiome analysis.
+# Agent: Read this file for tools + conda_env.
+# Example: conda run -n <conda_env> --no-capture-output <tool> …
+#
+
+conda_executable: /root/miniconda3/bin/conda
+conda_prefix: /root/miniconda3/envs
+
+runtimes:
+  qiime2-amplicon:
+    description: QIIME 2 amplicon stack (import, DADA2, taxonomy, phylogeny, diversity, export)
+    conda_env: qiime2-amplicon-2024.10
+    tools:
+      - qiime
+      - biom
+
+  picrust2:
+    description: PICRUSt2 functional prediction from ASV tables
+    conda_env: picrust2
+    tools:
+      - picrust2_pipeline.py
+      - place_seqs.py
+      - hsp.py
+      - metagenome_pipeline.py
+      - pathway_pipeline.py
+      - add_descriptions.py
+
+  biobakery:
+    description: bioBakery shotgun toolkit (KneadData, MetaPhlAn, HUMAnN)
+    conda_env: biobakery_workflows
+    tools:
+      - kneaddata
+      - metaphlan
+      - humann
+      - bowtie2
+
+  eggnog_mapper:
+    description: EggNOG ortholog / functional annotation (eggnog-mapper + Prodigal)
+    conda_env: eggnog_mapper
+    tools:
+      - eggnog-mapper
+      - emapper.py
+      - prodigal
+
+  rgi:
+    description: CARD Resistance Gene Identifier
+    conda_env: rgi
+    tools:
+      - rgi
+
+  aviary:
+    description: Aviary metagenome assembly / binning / recovery workflows
+    conda_env: aviary
+    tools:
+      - aviary
+
+  stats:
+    description: Downstream stats and viz (Python + R microbiome stack)
+    conda_env: mcp_server
+    tools:
+      - python
+      - python3
+      - R
+      - Rscript
+      - tqdm
+      - numpy
+      - pandas
+      - scipy
+      - scikit-bio
+      - gseapy
+      - matplotlib
+      - seaborn
+      - dplyr
+      - tidyr
+      - stringr
+      - maaslin3
+      - DESeq2
+      - phytools
+      - clusterProfiler
+      - KEGGREST
+      - SpiecEasi
+      - WGCNA
+      - ggplot2
+      - pheatmap
+
+  host:
+    description: Lightweight host helpers shared with stats env
+    conda_env: mcp_server
+    tools:
+      - python
+      - python3
+      - ls
+      - find
+      - cat
+      - zcat
+      - seqtk
+      - samtools
+      - pigz
+      - lz4
+      - grep
+      - jq
+      - cd-hit

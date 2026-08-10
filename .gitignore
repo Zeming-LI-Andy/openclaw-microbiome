@@ -1,0 +1,10 @@
+node_modules/
+dist/
+jobs/
+.dry-run-workspace/
+*.tgz
+.DS_Store
+*.log
+coverage/
+.vitest/
+.current_job_id

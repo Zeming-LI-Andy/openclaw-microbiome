@@ -1,0 +1,30 @@
+# Callable surface: session job bootstrap only.
+# Analysis CLIs run via the native OpenClaw agent (Bash / conda / docker).
+# Step knowledge lives in skills/*/SKILL.md.
+
+tools:
+  - id: mgx_create_job
+    kind: project
+    description: >
+      Create or reuse the analysis job for this OpenClaw session (one session ↔
+      one job_id). Scaffolds stage/, analysis/, and reproducibility/ under
+      jobsRoot, writes workspace .current_job_id, and returns paths. Call once
+      when starting analysis in a conversation; later calls reuse the same job
+      unless force_new is true.
+    optional: false
+    parameters:
+      type: object
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+          description: Short human label (only used when creating a new job).
+        notes:
+          type: string
+          description: Optional notes stored in job.json when creating.
+        force_new:
+          type: boolean
+          description: >
+            If true, mint a new job_id even if this session already has one.
+            Default false (reuse OPENCLAW_SESSION_JOB_ID or .current_job_id).
+      required: []

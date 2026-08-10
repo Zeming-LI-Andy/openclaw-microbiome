@@ -1,0 +1,4 @@
+# Reference database paths for analysis.
+# If a needed path is missing, ask the user — do not invent paths.
+
+references: {}

@@ -1,0 +1,58 @@
+{
+  "name": "openclaw-microbiome",
+  "version": "0.1.0",
+  "description": "OpenClaw plugin: one session job for 16S/metagenomics (mgx_create_job)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "catalog",
+    "skills",
+    "examples",
+    "openclaw.plugin.json",
+    "README.md",
+    "workspace"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.json && node scripts/copy-catalog.mjs",
+    "plugin:build": "npm run build && npm run plugin:sync-manifest",
+    "plugin:sync-manifest": "node scripts/sync-manifest.mjs",
+    "test": "node --experimental-vm-modules node_modules/vitest/dist/cli.js run",
+    "dry-run": "node scripts/dry-run.mjs",
+    "sync-refs": "node scripts/sync-refs.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "typebox": "^1.3.11",
+    "yaml": "^2.9.0"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.5.17"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.62.4",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
