@@ -19,11 +19,14 @@ local `.faa`. Metadata/download only — not functional annotation (use
 
 ## Reference script (`scripts/`)
 
-`scripts/fetch_ncbi_assembly_proteins.py` — **reference only**. Adjust filters
-(RefSeq vs GenBank), rate limits, and output layout for the session job.
+Reference (path relative to this skill): `scripts/fetch_ncbi_assembly_proteins.py`.
+
+**Copy/adapt** it under the session job; do not run against the skill tree as
+cwd. After copying to e.g. `<job>/stage/` or
+`<job>/analysis/ncbi-assembly-proteins/`:
 
 ```bash
-python skills/ncbi-assembly-proteins/scripts/fetch_ncbi_assembly_proteins.py \
+python fetch_ncbi_assembly_proteins.py \
   --organism "Escherichia coli K-12" \
   --output-dir <job>/stage
 ```
@@ -32,8 +35,7 @@ Optional: set `NCBI_API_KEY` / `NCBI_EMAIL` for higher Entrez limits.
 
 ## Agent procedure
 
-1. `mgx_create_job` if needed.
-2. Confirm organism string (and whether RefSeq is required).
-3. Adapt the reference script; stage `.faa` under `stage/` or
-   `analysis/ncbi-assembly-proteins/`.
-4. Hand off to the appropriate annotation skill — do not invent sequences.
+1. Confirm organism string (and whether RefSeq is required).
+2. Copy/adapt `scripts/fetch_ncbi_assembly_proteins.py` into the job; stage
+   `.faa` under `stage/` or `analysis/ncbi-assembly-proteins/`.
+3. Hand off to the appropriate annotation skill — do not invent sequences.

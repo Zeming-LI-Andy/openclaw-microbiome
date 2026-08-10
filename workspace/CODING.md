@@ -11,8 +11,9 @@ Instead:
 
 1. Pick **one** current step (usually one skill).
 2. Write or assemble a **small, self-contained** command/script for that step.
-3. **Run it now** (Bash / `conda run`).
-4. Check exit status, logs, and outputs under this session’s job dir.
+3. **Run it now** (see **Long-running steps** below for multi-hour CLIs).
+4. On completion, check exit status, logs, and outputs under this session’s job
+   dir.
 5. Only then move to the next step.
 
 If a step needs Python **and** a CLI, or R **and** bash glue, use **separate
@@ -70,6 +71,31 @@ Bash tips when using conda:
 - Prefer `conda run -n ENV --no-capture-output …` over `conda activate` in scripts.
 - Prefer `set -eo pipefail`. Avoid `set -u` together with fragile activate hooks.
 - Let the process **fail on error**; do not swallow CLI exit codes and continue.
+
+## Long-running steps (avoid exec timeouts)
+
+Many microbiome CLIs (Aviary assemble/recover, HUMAnN, heavy EggNOG, DADA2 on
+large cohorts, …) can run far longer than the default **exec process timeout**
+(~30 minutes). Do **not** hold a foreground `exec` for hours. Use **background `exec` + exit wake**:
+
+1. `exec` with `background: true` (or short `yieldMs`) and **`timeout: 0`**.
+2. Keep a job log under `reproducibility/logs/<step>.log`. Prefer
+   `… 2>&1 | tee <log>` so **both** the file and OpenClaw’s session capture see
+   output. If you must use pure `> log 2>&1`, follow with a visible
+   `echo "DONE …"` (not redirected) so exit wake still sees stdout.
+3. Keep the `sessionId`, **end the turn**. Do not sleep / poll-loop / cron-babysit
+   a live step.
+4. On **`notifyOnExit`** wake: verify exit + `analysis/<step>/`, then the next
+   step. Use `process` (`poll` / `log` / `kill`) only for ad-hoc status or if
+   wake is unavailable (`poll` ≤ ~30s — not wait-until-done).
+
+```text
+one step → background exec (timeout: 0, tee → log)
+→ stop turn → notifyOnExit wake → verify → next step
+```
+
+Cron/Automations schedule **future** starts; they do not watch a running CLI.
+Gateway restart clears in-memory `process` sessions (disk logs remain).
 
 ## Multi-stage runs inside one step
 

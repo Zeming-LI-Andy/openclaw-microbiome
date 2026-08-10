@@ -22,10 +22,11 @@
 | `shotgun-kneaddata` | 质控 / 宿主去污染（KneadData） |
 | `shotgun-metaphlan` | MetaPhlAn 物种组成 |
 | `shotgun-humann` | HUMAnN 通路 / 基因家族（可选） |
+| `shotgun-gene-catalog` | Prodigal ORF → CD-HIT 非冗余基因/蛋白目录（可选） |
 | `shotgun-eggnog` | EggNOG-mapper 基因功能注释（可选） |
 | `shotgun-vfdb` | VFDB 毒力因子筛选（可选） |
 | `shotgun-rgi` | CARD RGI 耐药基因（可选） |
-| `shotgun-aviary` | Aviary 组装 / binning / MAG 回收（可选） |
+| `shotgun-aviary` | Aviary 组装 / MAG 回收 / MAG 注释 / 多样本去冗余（可选） |
 
 ### 公共数据
 

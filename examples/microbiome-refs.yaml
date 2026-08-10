@@ -5,9 +5,12 @@
 #   Host:      /data/refdb
 #   Container: /refdb   →  OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
 #
-# Then list each DB as relative_path under that tree.
+# Then list each DB under that tree. description / kind are optional but
+# recommended — the plugin copies them into registry/references.yaml as-is
+# (no built-in DB catalog).
+#
 # On gateway start (or `npm run sync-refs`), the plugin writes
-# workspace/registry/references.yaml with a single `path` per id.
+# workspace/registry/references.yaml with path (+ optional description/kind).
 
 version: 1
 
@@ -18,57 +21,101 @@ refdb_root:
 references:
   # ── 16S / QIIME 2 (SILVA) ──────────────────────────────────────────────────
   silva_ssu_nr99_seqs:
+    description: SILVA 138.2 SSURef NR99 full-length reference sequences (.qza)
+    kind: file
     relative_path: silva/silva-138.2-ssu-nr99-full-seqs.qza
   silva_ssu_nr99_tax:
+    description: SILVA 138.2 SSURef NR99 taxonomy (.qza)
+    kind: file
     relative_path: silva/silva-138.2-ssu-nr99-tax.qza
   silva_v4_seqs:
+    description: SILVA 138.2 V4 (515F/806R) reference sequences (.qza)
+    kind: file
     relative_path: silva/silva-138.2-v4-515F-806R-seqs.qza
   silva_v4_tax:
+    description: SILVA 138.2 V4 (515F/806R) taxonomy (.qza)
+    kind: file
     relative_path: silva/silva-138.2-v4-515F-806R-tax.qza
   silva_v34_seqs:
+    description: SILVA 138.2 V3-V4 (341F/806R) reference sequences (.qza)
+    kind: file
     relative_path: silva/silva-138.2-v34-341F-806R-seqs.qza
   silva_v34_tax:
+    description: SILVA 138.2 V3-V4 (341F/806R) taxonomy (.qza)
+    kind: file
     relative_path: silva/silva-138.2-v34-341F-806R-tax.qza
 
   # ── Shotgun / bioBakery ────────────────────────────────────────────────────
   kneaddata_db_human_genome:
+    description: KneadData human genome Bowtie2 reference (hg37dec_v0.1)
+    kind: directory
     relative_path: kneaddata/hg37dec_v0.1
   metaphlan_bowtie2_db:
+    description: MetaPhlAn Bowtie2 database directory
+    kind: directory
     relative_path: metaphlan
   humann_chocophlan:
+    description: HUMAnN ChocoPhlAn nucleotide database
+    kind: directory
     relative_path: humann/chocophlan
   humann_uniref:
+    description: HUMAnN UniRef protein database
+    kind: directory
     relative_path: humann/uniref
   humann_utility_mapping:
+    description: HUMAnN utility mapping database
+    kind: directory
     relative_path: humann/utility_mapping
 
   # ── Annotation DBs ─────────────────────────────────────────────────────────
   eggnog_mapper_data:
+    description: EggNOG mapper data directory (eggnog.db, diamond DB)
+    kind: directory
     relative_path: eggnog
   eggnog_bact_arch_dmnd:
+    description: EggNOG bacteria/archaea Diamond database
+    kind: file
     relative_path: eggnog/bact_arch.dmnd
   vfdb_dmnd:
+    description: VFDB Diamond database
+    kind: file
     relative_path: vfdb/VFDB.dmnd
   card_db:
+    description: CARD local DB for RGI
+    kind: directory
     relative_path: card
 
   # ── Aviary ─────────────────────────────────────────────────────────────────
   aviary_gtdb:
+    description: GTDB for Aviary / GTDB-Tk
+    kind: directory
     relative_path: aviary/gtdb
   aviary_checkm2:
+    description: CheckM2 database for Aviary
+    kind: directory
     relative_path: aviary/checkm2db
   aviary_eggnog:
+    description: EggNOG data directory for Aviary (set only for aviary runs)
+    kind: directory
     relative_path: aviary/eggnog
   aviary_singlem:
+    description: SingleM metapackage for Aviary
+    kind: directory
     relative_path: aviary/singlem
 
   # ── KEGG local maps ────────────────────────────────────────────────────────
   kegg_ko_link:
+    description: KEGG link ko→pathway table
+    kind: file
     relative_path: kegg/kegg_link_ko_pathway.txt
   kegg_pathway_list:
+    description: KEGG pathway list (ko)
+    kind: file
     relative_path: kegg/kegg_list_pathway_ko.txt
 
   # Tree-exception example (uncomment and adjust):
   # my_custom_db:
+  #   description: My custom reference
+  #   kind: directory
   #   host_path: /other/place/custom_db
   #   container_path: /refdb/custom/custom_db

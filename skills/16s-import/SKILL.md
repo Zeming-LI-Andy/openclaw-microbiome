@@ -42,7 +42,7 @@ Discover flags with `conda run -n qiime2-amplicon-2024.10 qiime tools import --h
 
 ## Agent procedure
 
-1. Ensure `mgx_create_job` was called; stage manifest + reads into this session job.
+1. Stage manifest + reads into this session job.
 2. Read this skill for runtime + tool names.
 3. If unsure of type/format, run `--help` in the conda env above.
 4. Run import with paths under this job, e.g.:

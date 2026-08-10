@@ -14,6 +14,8 @@ const sample: UserRefsConfig = {
   },
   references: {
     silva_ssu_nr99_seqs: {
+      description: "SILVA 138.2 SSURef NR99 full-length reference sequences (.qza)",
+      kind: "file",
       relative_path: "silva/silva-138.2-ssu-nr99-full-seqs.qza",
     },
     kneaddata_db_human_genome: {
@@ -58,6 +60,15 @@ describe("resolveReferences", () => {
     expect(r.generated.references.my_custom_db?.path).toBe("/other/custom_db");
     expect(r.generated.references.silva_ssu_nr99_seqs?.description).toContain("SILVA");
     expect(r.generated.references.silva_ssu_nr99_seqs?.kind).toBe("file");
+  });
+
+  it("does not invent description/kind when user omits them", () => {
+    const r = resolveReferences(sample, { mode: "host" });
+    expect(r.generated.references.kneaddata_db_human_genome?.description).toBeUndefined();
+    expect(r.generated.references.kneaddata_db_human_genome?.kind).toBeUndefined();
+    expect(r.generated.references.kneaddata_db_human_genome?.path).toBe(
+      "/data/refdb/kneaddata/hg37dec_v0.1",
+    );
   });
 
   it("docker mode uses container_path + relative_path", () => {

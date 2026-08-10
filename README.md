@@ -6,7 +6,7 @@ OpenClaw plugin for **16S / metagenomics** analysis sessions.
 
 - **Plugin tool:** `mgx_create_job` — one OpenClaw conversation ↔ one `job_id`
 - **Skills:** `skills/*/SKILL.md` step procedures; optional `scripts/` are
-  reference helpers (adapt paths per job)
+  **reference** helpers (skill-relative paths; copy/adapt into the session job)
 - **Registries:**
   - `workspace/registry/runtimes.yaml` — CLIs + `conda_env`
   - `workspace/registry/references.yaml` — **generated** DB paths (`path` only)
@@ -47,7 +47,8 @@ cp examples/microbiome-refs.yaml ~/.openclaw/microbiome-refs.yaml
 # edit host_path / relative_path to match your machine
 ```
 
-Schema (preferred: whole-tree root + relative entries):
+Schema (preferred: whole-tree root + relative entries). DB metadata comes
+**only** from this file — the plugin has no built-in DB catalog:
 
 ```yaml
 version: 1
@@ -56,9 +57,13 @@ refdb_root:
   container_path: /refdb
 references:
   silva_ssu_nr99_seqs:
+    description: SILVA 138.2 SSURef NR99 full-length reference sequences (.qza)
+    kind: file
     relative_path: silva/silva-138.2-ssu-nr99-full-seqs.qza
   # Tree exception:
   # my_custom_db:
+  #   description: My custom reference
+  #   kind: directory
   #   host_path: /other/custom_db
   #   container_path: /refdb/custom/custom_db
 ```
@@ -147,6 +152,40 @@ export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
 `config.*` control **where** jobs, refs sync, and references.yaml go — they do
 not replace the `"skills": ["./skills"]` manifest declaration.
 
+## Long-running analysis (`exec`)
+
+Microbiome CLIs often exceed the default **exec process timeout** (~30 min).
+Workspace guidance (`workspace/CODING.md`) uses **background `exec`** with
+`timeout: 0` and exit wake — not cron poll loops.
+
+Recommended gateway settings in `~/.openclaw/openclaw.json` (reload gateway
+after change):
+
+```json5
+{
+  tools: {
+    exec: {
+      // default true: wake when a backgrounded exec exits
+      notifyOnExit: true,
+      // default false: also wake on successful exit with **no** captured stdout
+      // (needed if the agent redirects everything to a log file without tee/echo)
+      notifyOnExitEmptySuccess: true,
+    }
+  }
+}
+```
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `tools.exec.notifyOnExit` | `true` | System event + heartbeat when a backgrounded exec exits |
+| `tools.exec.notifyOnExitEmptySuccess` | `false` | Also notify when exit code is 0 and session stdout is empty |
+
+These are **gateway config**, not per-call `exec` parameters. Agent-side still
+prefer `… 2>&1 | tee <job>/reproducibility/logs/<step>.log` so progress is on
+disk and the session captures output for wake.
+
+See also: [Background exec](https://docs.openclaw.ai/gateway/background-process).
+
 ## Session job
 
 ```text
@@ -165,7 +204,7 @@ All analysis artifacts for that conversation stay under that job directory.
 | Area | Skills |
 |------|--------|
 | 16S | `16s-import` → `16s-denoise-dada2` → `16s-feature-summarize` → `16s-taxonomy` → `16s-phylogeny` → `16s-diversity` → optional `16s-export` / `16s-picrust2` |
-| Shotgun | `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann` / `shotgun-eggnog` / `shotgun-vfdb` / `shotgun-rgi` / `shotgun-aviary` |
+| Shotgun | `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann` / `shotgun-gene-catalog` / `shotgun-eggnog` / `shotgun-vfdb` / `shotgun-rgi` / `shotgun-aviary` |
 | Public data | `sra-search`, `ncbi-assembly-proteins` |
 | Stats / REST | `stats-*`, `annotation-*` |
 

@@ -1,15 +1,15 @@
 ---
 name: shotgun-aviary
 description: >
-  Run Aviary metagenome assembly / binning / recovery workflows when the user
-  wants MAG-oriented analysis.
+  Run Aviary metagenome assemble / recover / annotate / cluster workflows when
+  the user wants MAG-oriented analysis.
 runtime: aviary
 conda_env: aviary
 tools:
   - aviary
 ---
 
-# Shotgun assembly / binning (Aviary)
+# Shotgun assembly / MAG recovery (Aviary)
 
 ## Runtime
 
@@ -25,18 +25,34 @@ machines.
 
 ## Reference script (`scripts/`)
 
-`scripts/aviary_assemble_recover.py` is a **reference** wrapper for
-`aviary assemble` and `aviary recover`. Copy/adapt it; pass reads, output dir,
-and DB paths via CLI/env. Cluster/dereplicate is not covered — call Aviary
-directly if needed.
+Reference (path relative to this skill): `scripts/aviary_assemble_recover.py`
+(wraps `aviary assemble` / `recover` / `annotate` / `cluster`).
+
+**Copy/adapt** it into the session job; do not run against the skill tree as
+cwd. `complete` / `configure` / `build` / `isolate` are not wrapped — call
+Aviary directly if needed.
+
+After copying to e.g. `<job>/analysis/shotgun-aviary/`:
 
 ```bash
 # After resolving DBs into env vars:
-python skills/shotgun-aviary/scripts/aviary_assemble_recover.py assemble \
+python aviary_assemble_recover.py assemble \
   --output-dir <job>/analysis/shotgun-aviary/assemble \
   -1 <job>/stage/R1.fq.gz -2 <job>/stage/R2.fq.gz
 
-python skills/shotgun-aviary/scripts/aviary_assemble_recover.py recover \
+# Optional: MEGAHIT short-read assembly
+python aviary_assemble_recover.py assemble \
+  --output-dir <job>/analysis/shotgun-aviary/assemble \
+  -1 <job>/stage/R1.fq.gz -2 <job>/stage/R2.fq.gz \
+  --use-megahit
+
+# Optional: hybrid (short + long; default long assembler myloasm)
+python aviary_assemble_recover.py assemble \
+  --output-dir <job>/analysis/shotgun-aviary/assemble \
+  -1 <job>/stage/R1.fq.gz -2 <job>/stage/R2.fq.gz \
+  --long-reads <job>/stage/long.fq.gz --long-read-type ont
+
+python aviary_assemble_recover.py recover \
   --output-dir <job>/analysis/shotgun-aviary/recover \
   --assembly <job>/analysis/shotgun-aviary/assemble/assembly/final_contigs.fasta \
   -1 <job>/stage/R1.fq.gz -2 <job>/stage/R2.fq.gz \
@@ -44,19 +60,41 @@ python skills/shotgun-aviary/scripts/aviary_assemble_recover.py recover \
   --checkm2-db-path "$CHECKM2DB" \
   --singlem-metapackage-path "$SINGLEM_METAPACKAGE_PATH" \
   --eggnog-db-path "$EGGNOG_DATA_DIR"
+
+# Binning only (skip recover post-binning taxonomy/annotation):
+#   … recover … --binning-only
+
+python aviary_assemble_recover.py annotate \
+  --output-dir <job>/analysis/shotgun-aviary/annotate \
+  --genome-fasta-directory <job>/analysis/shotgun-aviary/recover/bins/final_bins \
+  --gtdb-path "$GTDBTK_DATA_PATH" \
+  --eggnog-db-path "$EGGNOG_DATA_DIR" \
+  --checkm2-db-path "$CHECKM2DB"
+
+# After multiple recover (or complete) runs — Galah dereplication:
+python aviary_assemble_recover.py cluster \
+  --output-dir <job>/analysis/shotgun-aviary/cluster \
+  --input-runs <job>/analysis/shotgun-aviary/recover <other>/recover
 ```
 
-Run **assemble** and **recover** as separate steps (see `CODING.md`).
+Run **assemble**, **recover**, **annotate**, and **cluster** as separate steps
+(see `CODING.md`). Default `recover` is **full** MAG recovery; pass
+`--binning-only` only when you want bins without recover’s post-binning steps.
+Protein-only EggNOG (non-MAG): use `shotgun-eggnog`.
 
 ## Agent procedure
 
-1. `mgx_create_job` + stage reads.
+1. Stage reads (and long reads if hybrid) under the session job.
 2. Resolve DBs from `registry/references.yaml` (ask if missing); set env or flags.
-3. Adapt the reference script or build equivalent `conda run -n aviary aviary …`.
+3. Copy/adapt `scripts/aviary_assemble_recover.py` into the job (or equivalent
+   `conda run -n aviary aviary …`).
 4. Write under `analysis/shotgun-aviary/`.
 
 ## Ask the user when unknown
 
-- Assembly vs recover vs both
-- Threads / memory
+- Which stages: assemble / recover / annotate / cluster (or combination)
+- Short-only vs hybrid / long-only; MEGAHIT vs default short assembler
+- Full recover vs `--binning-only`
+- Memory limits if relevant
 - Which reference packs are available on this host
+- For `cluster`: which prior recover output dirs; ANI threshold if non-default

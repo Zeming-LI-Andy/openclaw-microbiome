@@ -31,7 +31,9 @@ Resolve the job dir as:
 4. Read **`registry/references.yaml`** for reference DB paths when a step needs
    them. If a needed path is missing, ask the user — do not invent paths.
 5. Read `skills/<step>/SKILL.md` for the step procedure.
-6. Run with Bash: `conda run -n <conda_env> --no-capture-output …`
+6. Run with Bash / `exec`: `conda run -n <conda_env> --no-capture-output …`
+   For long steps, use **background `exec` + `timeout: 0`** and completion wake
+   (see `CODING.md` → Long-running steps) — do not block the turn for hours.
 7. Write under `analysis/<step>/` in **this** session job.
 
 ## Session startup
@@ -48,6 +50,7 @@ Resolve the job dir as:
 3. Never invent classifier / DB paths — read `registry/references.yaml`, or ask.
 4. Execute **one analysis step at a time** (see `CODING.md`); do not ship a
    whole-pipeline script and run it once at the end.
+5. Long CLIs: background + exit wake — not cron/sleep poll loops (`CODING.md`).
 
 ## Skill map (high level)
 
@@ -56,7 +59,8 @@ Resolve the job dir as:
 `16s-picrust2`
 
 **Shotgun:** `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann`
-→ optional `shotgun-eggnog` / `shotgun-vfdb` / `shotgun-rgi` / `shotgun-aviary`
+→ optional `shotgun-gene-catalog` / `shotgun-eggnog` / `shotgun-vfdb` /
+`shotgun-rgi` / `shotgun-aviary`
 
 **Public data:** `sra-search` (SRA metadata), `ncbi-assembly-proteins` (Assembly
 `.faa` download)
@@ -66,5 +70,6 @@ Resolve the job dir as:
 `annotation-gene-ontology`, `annotation-ncbi-gene`, `annotation-metacyc`,
 `annotation-eggnog-api`
 
-Skill `scripts/` are **reference** helpers — copy/adapt paths and flags to the
-session job; do not treat them as fixed pipelines.
+Skill `scripts/` are **reference** helpers (paths like `scripts/foo.py` are
+relative to that skill). **Copy/adapt** into the session job before running;
+do not treat the skill tree as the run cwd or as a fixed pipeline.

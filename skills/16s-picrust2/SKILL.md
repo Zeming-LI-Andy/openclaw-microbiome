@@ -44,4 +44,4 @@ Usually exported ASV FASTA + abundance TSV (from `16s-export` or equivalent). St
 
 ## Ask the user when unknown
 
-- Threads, stratified output, which pathway/EC tables they need
+- Stratified output, which pathway/EC tables they need

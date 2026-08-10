@@ -2,7 +2,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import YAML from "yaml";
-import { STANDARD_REFERENCE_CATALOG } from "./catalog.js";
 import type {
   GeneratedReferenceEntry,
   GeneratedReferences,
@@ -155,7 +154,6 @@ export function resolveReferences(
   options: ResolveRefsOptions = {},
 ): ResolveRefsResult {
   const mode = resolveRefsMode(options.mode, options.isDockerEnv);
-  const catalog = options.catalog ?? STANDARD_REFERENCE_CATALOG;
   const warnings: string[] = [];
   const references: Record<string, GeneratedReferenceEntry> = {};
 
@@ -177,12 +175,10 @@ export function resolveReferences(
     });
     if (!resolvedPath) continue;
 
-    const fromCatalog = catalog[id];
+    // Metadata only from the user config — never from plugin builtins.
     const out: GeneratedReferenceEntry = { path: resolvedPath };
-    const description = entry.description ?? fromCatalog?.description;
-    const kind = entry.kind ?? fromCatalog?.kind;
-    if (description) out.description = description;
-    if (kind) out.kind = kind;
+    if (entry.description) out.description = entry.description;
+    if (entry.kind) out.kind = entry.kind;
     references[id] = out;
   }
 

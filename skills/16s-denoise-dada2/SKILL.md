@@ -45,4 +45,3 @@ Inspect with `conda run -n qiime2-amplicon-2024.10 qiime dada2 denoise-paired --
 
 - Truncation / trim lengths
 - Paired vs single-end plugin
-- Thread count if machine limits matter

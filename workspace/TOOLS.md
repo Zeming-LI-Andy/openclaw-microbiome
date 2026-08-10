@@ -8,7 +8,10 @@ Plugin id: `microbiome`
 |------|---------|
 | `mgx_create_job` | Create or reuse the **session** job; write `.current_job_id` |
 
-Other work uses native OpenClaw **Read** / **Bash**.
+Other work uses native OpenClaw **Read** / **Bash** (`exec`). Long-running
+analysis steps should use **background `exec`** (`background: true`,
+`timeout: 0`) and resume on **completion wake** (`notifyOnExit`); manage with
+**`process`** only for on-demand status — see `CODING.md`.
 
 ## Registries (read these)
 
@@ -52,4 +55,5 @@ per reference DB). REST skills (`annotation-kegg`, `annotation-uniprot`,
 ## Coding while analyzing
 
 Read **`CODING.md`**: one analysis step at a time, small self-contained runs,
-outputs under `analysis/<step>/`, `conda run -n …` from the registry.
+outputs under `analysis/<step>/`, `conda run -n …` from the registry. For
+multi-hour CLIs, background `exec` + exit wake (not cron babysitting).

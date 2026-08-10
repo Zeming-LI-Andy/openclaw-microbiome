@@ -24,11 +24,14 @@ do not invent.
 
 ## Reference script (`scripts/`)
 
-`scripts/annotate_vfdb.py` — **reference only**. Adapt paths/flags to the job.
+Reference (path relative to this skill): `scripts/annotate_vfdb.py`.
+
+**Copy/adapt** it under the session job; do not run against the skill tree as
+cwd. After copying to e.g. `<job>/analysis/shotgun-vfdb/`:
 
 ```bash
 export VFDB_DMND=<resolved>
-python skills/shotgun-vfdb/scripts/annotate_vfdb.py \
+python annotate_vfdb.py \
   --protein <job>/stage/proteins.faa \
   --output-dir <job>/analysis/shotgun-vfdb \
   --threads 8
@@ -42,10 +45,11 @@ EggNOG annotation). Do not fabricate virulence calls if the DB is missing.
 1. Stage protein FASTA under the session job.
 2. Resolve the DB path from `registry/references.yaml` (ask if missing); set
    `VFDB_DMND` or `--vfdb-dmnd`.
-3. Adapt the reference script or run equivalent `emapper.py --no_annot --dmnd_db …`.
+3. Copy/adapt `scripts/annotate_vfdb.py` into the job (or equivalent
+   `emapper.py --no_annot --dmnd_db …`).
 4. Write under `analysis/shotgun-vfdb/`.
 
 ## Ask the user when unknown
 
 - Protein vs contig input (ORF call first if contigs)
-- Threads / which DB build is available
+- Which DB build is available

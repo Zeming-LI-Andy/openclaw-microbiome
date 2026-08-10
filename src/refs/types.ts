@@ -6,12 +6,6 @@ export type ResolvedRefsMode = "docker" | "host";
 
 export type RefKind = "file" | "directory";
 
-/** Built-in metadata for known reference ids. */
-export type ReferenceCatalogEntry = {
-  description: string;
-  kind: RefKind;
-};
-
 /** Optional whole-tree bind: host refdb root → container path. */
 export type RefdbRootConfig = {
   host_path: string;
@@ -27,7 +21,9 @@ export type UserReferenceEntry = {
   host_path?: string;
   /** Absolute container path when not under refdb_root. */
   container_path?: string;
+  /** Optional; copied into generated references.yaml if set. */
   description?: string;
+  /** Optional; copied into generated references.yaml if set. */
   kind?: RefKind;
 };
 
@@ -54,8 +50,6 @@ export type ResolveRefsOptions = {
   mode?: RefsMode;
   /** Override auto docker detection (tests). */
   isDockerEnv?: boolean;
-  /** Built-in catalog; defaults to STANDARD_REFERENCE_CATALOG. */
-  catalog?: Record<string, ReferenceCatalogEntry>;
 };
 
 export type ResolveRefsResult = {

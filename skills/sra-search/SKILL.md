@@ -19,11 +19,14 @@ no `prefetch` / `fasterq-dump` unless the user explicitly asks for download
 
 ## Reference script (`scripts/`)
 
-`scripts/search_sra.py` — Entrez `esearch` + `esummary` via stdlib. Reference
-only; adjust `retmax`, filters, and output paths.
+Reference (path relative to this skill): `scripts/search_sra.py` (Entrez
+`esearch` + `esummary` via stdlib).
+
+**Copy/adapt** it under the session job; do not run against the skill tree as
+cwd. After copying to e.g. `<job>/analysis/sra-search/`:
 
 ```bash
-python skills/sra-search/scripts/search_sra.py \
+python search_sra.py \
   --query "gut microbiome IBD 16S" \
   --organism "Homo sapiens" \
   --retmax 10 \
@@ -35,7 +38,7 @@ Optional env: `NCBI_API_KEY`, `NCBI_EMAIL` (higher rate limits).
 ## Agent procedure
 
 1. Clarify search intent (disease, organism, strategy, known SRR/ERR/DRR).
-2. Run the reference script (or equivalent E-utilities calls).
+2. Copy/adapt `scripts/search_sra.py` into the job (or equivalent E-utilities).
 3. Save human-readable summary + JSON under `analysis/sra-search/`.
 4. If the user picks accessions for analysis, stage/download in a **later** step
    — do not invent FASTQ contents.
