@@ -1,8 +1,8 @@
 # AGENTS.md — openclaw-microbiome (repo guide for coding agents)
 
-For **coding agents** editing this repository. Not the OpenClaw analysis-agent
-bootstrap — that is `workspace/AGENTS.md` (merged into the OpenClaw agent
-workspace).
+This file is for **developers / coding agents** working in this repository.
+It is **not** the OpenClaw runtime bootstrap (that lives in `workspace/AGENTS.md`
+and is merged into the OpenClaw agent workspace).
 
 ## What this is
 

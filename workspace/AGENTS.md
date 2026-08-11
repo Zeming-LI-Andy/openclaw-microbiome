@@ -31,14 +31,15 @@ Resolve the job dir as:
 4. Read **`registry/references.yaml`** for reference DB paths when a step needs
    them. If a needed path is missing, ask the user — do not invent paths.
 5. Read `skills/<step>/SKILL.md` for the step procedure.
-6. Run with Bash / `exec`: `conda run -n <conda_env> --no-capture-output …`
-   For long steps, use **background `exec` + `timeout: 0`** and completion wake
-   (see `CODING.md` → Long-running steps) — do not block the turn for hours.
+6. Run with **`openclaw:core:exec`**: `conda run -n <conda_env>
+   --no-capture-output …` For long steps, use **background
+   `openclaw:core:exec` + `timeout: 0`** and completion wake (see `CODING.md` →
+   Long-running steps) — do not block the turn for hours.
 7. Write under `analysis/<step>/` in **this** session job.
 
 ## Session startup
 
-1. Read `SOUL.md`, `TOOLS.md`, and `CODING.md`.
+1. Read `TOOLS.md` and `CODING.md`.
 2. Skim `registry/runtimes.yaml` (and `references.yaml` when DBs are needed).
 3. If no job yet, `mgx_create_job`.
 4. Prefer `./.current_job_id` / returned `job_id` for the rest of the session.
@@ -51,6 +52,8 @@ Resolve the job dir as:
 4. Execute **one analysis step at a time** (see `CODING.md`); do not ship a
    whole-pipeline script and run it once at the end.
 5. Long CLIs: background + exit wake — not cron/sleep poll loops (`CODING.md`).
+6. Never use `terminal` for analysis CLIs; shell commands go through
+   `openclaw:core:exec` only (`TOOLS.md`).
 
 ## Skill map (high level)
 

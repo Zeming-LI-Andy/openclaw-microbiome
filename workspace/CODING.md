@@ -76,9 +76,11 @@ Bash tips when using conda:
 
 Many microbiome CLIs (Aviary assemble/recover, HUMAnN, heavy EggNOG, DADA2 on
 large cohorts, …) can run far longer than the default **exec process timeout**
-(~30 minutes). Do **not** hold a foreground `exec` for hours. Use **background `exec` + exit wake**:
+(~30 minutes). Do **not** hold a foreground `openclaw:core:exec` for hours. Use
+**background `openclaw:core:exec` + exit wake** — never `terminal`:
 
-1. `exec` with `background: true` (or short `yieldMs`) and **`timeout: 0`**.
+1. `openclaw:core:exec` with `background: true` (or short `yieldMs`) and
+   **`timeout: 0`**.
 2. Keep a job log under `reproducibility/logs/<step>.log`. Prefer
    `… 2>&1 | tee <log>` so **both** the file and OpenClaw’s session capture see
    output. If you must use pure `> log 2>&1`, follow with a visible
@@ -86,11 +88,11 @@ large cohorts, …) can run far longer than the default **exec process timeout**
 3. Keep the `sessionId`, **end the turn**. Do not sleep / poll-loop / cron-babysit
    a live step.
 4. On **`notifyOnExit`** wake: verify exit + `analysis/<step>/`, then the next
-   step. Use `process` (`poll` / `log` / `kill`) only for ad-hoc status or if
-   wake is unavailable (`poll` ≤ ~30s — not wait-until-done).
+   step. Use **`openclaw:core:process`** (`poll` / `log` / `kill`) only for
+   ad-hoc status or if wake is unavailable (`poll` ≤ ~30s — not wait-until-done).
 
 ```text
-one step → background exec (timeout: 0, tee → log)
+one step → background openclaw:core:exec (timeout: 0, tee → log)
 → stop turn → notifyOnExit wake → verify → next step
 ```
 
