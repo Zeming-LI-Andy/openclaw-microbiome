@@ -8,3 +8,4 @@ jobs/
 coverage/
 .vitest/
 .current_job_id
+.microbiome/

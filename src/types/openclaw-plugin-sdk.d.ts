@@ -1,23 +1,33 @@
 declare module "openclaw/plugin-sdk/plugin-entry" {
   export type PluginLogger = Pick<Console, "info" | "warn" | "error" | "debug">;
 
+  export type PluginToolContext = {
+    workspaceDir?: string;
+    agentId?: string;
+    sessionKey?: string;
+    /** Ephemeral conversation UUID; regenerated on /new and /reset. */
+    sessionId?: string;
+  };
+
+  export type PluginAgentTool = {
+    name: string;
+    description: string;
+    parameters: unknown;
+    execute: (
+      id: string,
+      params: Record<string, unknown>,
+    ) => Promise<{
+      content: Array<{ type: "text"; text: string }>;
+      details?: unknown;
+    }>;
+  };
+
   export type PluginRegisterApi = {
     pluginConfig?: unknown;
     logger?: PluginLogger;
     registerTool: (
-      tool: {
-        name: string;
-        description: string;
-        parameters: unknown;
-        execute: (
-          id: string,
-          params: Record<string, unknown>,
-        ) => Promise<{
-          content: Array<{ type: "text"; text: string }>;
-          details?: unknown;
-        }>;
-      },
-      opts?: { optional?: boolean },
+      tool: PluginAgentTool | ((ctx: PluginToolContext) => PluginAgentTool | null | undefined),
+      opts?: { optional?: boolean; name?: string },
     ) => void;
     /** Typed lifecycle hooks (e.g. gateway_start). */
     on?: (

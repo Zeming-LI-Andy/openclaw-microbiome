@@ -6,11 +6,12 @@ tools:
   - id: mgx_create_job
     kind: project
     description: >
-      Create or reuse the analysis job for this OpenClaw session (one session ↔
-      one job_id). Scaffolds stage/, analysis/, and reproducibility/ under
-      jobsRoot, writes workspace .current_job_id, and returns paths. Call once
-      when starting analysis in a conversation; later calls reuse the same job
-      unless force_new is true.
+      Create or reuse the analysis job for this OpenClaw conversation (one
+      sessionId ↔ one job_id). Scaffolds stage/, analysis/, and reproducibility/
+      under jobsRoot, bookmarks the job under workspace
+      .microbiome/session_jobs/<sessionId>, and returns paths. Call once when
+      starting analysis; later calls in the same conversation reuse the same
+      job unless force_new is true. Different conversations get different jobs.
     optional: false
     parameters:
       type: object
@@ -25,6 +26,6 @@ tools:
         force_new:
           type: boolean
           description: >
-            If true, mint a new job_id even if this session already has one.
-            Default false (reuse OPENCLAW_SESSION_JOB_ID or .current_job_id).
+            If true, mint a new job_id even if this conversation already has one.
+            Default false (reuse OPENCLAW_SESSION_JOB_ID or this session's bookmark).
       required: []

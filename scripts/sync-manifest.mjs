@@ -38,7 +38,7 @@ const manifest = {
       workspaceRoot: {
         type: "string",
         description:
-          "Workspace checkout that stores .current_job_id and registry/references.yaml.",
+          "Workspace checkout that stores .microbiome/session_jobs/ and registry/references.yaml.",
       },
       catalogDir: { type: "string" },
       refsConfig: {

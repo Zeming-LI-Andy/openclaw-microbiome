@@ -5,8 +5,9 @@
 **One OpenClaw conversation = one `job_id`.**
 
 1. At the start of an analysis session, call `mgx_create_job` once.
-2. It creates or **reuses** the session job (`OPENCLAW_SESSION_JOB_ID` →
-   workspace `.current_job_id` → new id).
+2. It creates or **reuses** this conversation’s job (`OPENCLAW_SESSION_JOB_ID`
+   → per-session bookmark under `.microbiome/session_jobs/<sessionId>` → new
+   id). Different OpenClaw conversations get different `job_id`s.
 3. All inputs/outputs for this conversation go under that job directory.
 4. Do not mint a second job mid-chat unless the user explicitly wants a new
    analysis (`force_new: true`).
@@ -42,7 +43,8 @@ Resolve the job dir as:
 1. Read `TOOLS.md` and `CODING.md`.
 2. Skim `registry/runtimes.yaml` (and `references.yaml` when DBs are needed).
 3. If no job yet, `mgx_create_job`.
-4. Prefer `./.current_job_id` / returned `job_id` for the rest of the session.
+4. Prefer the returned `job_id` (and `root` / `stage` / `analysis`) for the
+   rest of the session.
 
 ## Hard rules
 

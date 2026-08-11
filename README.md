@@ -143,7 +143,7 @@ export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
 |-----|---------|
 | `enabled` | Load the plugin (tools, skills, `gateway_start`) |
 | `jobsRoot` | Analysis jobs root (default `OPENCLAW_JOBS_ROOT` or `./jobs`) |
-| `workspaceRoot` | Agent workspace for `.current_job_id` + generated `registry/references.yaml` |
+| `workspaceRoot` | Agent workspace for `.microbiome/session_jobs/` + generated `registry/references.yaml` |
 | `refsConfig` | User refs yaml (default `~/.openclaw/microbiome-refs.yaml`) |
 | `refsMode` | `auto` / `docker` / `host` for generated `path` values |
 | `catalogDir` | Override `catalog/` for tools.yaml |
@@ -189,15 +189,16 @@ See also: [Background exec](https://docs.openclaw.ai/gateway/background-process)
 ## Session job
 
 ```text
-mgx_create_job
+mgx_create_job (per OpenClaw conversation / sessionId)
   → reuse OPENCLAW_SESSION_JOB_ID
-  → else reuse workspace/.current_job_id
+  → else reuse .microbiome/session_jobs/<sessionId>
   → else create jobsRoot/<YYYYMMDD-HHMMSS-hex>/
        stage/  analysis/  reproducibility/
-  → write .current_job_id
+  → write .microbiome/session_jobs/<sessionId>
 ```
 
-All analysis artifacts for that conversation stay under that job directory.
+Different conversations get different job directories. All analysis artifacts for
+a conversation stay under that conversation’s job directory.
 
 ## Skills (index)
 

@@ -4,7 +4,7 @@ export type RefsMode = "auto" | "docker" | "host";
 
 export type PluginConfig = {
   jobsRoot?: string;
-  /** Workspace checkout that stores `.current_job_id` (default: cwd / OPENCLAW_WORKSPACE). */
+  /** Workspace checkout for `.microbiome/session_jobs/` bookmarks (default: cwd / OPENCLAW_WORKSPACE). */
   workspaceRoot?: string;
   preferRuntime?: PreferRuntime;
   condaExecutable?: string;

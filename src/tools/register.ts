@@ -1,4 +1,5 @@
 import type { Catalog, PluginConfig, ToolSpec } from "../runtime/types.js";
+import type { SessionBinding } from "../runtime/job.js";
 import { executeProjectTool, isProjectTool } from "./project.js";
 import { jsonSchemaToTypeBox } from "./schema.js";
 
@@ -7,7 +8,10 @@ export type RegisteredTool = {
   description: string;
   optional: boolean;
   parameters: ReturnType<typeof jsonSchemaToTypeBox>;
-  execute: (params: Record<string, unknown>) => Promise<{
+  execute: (
+    params: Record<string, unknown>,
+    session?: SessionBinding,
+  ) => Promise<{
     content: Array<{ type: "text"; text: string }>;
     details: unknown;
   }>;
@@ -27,13 +31,13 @@ function buildTool(
     description: tool.description.trim(),
     optional: Boolean(tool.optional),
     parameters: jsonSchemaToTypeBox(tool.parameters),
-    async execute(params) {
+    async execute(params, session) {
       const config = getConfig();
       try {
         if (!isProjectTool(tool.id) && tool.kind !== "project") {
           throw new Error(`Unsupported tool: ${tool.id}. Only mgx_create_job is registered.`);
         }
-        const details = await executeProjectTool(tool.id, params, config, catalog);
+        const details = await executeProjectTool(tool.id, params, config, catalog, session);
         return {
           content: [{ type: "text", text: JSON.stringify(details, null, 2) }],
           details,

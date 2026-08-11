@@ -6,7 +6,7 @@ Plugin id: `microbiome`
 
 | Tool | Purpose |
 |------|---------|
-| `mgx_create_job` | Create or reuse the **session** job; write `.current_job_id` |
+| `mgx_create_job` | Create or reuse **this conversation’s** job; bookmark under `.microbiome/session_jobs/<sessionId>` |
 
 Other work uses native OpenClaw **Read** plus the shell **`openclaw:core:exec`**.
 
@@ -40,9 +40,14 @@ the user — do not invent paths.
 
 ## Session binding
 
-1. `OPENCLAW_SESSION_JOB_ID` if set  
-2. else `.current_job_id`  
-3. else mint new id via `mgx_create_job`
+Bound to the OpenClaw **conversation** (`sessionId`; fallback `sessionKey`):
+
+1. `OPENCLAW_SESSION_JOB_ID` if set and the job dir exists  
+2. else workspace `.microbiome/session_jobs/<sessionId>`  
+3. else mint a new id and write that per-session bookmark  
+
+Different conversations → different `job_id` directories. Same conversation →
+reuse. `force_new: true` mints another job for the current conversation.
 
 Jobs: `${OPENCLAW_JOBS_ROOT:-/data/output}/<job_id>/` (or plugin `jobsRoot`).
 

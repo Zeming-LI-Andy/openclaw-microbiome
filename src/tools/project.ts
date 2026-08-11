@@ -1,6 +1,6 @@
 import { Type } from "typebox";
 import type { Catalog, PluginConfig } from "../runtime/types.js";
-import { createOrReuseSessionJob } from "../runtime/job.js";
+import { createOrReuseSessionJob, type SessionBinding } from "../runtime/job.js";
 
 export const projectToolIds = ["mgx_create_job"] as const;
 
@@ -13,6 +13,7 @@ export async function executeProjectTool(
   params: Record<string, unknown>,
   config: PluginConfig,
   _catalog: Catalog,
+  session?: SessionBinding,
 ): Promise<unknown> {
   if (toolId !== "mgx_create_job") {
     throw new Error(`Unknown project tool: ${toolId}`);
@@ -22,6 +23,7 @@ export async function executeProjectTool(
     label: typeof params.label === "string" ? params.label : undefined,
     notes: typeof params.notes === "string" ? params.notes : undefined,
     forceNew: Boolean(params.force_new),
+    session,
   });
 
   return {
@@ -34,11 +36,15 @@ export async function executeProjectTool(
     reproducibility: result.reproducibility,
     jobs_root: result.jobs_root,
     bookmark_path: result.bookmark_path,
+    session_binding: result.session_binding ?? null,
     session: {
       one_session_one_job: true,
+      binding: result.session_binding
+        ? "OpenClaw sessionId (fallback: sessionKey)"
+        : "legacy workspace .current_job_id (no session context)",
       env_var: "OPENCLAW_SESSION_JOB_ID",
       hint: result.reused
-        ? "Reusing this session's job_id. Keep all analysis I/O under this job directory."
+        ? "Reusing this conversation's job_id. Keep all analysis I/O under this job directory."
         : "New session job created. Remember job_id for this conversation; write all outputs under root/stage/analysis.",
     },
   };

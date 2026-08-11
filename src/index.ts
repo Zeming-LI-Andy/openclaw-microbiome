@@ -19,7 +19,7 @@ export const configSchema = Type.Object({
   workspaceRoot: Type.Optional(
     Type.String({
       description:
-        "OpenClaw workspace checkout that stores .current_job_id and registry/references.yaml (default: OPENCLAW_WORKSPACE or cwd).",
+        "OpenClaw workspace checkout that stores per-session job bookmarks under .microbiome/session_jobs/ and registry/references.yaml (default: OPENCLAW_WORKSPACE or cwd).",
     }),
   ),
   catalogDir: Type.Optional(
@@ -89,16 +89,20 @@ export default definePluginEntry({
     const catalog = loadCatalog(getConfig());
     const tools = buildTools(catalog, getConfig);
     for (const tool of tools) {
+      // Factory so each turn gets OpenClaw sessionId/sessionKey for per-conversation jobs.
       api.registerTool(
-        {
+        (ctx) => ({
           name: tool.name,
           description: tool.description,
           parameters: tool.parameters,
           async execute(_id, params) {
-            return tool.execute(params as Record<string, unknown>);
+            return tool.execute(params as Record<string, unknown>, {
+              sessionId: ctx.sessionId,
+              sessionKey: ctx.sessionKey,
+            });
           },
-        },
-        { optional: tool.optional },
+        }),
+        { optional: tool.optional, name: tool.name },
       );
     }
 
