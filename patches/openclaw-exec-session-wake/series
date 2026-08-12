@@ -1,0 +1,4 @@
+0001-session-continue-exec-event-prompt.patch
+0002-clear-disposed-transcript-als-on-exec-wake.patch
+0003-exec-notify-immediate-and-steer-wake.patch
+0004-tool-guidance-yield-before-poll.patch

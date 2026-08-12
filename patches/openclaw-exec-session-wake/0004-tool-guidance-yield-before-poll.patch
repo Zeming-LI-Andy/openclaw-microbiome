@@ -1,0 +1,181 @@
+diff --git a/src/agents/agent-tools.deferred-followup-guidance.test.ts b/src/agents/agent-tools.deferred-followup-guidance.test.ts
+index 5c82c1c3bf8..f2060b1fc30 100644
+--- a/src/agents/agent-tools.deferred-followup-guidance.test.ts
++++ b/src/agents/agent-tools.deferred-followup-guidance.test.ts
+@@ -29,7 +29,7 @@ describe("createOpenClawCodingTools deferred follow-up guidance", () => {
+ 
+     expect(exec.toolNames).toEqual(["exec", "process", "cron"]);
+     expect(exec.description).toBe(
+-      "Run shell now; background continuation supported. Use yieldMs/background, then process for logs/status/input/intervention. Long run: automatic completion wake when enabled and output/failure occurs; otherwise process confirms completion. No sleep/delay loops for reminders/follow-ups; use cron. TTY CLI/UI/coding agent: pty=true.",
++      "Run shell now; background continuation supported. Use yieldMs to observe startup before backgrounding; background=true skips that wait. With automatic completion wake, end the turn instead of polling; use process only for requested logs/status/input/intervention or when wake is unavailable. No sleep/delay loops for reminders/follow-ups; use cron. TTY CLI/UI/coding agent: pty=true.",
+     );
+     expect(process.description).toBe(
+       "Control existing exec: list, poll, log, write, send-keys, submit, paste, kill. poll/log: status, output, quiet success, completion without auto-wake, input hints. Others: input/intervention. No polling as timer/reminder; scheduled follow-up uses cron.",
+@@ -42,7 +42,7 @@ describe("createOpenClawCodingTools deferred follow-up guidance", () => {
+ 
+     expect(exec.toolNames).toEqual(["exec", "process"]);
+     expect(exec.description).toBe(
+-      "Run shell now; background continuation supported. Use yieldMs/background, then process for logs/status/input/intervention. Long run: automatic completion wake when enabled and output/failure occurs; otherwise process confirms completion. TTY CLI/UI/coding agent: pty=true.",
++      "Run shell now; background continuation supported. Use yieldMs to observe startup before backgrounding; background=true skips that wait. With automatic completion wake, end the turn instead of polling; use process only for requested logs/status/input/intervention or when wake is unavailable. TTY CLI/UI/coding agent: pty=true.",
+     );
+     expect(process.description).toBe(
+       "Control existing exec: list, poll, log, write, send-keys, submit, paste, kill. poll/log: status, output, quiet success, completion without auto-wake, input hints. Others: input/intervention.",
+diff --git a/src/agents/agent-tools.schema.test.ts b/src/agents/agent-tools.schema.test.ts
+index 4d0738190f3..f1fb89b5ce5 100644
+--- a/src/agents/agent-tools.schema.test.ts
++++ b/src/agents/agent-tools.schema.test.ts
+@@ -51,6 +51,7 @@ describe("direct exec tool schema", () => {
+     expect(descriptions.join("").length).toBeLessThan(550);
+     expect(describeField("workdir")).toContain("Blank/whitespace");
+     expect(describeField("yieldMs")).toContain("Milliseconds");
++    expect(describeField("background")).toContain("overrides yieldMs");
+     expect(describeField("timeout")).toContain("seconds");
+     expect(describeField("pty")).toContain("PTY");
+     expect(describeField("elevated")).toContain("if allowed");
+diff --git a/src/agents/bash-tools.descriptions.ts b/src/agents/bash-tools.descriptions.ts
+index 588226d9d0a..693d3d83ace 100644
+--- a/src/agents/bash-tools.descriptions.ts
++++ b/src/agents/bash-tools.descriptions.ts
+@@ -22,8 +22,8 @@ function deriveExecShortName(fullPath: string): string {
+ export function describeExecTool(params?: { agentId?: string; hasCronTool?: boolean }): string {
+   const base = [
+     "Run shell now; background continuation supported.",
+-    "Use yieldMs/background, then process for logs/status/input/intervention.",
+-    "Long run: automatic completion wake when enabled and output/failure occurs; otherwise process confirms completion.",
++    "Use yieldMs to observe startup before backgrounding; background=true skips that wait.",
++    "With automatic completion wake, end the turn instead of polling; use process only for requested logs/status/input/intervention or when wake is unavailable.",
+     params?.hasCronTool ? "No sleep/delay loops for reminders/follow-ups; use cron." : undefined,
+     "TTY CLI/UI/coding agent: pty=true.",
+   ]
+diff --git a/src/agents/bash-tools.schemas.ts b/src/agents/bash-tools.schemas.ts
+index 57ca835ed80..d81938a0644 100644
+--- a/src/agents/bash-tools.schemas.ts
++++ b/src/agents/bash-tools.schemas.ts
+@@ -23,7 +23,9 @@ export const execSchema = Type.Object({
+       description: "Milliseconds before backgrounding; default 10000.",
+     }),
+   ),
+-  background: Type.Optional(Type.Boolean({ description: "Run in background immediately" })),
++  background: Type.Optional(
++    Type.Boolean({ description: "Immediate background; overrides yieldMs." }),
++  ),
+   timeout: Type.Optional(
+     Type.Number({
+       description: "Timeout in seconds; kills process on expiry.",
+diff --git a/src/agents/bash-tools.exec-run.ts b/src/agents/bash-tools.exec-run.ts
+index 10d04a5da7a..de746a01f20 100644
+--- a/src/agents/bash-tools.exec-run.ts
++++ b/src/agents/bash-tools.exec-run.ts
+@@ -609,7 +609,7 @@ export function createExecTool(
+                 type: "text",
+                 text: `${getWarningText()}Command still running (session ${run.session.id}, pid ${
+                   run.session.pid ?? "n/a"
+-                }). Use process (list/poll/log/write/send-keys/submit/paste/kill/clear/remove) for follow-up.`,
++                }). Use sessions_yield to await completion; do not poll. Use process only for user-requested status, logs, input, or intervention.`,
+               },
+             ],
+             details: {
+diff --git a/src/agents/bash-tools.test.ts b/src/agents/bash-tools.test.ts
+index 035d843dd4f..581b5db531a 100644
+--- a/src/agents/bash-tools.test.ts
++++ b/src/agents/bash-tools.test.ts
+@@ -706,7 +706,7 @@ describe("tool descriptions", () => {
+     const processWithCron = createProcessTool({ hasCronTool: true });
+ 
+     expect(execWithCron.description).toContain(
+-      "automatic completion wake when enabled and output/failure occurs; otherwise process confirms completion",
++      "With automatic completion wake, end the turn instead of polling",
+     );
+     expect(processWithCron.description).toContain("completion without auto-wake");
+     expect(processWithCron.description).toContain("write, send-keys, submit, paste, kill");
+@@ -718,7 +718,7 @@ describe("tool descriptions", () => {
+     );
+     expect(execTool.description).not.toContain("use cron instead");
+     expect(processTool.description).not.toContain("scheduled follow-ups");
+-    expect(execTool.description).toContain("otherwise process confirms completion");
++    expect(execTool.description).toContain("end the turn instead of polling");
+     expect(processTool.description).toContain("completion without auto-wake");
+     expect(processTool.description).toContain("write, send-keys, submit, paste, kill");
+   });
+@@ -768,6 +768,14 @@ describe("exec tool backgrounding", () => {
+     expect(sessions.find((s) => s.sessionId === sessionId)?.name).toBe(COMMAND_ECHO_HELLO);
+   });
+ 
++  it("directs background completion waits to sessions_yield instead of polling", async () => {
++    const result = await executeExecCommand(execTool, COMMAND_ECHO_HELLO, { background: true });
++
++    expect(readTextContent(result.content)).toContain(
++      "Use sessions_yield to await completion; do not poll.",
++    );
++  });
++
+   it.each<DisallowedElevationCase>(DISALLOWED_ELEVATION_CASES)(
+     "$label",
+     runDisallowedElevationCase,
+diff --git a/src/agents/system-prompt.ts b/src/agents/system-prompt.ts
+index 11a2eced75f..b175b43801c 100644
+--- a/src/agents/system-prompt.ts
++++ b/src/agents/system-prompt.ts
+@@ -922,7 +922,7 @@ export function buildAgentSystemPrompt(params: {
+     sessions_spawn: acpSpawnRuntimeEnabled
+       ? 'Spawn isolated subagent/ACP. Transcript needed: context="fork". ACP needs agentId unless default; ids from acp.allowedAgents, not agents_list.'
+       : 'Spawn isolated subagent; transcript needed: context="fork"',
+-    sessions_yield: "End turn; await subagent events",
++    sessions_yield: "End turn; await subagent and background exec events",
+     subagents: "Subagent status; never wait-loop",
+     session_status: "Session/model/usage/time/status; model override",
+     skill_workshop: "Manage reusable-skill proposals",
+diff --git a/src/agents/system-prompt.test.ts b/src/agents/system-prompt.test.ts
+index b6f89a2f24f..437b4f49682 100644
+--- a/src/agents/system-prompt.test.ts
++++ b/src/agents/system-prompt.test.ts
+@@ -544,6 +544,9 @@ describe("buildAgentSystemPrompt", () => {
+ 
+     expect(withoutYield).not.toContain("use `sessions_yield` when waiting");
+     expect(withYield).toContain("wait with `sessions_yield`");
++    expect(withYield).toContain(
++      "- sessions_yield: End turn; await subagent and background exec events",
++    );
+   });
+ 
+   it("limits screen guidance to web/app tool surfaces", () => {
+diff --git a/src/agents/tools/sessions-yield-tool.ts b/src/agents/tools/sessions-yield-tool.ts
+index da9eaad725c..c1bd04a9be2 100644
+--- a/src/agents/tools/sessions-yield-tool.ts
++++ b/src/agents/tools/sessions-yield-tool.ts
+@@ -1,7 +1,7 @@
+ /**
+  * sessions_yield built-in tool.
+  *
+- * Ends the current turn after subagent spawning so completion events can resume the session later.
++ * Ends the current turn so an asynchronous completion event can resume the session later.
+  */
+ import { Type } from "typebox";
+ import type { AnyAgentTool } from "./common.js";
+@@ -23,7 +23,8 @@ export function createSessionsYieldTool(opts?: {
+     // Turn-lifecycle contract: spawn flows instruct the model to yield, so the
+     // tool must stay visible even when tool search compacts the catalog.
+     catalogMode: "direct-only",
+-    description: "End turn after subagent spawn; results arrive next message.",
++    description:
++      "End the current turn while waiting for an asynchronous completion event, such as a subagent or background exec; results arrive in a later message.",
+     parameters: SessionsYieldToolSchema,
+     execute: async (_toolCallId, args) => {
+       const params = args as Record<string, unknown>;
+diff --git a/src/agents/tools/sessions-yield-tool.test.ts b/src/agents/tools/sessions-yield-tool.test.ts
+index 6e6a2f4a985..881531d62ed 100644
+--- a/src/agents/tools/sessions-yield-tool.test.ts
++++ b/src/agents/tools/sessions-yield-tool.test.ts
+@@ -10,6 +10,12 @@ type SessionsYieldDetails = {
+ };
+ 
+ describe("sessions_yield tool", () => {
++  it("describes a general asynchronous completion handoff", () => {
++    const tool = createSessionsYieldTool();
++    expect(tool.description).toContain("asynchronous completion event");
++    expect(tool.description).toContain("background exec");
++  });
++
+   it("returns error when no sessionId is provided", async () => {
+     const onYield = vi.fn();
+     const tool = createSessionsYieldTool({ onYield });

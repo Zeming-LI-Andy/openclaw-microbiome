@@ -1,0 +1,122 @@
+diff --git a/src/infra/heartbeat-events-filter.test.ts b/src/infra/heartbeat-events-filter.test.ts
+index ab49c8ef219..69ff4c3a88b 100644
+--- a/src/infra/heartbeat-events-filter.test.ts
++++ b/src/infra/heartbeat-events-filter.test.ts
+@@ -60,14 +60,20 @@ describe("heartbeat event prompts", () => {
+       unexpected: ["system messages above", "Handle the result internally"],
+     },
+     {
+-      name: "builds internal-only exec prompt when delivery is disabled",
++      name: "builds session-continue exec prompt when delivery is disabled",
+       events: ["Exec failed (node=abc id=123, code 1)\nUpload failed"],
+       opts: { deliverToUser: false },
+-      expected: ["user delivery is disabled", "Handle the result internally", "HEARTBEAT_OK only"],
+-      unexpected: [
++      expected: [
++        "Outbound user delivery is disabled",
+         "Upload failed",
++        "Continue the work in this same session",
++        "Only reply HEARTBEAT_OK if nothing further",
++      ],
++      unexpected: [
+         "system messages above",
+         "Please relay the command output to the user",
++        "HEARTBEAT_OK only",
++        "Do not mention, summarize, or reuse command output",
+       ],
+     },
+     {
+@@ -127,6 +133,20 @@ describe("heartbeat event prompts", () => {
+     expect(prompt).toContain("notify=false");
+     expect(prompt).not.toContain("HEARTBEAT_OK");
+   });
++
++  it("builds session-continue exec prompt for response-tool mode when delivery is disabled", () => {
++    const prompt = buildExecEventPrompt(["Exec completed (abc12345, code 0) :: done"], {
++      deliverToUser: false,
++      useHeartbeatResponseTool: true,
++    });
++
++    expect(prompt).toContain("Outbound user delivery is disabled");
++    expect(prompt).toContain("Continue the work in this same session");
++    expect(prompt).toContain("done");
++    expect(prompt).toContain("heartbeat_respond");
++    expect(prompt).not.toContain("HEARTBEAT_OK only");
++    expect(prompt).not.toContain("Do not mention, summarize, or reuse command output");
++  });
+ });
+ 
+ describe("heartbeat event classification", () => {
+diff --git a/src/infra/heartbeat-events-filter.ts b/src/infra/heartbeat-events-filter.ts
+index 75d17b27bde..51060baf259 100644
+--- a/src/infra/heartbeat-events-filter.ts
++++ b/src/infra/heartbeat-events-filter.ts
+@@ -140,16 +140,25 @@ export function buildExecEventPrompt(
+     );
+   }
+   if (!deliverToUser) {
++    // Webchat/Control UI and other non-outbound targets still run in-session.
++    // Keep follow-up visible in the same transcript instead of forcing HEARTBEAT_OK-only.
+     if (useHeartbeatResponseTool) {
+       return (
+-        "An async command completion event was triggered, but user delivery is disabled for this run. " +
+-        `Handle the result internally. ${HEARTBEAT_RESPONSE_TOOL_INSTRUCTIONS} ` +
+-        "Do not mention, summarize, or reuse command output."
++        "An async command you ran earlier has completed. Outbound user delivery is disabled for this run. " +
++        "The command completion details are:\n\n" +
++        eventText +
++        "\n\nContinue the work in this same session (inspect the result and use tools if needed). " +
++        `${HEARTBEAT_RESPONSE_TOOL_INSTRUCTIONS} ` +
++        "Do not discard the completion as a silent HEARTBEAT_OK when follow-up work remains."
+       );
+     }
+     return (
+-      "An async command completion event was triggered, but user delivery is disabled for this run. " +
+-      "Handle the result internally and reply HEARTBEAT_OK only. Do not mention, summarize, or reuse command output."
++      "An async command you ran earlier has completed. Outbound user delivery is disabled for this run. " +
++      "The command completion details are:\n\n" +
++      eventText +
++      "\n\nContinue the work in this same session: inspect the result, use tools if needed, and write a " +
++      "normal session reply with progress or next steps. Only reply HEARTBEAT_OK if nothing further " +
++      "needs doing. Do not attempt external channel delivery."
+     );
+   }
+   if (hasMissingOutputFailure) {
+diff --git a/src/infra/heartbeat-runner.ghost-reminder.test.ts b/src/infra/heartbeat-runner.ghost-reminder.test.ts
+index 7d4e81866cd..642a8c94498 100644
+--- a/src/infra/heartbeat-runner.ghost-reminder.test.ts
++++ b/src/infra/heartbeat-runner.ghost-reminder.test.ts
+@@ -716,7 +716,8 @@ describe("Ghost reminder bug (issue #13317)", () => {
+ 
+     expect(result.status).toBe("ran");
+     expect(calledCtx?.Provider).toBe("exec-event");
+-    expect(calledCtx?.Body).toContain("Handle the result internally");
++    expect(calledCtx?.Body).toContain("Continue the work in this same session");
++    expect(calledCtx?.Body).toContain("deploy succeeded");
+     expect(sendTelegram).not.toHaveBeenCalled();
+     expect(peekSystemEvents(processedSessionKey)).toEqual([]);
+   });
+@@ -770,7 +771,8 @@ describe("Ghost reminder bug (issue #13317)", () => {
+ 
+     expect(result.status).toBe("ran");
+     expect(calledCtx?.Provider).toBe("exec-event");
+-    expect(calledCtx?.Body).toContain("Handle the result internally");
++    expect(calledCtx?.Body).toContain("Continue the work in this same session");
++    expect(calledCtx?.Body).toContain("webhook-triggered backup completed");
+     expect(sendTelegram).not.toHaveBeenCalled();
+   });
+ 
+diff --git a/src/infra/heartbeat-runner.returns-default-unset.test.ts b/src/infra/heartbeat-runner.returns-default-unset.test.ts
+index a3c76f96037..d391432de25 100644
+--- a/src/infra/heartbeat-runner.returns-default-unset.test.ts
++++ b/src/infra/heartbeat-runner.returns-default-unset.test.ts
+@@ -1936,7 +1936,8 @@ tasks:
+       expect(sendWhatsApp).toHaveBeenCalledTimes(0);
+       const calledCtx = replyBody(replySpy);
+       expect(calledCtx.Provider).toBe("exec-event");
+-      expect(calledCtx.Body).toContain("Handle the result internally");
++      expect(calledCtx.Body).toContain("Continue the work in this same session");
++      expect(calledCtx.Body).toContain("backup completed");
+       expect(calledCtx.Body).not.toContain("Please relay the command output to the user");
+     } finally {
+       replySpy.mockReset();

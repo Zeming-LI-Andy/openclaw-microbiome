@@ -27,7 +27,24 @@ Migrate a bio tool into a skill: READ `SKILL_CREATE.md`.
 | `examples/` | Template `microbiome-refs.yaml` for `~/.openclaw/` |
 | `catalog/` | Tool catalog YAML (copied into `dist` on build) |
 | `scripts/` | Maint: sync-refs, dry-run, sync-manifest, copy-catalog |
+| `patches/` | Version-pinned OpenClaw patch packs (do not edit upstream in-place) |
 | `jobs/` | Local/dry-run job dirs (not necessarily production `jobsRoot`) |
+
+## OpenClaw patches
+
+Long-running analysis depends on background `exec` + `notifyOnExit` wake.
+Required upstream fixes live under
+`patches/openclaw-exec-session-wake/` (see that pack’s `README.md` +
+`manifest.json` for the **exact OpenClaw version/commit** pin).
+
+```bash
+./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh --check
+./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh
+# rebuild + restart gateway after apply
+```
+
+Prefer updating / rebasing the patch pack over leaving dirty edits in
+`../openclaw`.
 
 ## Two AGENTS.md files
 

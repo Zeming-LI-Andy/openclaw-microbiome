@@ -1,0 +1,221 @@
+diff --git a/src/agents/bash-tools.exec-runtime.test.ts b/src/agents/bash-tools.exec-runtime.test.ts
+index b3a59819bae..9fe8221061b 100644
+--- a/src/agents/bash-tools.exec-runtime.test.ts
++++ b/src/agents/bash-tools.exec-runtime.test.ts
+@@ -565,6 +565,77 @@ describe("exec notifyOnExit suppression", () => {
+     expect(heartbeat.sessionKey).toBe("agent:main:main");
+   });
+ 
++  it("clears disposed attempt transcript ownership before notifyOnExit wake", async () => {
++    const { withOwnedSessionTranscriptWrites, runWithOwnedSessionTranscriptWriteLock } =
++      await import("../config/sessions/transcript-write-context.js");
++    const sessionKey = "agent:main:dashboard:disposed-owner-wake";
++    let disposed = false;
++    const staleWriteLock = vi.fn();
++    const withStaleWriteLock = async <T>(operation: () => Promise<T> | T): Promise<T> => {
++      staleWriteLock();
++      if (disposed) {
++        throw new Error("attempt disposed before transcript write");
++      }
++      return await operation();
++    };
++    let releaseExit!: () => void;
++    const exitGate = new Promise<void>((resolve) => {
++      releaseExit = resolve;
++    });
++
++    supervisorMock.spawn.mockImplementationOnce(async () => ({
++      runId: "run-disposed-owner",
++      startedAtMs: Date.now(),
++      pid: 4242,
++      wait: async () => {
++        await exitGate;
++        return {
++          reason: "exit" as const,
++          exitCode: 0,
++          exitSignal: null,
++          durationMs: 10,
++          stdout: "",
++          stderr: "",
++          timedOut: false,
++          noOutputTimedOut: false,
++        };
++      },
++      cancel: vi.fn(),
++    }));
++
++    await withOwnedSessionTranscriptWrites(
++      { sessionKey, withSessionWriteLock: withStaleWriteLock },
++      async () => {
++        const run = await runExecProcess({
++          command: "echo DONE",
++          workdir: "/tmp",
++          env: {},
++          usePty: false,
++          warnings: [],
++          maxOutput: 1000,
++          pendingMaxOutput: 1000,
++          notifyOnExit: true,
++          notifyOnExitEmptySuccess: true,
++          sessionKey,
++          timeoutSec: null,
++        });
++        markBackgrounded(run.session);
++        disposed = true;
++        staleWriteLock.mockClear();
++        releaseExit();
++        await run.promise;
++      },
++    );
++
++    expect(enqueueSystemEventMock).toHaveBeenCalledTimes(1);
++    expect(requestHeartbeatMock).toHaveBeenCalledTimes(1);
++    // Notify must not re-enter the disposed attempt lock.
++    expect(staleWriteLock).not.toHaveBeenCalled();
++    await expect(
++      runWithOwnedSessionTranscriptWriteLock({ sessionKey }, () => "fresh"),
++    ).resolves.toBe("fresh");
++  });
++
+   it("still notifies for no-output background exec timeouts", async () => {
+     await runBackgroundedExit({ reason: "overall-timeout" });
+ 
+diff --git a/src/agents/bash-tools.exec-runtime.ts b/src/agents/bash-tools.exec-runtime.ts
+index 80bd2cb8ad4..9ce7bcc683b 100644
+--- a/src/agents/bash-tools.exec-runtime.ts
++++ b/src/agents/bash-tools.exec-runtime.ts
+@@ -14,6 +14,7 @@ import {
+   type ExecApprovalDecision,
+   type ExecTarget,
+ } from "../infra/exec-approvals.js";
++import { runWithoutOwnedSessionTranscriptWrites } from "../config/sessions/transcript-write-context.js";
+ import { requestHeartbeat } from "../infra/heartbeat-wake.js";
+ import { findPathKey, mergePathPrepend, removePathPrepend } from "../infra/path-prepend.js";
+ import { enqueueSystemEvent } from "../infra/system-events.js";
+@@ -338,26 +339,31 @@ function maybeNotifyOnExit(session: ProcessSession, status: "completed" | "faile
+     mainKey: session.mainKey,
+     sessionScope: session.sessionScope,
+   };
+-  enqueueSystemEvent(eventText, {
+-    sessionKey: resolveEventSessionKeyForPolicy(sessionKey, eventRouting),
+-    deliveryContext: session.notifyDeliveryContext,
++  // Background exec exit can fire after the spawning attempt disposed its
++  // transcript owner. Clear that ALS so wake admission acquires a fresh lock
++  // (same pattern as subagent/media completion wakes).
++  runWithoutOwnedSessionTranscriptWrites(() => {
++    enqueueSystemEvent(eventText, {
++      sessionKey: resolveEventSessionKeyForPolicy(sessionKey, eventRouting),
++      deliveryContext: session.notifyDeliveryContext,
++    });
++    // Subagent sessions receive exec results via process poll and announce flow;
++    // the heartbeat would fall back to the main session and cause spurious wakes.
++    if (!isSubagentSessionKey(sessionKey)) {
++      requestHeartbeat(
++        scopedHeartbeatWakeOptionsForPolicy(
++          sessionKey,
++          {
++            source: "exec-event",
++            intent: "event",
++            reason: "exec-event",
++            coalesceMs: 0,
++          },
++          eventRouting,
++        ),
++      );
++    }
+   });
+-  // Subagent sessions receive exec results via process poll and announce flow;
+-  // the heartbeat would fall back to the main session and cause spurious wakes.
+-  if (!isSubagentSessionKey(sessionKey)) {
+-    requestHeartbeat(
+-      scopedHeartbeatWakeOptionsForPolicy(
+-        sessionKey,
+-        {
+-          source: "exec-event",
+-          intent: "event",
+-          reason: "exec-event",
+-          coalesceMs: 0,
+-        },
+-        eventRouting,
+-      ),
+-    );
+-  }
+ }
+ 
+ /** Creates the short approval id shown in `/approve` prompts. */
+diff --git a/src/infra/heartbeat-wake.test.ts b/src/infra/heartbeat-wake.test.ts
+index 485f3114ee7..972fcfea1f2 100644
+--- a/src/infra/heartbeat-wake.test.ts
++++ b/src/infra/heartbeat-wake.test.ts
+@@ -1136,4 +1136,46 @@ describe("heartbeat-wake", () => {
+       },
+     ]);
+   });
++
++  it("runs wake handlers outside a disposed attempt transcript owner", async () => {
++    const { withOwnedSessionTranscriptWrites, runWithOwnedSessionTranscriptWriteLock } =
++      await import("../config/sessions/transcript-write-context.js");
++    const sessionKey = "agent:main:dashboard:hb-disposed-owner";
++    let disposed = false;
++    const staleWriteLock = vi.fn();
++    const withStaleWriteLock = async <T>(operation: () => Promise<T> | T): Promise<T> => {
++      staleWriteLock();
++      if (disposed) {
++        throw new Error("attempt disposed before transcript write");
++      }
++      return await operation();
++    };
++    let sawFreshLock = false;
++    const handler = vi.fn(async () => {
++      await runWithOwnedSessionTranscriptWriteLock({ sessionKey }, () => {
++        sawFreshLock = true;
++      });
++      return { status: "ran" as const, durationMs: 0 };
++    });
++    setHeartbeatWakeHandler(handler);
++
++    await withOwnedSessionTranscriptWrites(
++      { sessionKey, withSessionWriteLock: withStaleWriteLock },
++      async () => {
++        disposed = true;
++        requestHeartbeat({
++          source: "exec-event",
++          intent: "event",
++          reason: "exec-event",
++          sessionKey,
++          coalesceMs: 0,
++        });
++        await expect.poll(() => handler.mock.calls.length).toBe(1);
++      },
++    );
++
++    expect(handler).toHaveBeenCalledTimes(1);
++    expect(sawFreshLock).toBe(true);
++    expect(staleWriteLock).not.toHaveBeenCalled();
++  });
+ });
+diff --git a/src/infra/heartbeat-wake.ts b/src/infra/heartbeat-wake.ts
+index 4d3af094485..4c7a4e53a2b 100644
+--- a/src/infra/heartbeat-wake.ts
++++ b/src/infra/heartbeat-wake.ts
+@@ -1,4 +1,5 @@
+ // Tracks heartbeat wake requests, busy skips, and retry timing.
++import { runWithoutOwnedSessionTranscriptWrites } from "../config/sessions/transcript-write-context.js";
+ import { runWithGatewayIndependentRootWorkAdmission } from "../process/gateway-work-admission.js";
+ import { resolveTimerTimeoutMs } from "../shared/number-coercion.js";
+ import { normalizeHeartbeatWakeReason } from "./heartbeat-reason.js";
+@@ -473,8 +474,13 @@ async function dispatchPendingWakeGroup(params: {
+       let result: HeartbeatRunResult;
+       try {
+         // Admission spans the entire target turn so gateway drain can observe it.
++        // Clear any leftover attempt-owned transcript ALS first: exec/media/subagent
++        // wakes can outlive their spawning attempt and would otherwise fail at
++        // user-turn admission with "attempt disposed before transcript write".
+         result = await runWithGatewayIndependentRootWorkAdmission(async () =>
+-          runAbortableHeartbeatWake(active, wakeOpts, abortSignal),
++          runWithoutOwnedSessionTranscriptWrites(() =>
++            runAbortableHeartbeatWake(active, wakeOpts, abortSignal),
++          ),
+         );
+       } catch {
+         if (handlerGeneration !== generation) {

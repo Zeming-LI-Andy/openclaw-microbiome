@@ -76,28 +76,40 @@ Bash tips when using conda:
 
 Many microbiome CLIs (Aviary assemble/recover, HUMAnN, heavy EggNOG, DADA2 on
 large cohorts, …) can run far longer than the default **exec process timeout**
-(~30 minutes). Do **not** hold a foreground `openclaw:core:exec` for hours. Use
-**background `openclaw:core:exec` + exit wake** — never `terminal`:
+(~30 minutes). Do **not** hold a foreground `exec` for hours. Use
+**timed-yield `exec` + `sessions_yield`**, then continue when the exec ends —
+never `terminal`:
 
-1. `openclaw:core:exec` with `background: true` (or short `yieldMs`) and
-   **`timeout: 0`**.
+1. Call `exec` with **`yieldMs: 30000`** and **`timeout: 0`**. Omit
+   `background: true`: it backgrounds immediately and bypasses the observation
+   window. The `command` must run the real workload in the foreground; never
+   use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent detachment.
 2. Keep a job log under `reproducibility/logs/<step>.log`. Prefer
    `… 2>&1 | tee <log>` so **both** the file and OpenClaw’s session capture see
    output. If you must use pure `> log 2>&1`, follow with a visible
-   `echo "DONE …"` (not redirected) so exit wake still sees stdout.
-3. Keep the `sessionId`, **end the turn**. Do not sleep / poll-loop / cron-babysit
-   a live step.
-4. On **`notifyOnExit`** wake: verify exit + `analysis/<step>/`, then the next
-   step. Use **`openclaw:core:process`** (`poll` / `log` / `kill`) only for
-   ad-hoc status or if wake is unavailable (`poll` ≤ ~30s — not wait-until-done).
+   `echo "DONE …"` (not redirected) so the completion payload still has stdout.
+3. Inspect the exec result after the observation window:
+   - Completed or failed: verify or diagnose it directly; do not yield.
+   - Awaiting approval or no `sessionId`: handle that state; do not yield.
+   - **`status: "running"`** with a valid `sessionId`: call `sessions_yield`
+     with the step name and `sessionId`.
+   Do not sleep, poll-loop, or use automations to babysit a live step.
+4. When the **background exec ends** and the session wakes: verify exit +
+   `analysis/<step>/`, then the next step. Use **`process`** (`poll` / `log` /
+   `kill`) **only when the user asks** for status or control — not as a
+   substitute for waiting on background exec end, and never as a
+   wait-until-done loop.
 
 ```text
-one step → background openclaw:core:exec (timeout: 0, tee → log)
-→ stop turn → notifyOnExit wake → verify → next step
-```
+# Short / quick step (foreground)
+one step → exec (foreground) → verify → next step
 
-Cron/Automations schedule **future** starts; they do not watch a running CLI.
-Gateway restart clears in-memory `process` sessions (disk logs remain).
+# Long-running step (background)
+one step → exec(command="<CLI> 2>&1 | tee <log>",
+                yieldMs=30000, timeout=0)
+→ confirm status=running + sessionId → sessions_yield
+→ background exec ends → wake → verify → next step
+```
 
 ## Multi-stage runs inside one step
 

@@ -149,10 +149,12 @@ function writeBookmark(bookmark: string, jobId: string): void {
 /**
  * One OpenClaw conversation ↔ one job_id.
  * Resolve order:
- *   OPENCLAW_SESSION_JOB_ID →
  *   per-session bookmark (.microbiome/session_jobs/<sessionId|sessionKey>) →
- *   legacy workspace .current_job_id (only when no session binding) →
+ *   when no session binding: OPENCLAW_SESSION_JOB_ID → legacy .current_job_id →
  *   create.
+ *
+ * Never apply process-wide OPENCLAW_SESSION_JOB_ID when a session binding is
+ * present — the gateway hosts many conversations in one process.
  */
 export function createOrReuseSessionJob(
   config: PluginConfig,
@@ -172,12 +174,17 @@ export function createOrReuseSessionJob(
     : legacyBookmarkPath(config);
 
   if (!opts.forceNew) {
-    const fromEnv = process.env.OPENCLAW_SESSION_JOB_ID?.trim();
-    if (fromEnv) {
-      const reused = tryReuse(config, fromEnv, "env", bookmark, bindingId);
-      if (reused) {
-        writeBookmark(bookmark, fromEnv);
-        return reused;
+    // OPENCLAW_SESSION_JOB_ID is process-wide on a multi-session gateway.
+    // Only honor it when we have no per-conversation binding; otherwise every
+    // chat would collapse onto the same job_id.
+    if (!bindingId) {
+      const fromEnv = process.env.OPENCLAW_SESSION_JOB_ID?.trim();
+      if (fromEnv) {
+        const reused = tryReuse(config, fromEnv, "env", bookmark);
+        if (reused) {
+          writeBookmark(bookmark, fromEnv);
+          return reused;
+        }
       }
     }
     if (bindingId && fs.existsSync(bookmark)) {

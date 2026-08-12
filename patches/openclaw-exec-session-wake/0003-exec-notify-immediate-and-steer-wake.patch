@@ -1,0 +1,407 @@
+diff --git a/src/agents/bash-tools.exec-notify-wake.ts b/src/agents/bash-tools.exec-notify-wake.ts
+new file mode 100644
+index 00000000000..cc77aea56f2
+--- /dev/null
++++ b/src/agents/bash-tools.exec-notify-wake.ts
+@@ -0,0 +1,119 @@
++// Wakes the owning session after a background exec exits.
++// Idle sessions use an immediate heartbeat; active sessions get steered mid-turn.
++import {
++  type EventSessionRoutingPolicy,
++  resolveEventSessionKeyForPolicy,
++  scopedHeartbeatWakeOptionsForPolicy,
++} from "../infra/event-session-routing.js";
++import { requestHeartbeat } from "../infra/heartbeat-wake.js";
++import { enqueueSystemEvent } from "../infra/system-events.js";
++import { logWarn } from "../logger.js";
++import { isSubagentSessionKey } from "../sessions/session-key-utils.js";
++import type { DeliveryContext } from "../utils/delivery-context.shared.js";
++import type { EmbeddedAgentQueueMessageOptions } from "./embedded-agent-runner/run-state.js";
++import {
++  isEmbeddedAgentRunActive,
++  queueEmbeddedAgentMessageWithOutcomeAsync,
++  resolveActiveEmbeddedRunSessionId,
++} from "./embedded-agent-runner/runs.js";
++
++export type ExecNotifyWakeDeps = {
++  resolveActiveSessionId: (sessionKey: string) => string | undefined;
++  isSessionRunActive: (sessionId: string) => boolean;
++  queueSteerMessage: (
++    sessionId: string,
++    text: string,
++    options?: EmbeddedAgentQueueMessageOptions,
++  ) => Promise<{ queued: boolean }>;
++  enqueueSystemEvent: typeof enqueueSystemEvent;
++  requestHeartbeat: typeof requestHeartbeat;
++};
++
++const defaultDeps: ExecNotifyWakeDeps = {
++  resolveActiveSessionId: resolveActiveEmbeddedRunSessionId,
++  isSessionRunActive: isEmbeddedAgentRunActive,
++  queueSteerMessage: queueEmbeddedAgentMessageWithOutcomeAsync,
++  enqueueSystemEvent,
++  requestHeartbeat,
++};
++
++let execNotifyWakeDeps: ExecNotifyWakeDeps = defaultDeps;
++
++/** Test-only dependency override for notify wake routing. */
++export function setExecNotifyWakeDepsForTest(deps: Partial<ExecNotifyWakeDeps> | null): void {
++  execNotifyWakeDeps = deps ? { ...defaultDeps, ...deps } : defaultDeps;
++}
++
++function buildExecCompletionSteerMessage(eventText: string): string {
++  return (
++    "An async command you ran earlier has completed. The command completion details are:\n\n" +
++    eventText +
++    "\n\nContinue in this same turn: inspect the result, use tools if needed, and reply with " +
++    "progress or next steps."
++  );
++}
++
++function requestExecCompletionHeartbeat(params: {
++  sessionKey: string;
++  eventRouting?: EventSessionRoutingPolicy;
++}): void {
++  execNotifyWakeDeps.requestHeartbeat(
++    scopedHeartbeatWakeOptionsForPolicy(
++      params.sessionKey,
++      {
++        source: "exec-event",
++        intent: "immediate",
++        reason: "exec-event",
++        coalesceMs: 0,
++      },
++      params.eventRouting,
++    ),
++  );
++}
++
++/**
++ * Deliver an exec-exit wake: steer into an active turn when possible, otherwise
++ * enqueue a system event and request an immediate heartbeat for a fresh turn.
++ */
++export async function wakeSessionAfterExecExit(params: {
++  sessionKey: string;
++  eventText: string;
++  eventRouting?: EventSessionRoutingPolicy;
++  deliveryContext?: DeliveryContext;
++}): Promise<"steered" | "heartbeat" | "skipped"> {
++  const sessionKey = params.sessionKey.trim();
++  if (!sessionKey || isSubagentSessionKey(sessionKey)) {
++    return "skipped";
++  }
++  const wakeSessionKey = resolveEventSessionKeyForPolicy(sessionKey, params.eventRouting);
++  const activeSessionId = execNotifyWakeDeps.resolveActiveSessionId(wakeSessionKey);
++  if (activeSessionId && execNotifyWakeDeps.isSessionRunActive(activeSessionId)) {
++    try {
++      const outcome = await execNotifyWakeDeps.queueSteerMessage(
++        activeSessionId,
++        buildExecCompletionSteerMessage(params.eventText),
++        {
++          steeringMode: "all",
++          waitForTranscriptCommit: true,
++        },
++      );
++      if (outcome.queued) {
++        return "steered";
++      }
++    } catch (error) {
++      logWarn(
++        `exec: active-session steer after exit failed (${String(error)}); falling back to heartbeat.`,
++      );
++    }
++  }
++
++  execNotifyWakeDeps.enqueueSystemEvent(params.eventText, {
++    sessionKey: wakeSessionKey,
++    deliveryContext: params.deliveryContext,
++  });
++  requestExecCompletionHeartbeat({
++    sessionKey: wakeSessionKey,
++    eventRouting: params.eventRouting,
++  });
++  return "heartbeat";
++}
+diff --git a/src/agents/bash-tools.exec-notify-wake.test.ts b/src/agents/bash-tools.exec-notify-wake.test.ts
+new file mode 100644
+index 00000000000..e5f7d50a2ff
+--- /dev/null
++++ b/src/agents/bash-tools.exec-notify-wake.test.ts
+@@ -0,0 +1,114 @@
++import { afterEach, describe, expect, it, vi } from "vitest";
++import {
++  setExecNotifyWakeDepsForTest,
++  wakeSessionAfterExecExit,
++} from "./bash-tools.exec-notify-wake.js";
++
++describe("wakeSessionAfterExecExit", () => {
++  afterEach(() => {
++    setExecNotifyWakeDepsForTest(null);
++  });
++
++  it("requests an immediate heartbeat when the session is idle", async () => {
++    const enqueueSystemEvent = vi.fn();
++    const requestHeartbeat = vi.fn();
++    setExecNotifyWakeDepsForTest({
++      resolveActiveSessionId: () => undefined,
++      isSessionRunActive: () => false,
++      queueSteerMessage: vi.fn(async () => ({ queued: false })),
++      enqueueSystemEvent,
++      requestHeartbeat,
++    });
++
++    await expect(
++      wakeSessionAfterExecExit({
++        sessionKey: "agent:main:dashboard:demo",
++        eventText: "Exec completed (brisk-otter, code 0) :: DONE",
++      }),
++    ).resolves.toBe("heartbeat");
++
++    expect(enqueueSystemEvent).toHaveBeenCalledWith(
++      "Exec completed (brisk-otter, code 0) :: DONE",
++      expect.objectContaining({ sessionKey: "agent:main:dashboard:demo" }),
++    );
++    expect(requestHeartbeat).toHaveBeenCalledWith(
++      expect.objectContaining({
++        source: "exec-event",
++        intent: "immediate",
++        reason: "exec-event",
++        coalesceMs: 0,
++        sessionKey: "agent:main:dashboard:demo",
++      }),
++    );
++  });
++
++  it("steers into an active session turn instead of heartbeating", async () => {
++    const enqueueSystemEvent = vi.fn();
++    const requestHeartbeat = vi.fn();
++    const queueSteerMessage = vi.fn(async () => ({ queued: true }));
++    setExecNotifyWakeDepsForTest({
++      resolveActiveSessionId: () => "session-active",
++      isSessionRunActive: (sessionId) => sessionId === "session-active",
++      queueSteerMessage,
++      enqueueSystemEvent,
++      requestHeartbeat,
++    });
++
++    await expect(
++      wakeSessionAfterExecExit({
++        sessionKey: "agent:main:dashboard:demo",
++        eventText: "Exec completed (brisk-otter, code 0) :: DONE",
++      }),
++    ).resolves.toBe("steered");
++
++    expect(queueSteerMessage).toHaveBeenCalledWith(
++      "session-active",
++      expect.stringContaining("Exec completed (brisk-otter, code 0) :: DONE"),
++      expect.objectContaining({ steeringMode: "all", waitForTranscriptCommit: true }),
++    );
++    expect(enqueueSystemEvent).not.toHaveBeenCalled();
++    expect(requestHeartbeat).not.toHaveBeenCalled();
++  });
++
++  it("falls back to immediate heartbeat when steer does not queue", async () => {
++    const enqueueSystemEvent = vi.fn();
++    const requestHeartbeat = vi.fn();
++    setExecNotifyWakeDepsForTest({
++      resolveActiveSessionId: () => "session-active",
++      isSessionRunActive: () => true,
++      queueSteerMessage: vi.fn(async () => ({ queued: false })),
++      enqueueSystemEvent,
++      requestHeartbeat,
++    });
++
++    await expect(
++      wakeSessionAfterExecExit({
++        sessionKey: "agent:main:main",
++        eventText: "Exec failed (x, code 1)",
++      }),
++    ).resolves.toBe("heartbeat");
++
++    expect(requestHeartbeat).toHaveBeenCalledWith(
++      expect.objectContaining({ intent: "immediate", reason: "exec-event" }),
++    );
++  });
++
++  it("skips subagent session keys", async () => {
++    const enqueueSystemEvent = vi.fn();
++    const requestHeartbeat = vi.fn();
++    setExecNotifyWakeDepsForTest({
++      enqueueSystemEvent,
++      requestHeartbeat,
++    });
++
++    await expect(
++      wakeSessionAfterExecExit({
++        sessionKey: "agent:main:subagent:child-1",
++        eventText: "Exec completed (x, code 0)",
++      }),
++    ).resolves.toBe("skipped");
++
++    expect(enqueueSystemEvent).not.toHaveBeenCalled();
++    expect(requestHeartbeat).not.toHaveBeenCalled();
++  });
++});
+diff --git a/src/agents/bash-tools.exec-runtime.ts b/src/agents/bash-tools.exec-runtime.ts
+index 9ce7bcc683b..bcb14a2d9a1 100644
+--- a/src/agents/bash-tools.exec-runtime.ts
++++ b/src/agents/bash-tools.exec-runtime.ts
+@@ -2,10 +2,9 @@ import path from "node:path";
+ import { normalizeStringEntries } from "@openclaw/normalization-core/string-normalization";
+ import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+ import { emitDiagnosticEventWithTrustedTraceContext } from "../infra/diagnostic-events.js";
++import { runWithoutOwnedSessionTranscriptWrites } from "../config/sessions/transcript-write-context.js";
+ import {
+   type EventSessionRoutingPolicy,
+-  resolveEventSessionKeyForPolicy,
+-  scopedHeartbeatWakeOptionsForPolicy,
+ } from "../infra/event-session-routing.js";
+ import {
+   DEFAULT_EXEC_APPROVAL_TIMEOUT_MS,
+@@ -14,11 +13,8 @@ import {
+   type ExecApprovalDecision,
+   type ExecTarget,
+ } from "../infra/exec-approvals.js";
+-import { runWithoutOwnedSessionTranscriptWrites } from "../config/sessions/transcript-write-context.js";
+-import { requestHeartbeat } from "../infra/heartbeat-wake.js";
+ import { findPathKey, mergePathPrepend, removePathPrepend } from "../infra/path-prepend.js";
+-import { enqueueSystemEvent } from "../infra/system-events.js";
+-import { isSubagentSessionKey } from "../sessions/session-key-utils.js";
++import { wakeSessionAfterExecExit } from "./bash-tools.exec-notify-wake.js";
+ /**
+  * Bash exec runtime.
+  * Spawns host/sandbox processes, manages session updates/backgrounding,
+@@ -343,26 +339,14 @@ function maybeNotifyOnExit(session: ProcessSession, status: "completed" | "faile
+   // transcript owner. Clear that ALS so wake admission acquires a fresh lock
+   // (same pattern as subagent/media completion wakes).
+   runWithoutOwnedSessionTranscriptWrites(() => {
+-    enqueueSystemEvent(eventText, {
+-      sessionKey: resolveEventSessionKeyForPolicy(sessionKey, eventRouting),
++    void wakeSessionAfterExecExit({
++      sessionKey,
++      eventText,
++      eventRouting,
+       deliveryContext: session.notifyDeliveryContext,
++    }).catch((error: unknown) => {
++      logWarn(`exec: completion wake after exit failed (${String(error)}).`);
+     });
+-    // Subagent sessions receive exec results via process poll and announce flow;
+-    // the heartbeat would fall back to the main session and cause spurious wakes.
+-    if (!isSubagentSessionKey(sessionKey)) {
+-      requestHeartbeat(
+-        scopedHeartbeatWakeOptionsForPolicy(
+-          sessionKey,
+-          {
+-            source: "exec-event",
+-            intent: "event",
+-            reason: "exec-event",
+-            coalesceMs: 0,
+-          },
+-          eventRouting,
+-        ),
+-      );
+-    }
+   });
+ }
+ 
+diff --git a/src/agents/bash-tools.exec-runtime.test.ts b/src/agents/bash-tools.exec-runtime.test.ts
+index 9fe8221061b..cef8ea23274 100644
+--- a/src/agents/bash-tools.exec-runtime.test.ts
++++ b/src/agents/bash-tools.exec-runtime.test.ts
+@@ -216,6 +216,14 @@ function requireHeartbeatCall(): Record<string, unknown> {
+   return call[0] as Record<string, unknown>;
+ }
+ 
++async function flushExecNotifyWake(): Promise<void> {
++  // maybeNotifyOnExit schedules wakeSessionAfterExecExit without awaiting.
++  await new Promise<void>((resolve) => {
++    setImmediate(resolve);
++  });
++  await Promise.resolve();
++}
++
+ describe("runExecProcess cursor tracking", () => {
+   it.each([
+     { raw: "hello world", expected: "unknown" },
+@@ -554,6 +562,7 @@ describe("exec notifyOnExit suppression", () => {
+ 
+   it("notifies for manual-cancelled background execs with output", async () => {
+     await runBackgroundedExit({ reason: "manual-cancel", stdout: "partial output\n" });
++    await flushExecNotifyWake();
+ 
+     const [message, options] = requireSystemEventCall();
+     expect(message).toContain("partial output");
+@@ -561,6 +570,7 @@ describe("exec notifyOnExit suppression", () => {
+     expect(requestHeartbeatMock).toHaveBeenCalledTimes(1);
+     const heartbeat = requireHeartbeatCall();
+     expect(heartbeat.coalesceMs).toBe(0);
++    expect(heartbeat.intent).toBe("immediate");
+     expect(heartbeat.reason).toBe("exec-event");
+     expect(heartbeat.sessionKey).toBe("agent:main:main");
+   });
+@@ -627,8 +637,10 @@ describe("exec notifyOnExit suppression", () => {
+       },
+     );
+ 
++    await flushExecNotifyWake();
+     expect(enqueueSystemEventMock).toHaveBeenCalledTimes(1);
+     expect(requestHeartbeatMock).toHaveBeenCalledTimes(1);
++    expect(requireHeartbeatCall().intent).toBe("immediate");
+     // Notify must not re-enter the disposed attempt lock.
+     expect(staleWriteLock).not.toHaveBeenCalled();
+     await expect(
+@@ -638,6 +650,7 @@ describe("exec notifyOnExit suppression", () => {
+ 
+   it("still notifies for no-output background exec timeouts", async () => {
+     await runBackgroundedExit({ reason: "overall-timeout" });
++    await flushExecNotifyWake();
+ 
+     const [message, options] = requireSystemEventCall();
+     expect(message).toContain("Exec failed");
+@@ -648,6 +661,7 @@ describe("exec notifyOnExit suppression", () => {
+     expect(requestHeartbeatMock).toHaveBeenCalledTimes(1);
+     const heartbeat = requireHeartbeatCall();
+     expect(heartbeat.coalesceMs).toBe(0);
++    expect(heartbeat.intent).toBe("immediate");
+     expect(heartbeat.reason).toBe("exec-event");
+     expect(heartbeat.sessionKey).toBe("agent:main:main");
+   });
+@@ -660,6 +674,7 @@ describe("exec notifyOnExit suppression", () => {
+     const head = "a".repeat(178);
+     const overflowingOutput = `${head}🎉${"b".repeat(30)}`;
+     await runBackgroundedExit({ reason: "manual-cancel", stdout: overflowingOutput });
++    await flushExecNotifyWake();
+ 
+     const [message] = requireSystemEventCall();
+     const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u;
+@@ -677,6 +692,7 @@ describe("exec notifyOnExit suppression", () => {
+     const tailHead = "b".repeat(179);
+     const overflowingOutput = `${prefix}🎉${tailHead}${"c".repeat(220)}`;
+     await runBackgroundedExit({ reason: "manual-cancel", stdout: overflowingOutput });
++    await flushExecNotifyWake();
+ 
+     const [message] = requireSystemEventCall();
+     const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u;
+diff --git a/src/agents/bash-tools.test.ts b/src/agents/bash-tools.test.ts
+index 6d1b066b1ec..035d843dd4f 100644
+--- a/src/agents/bash-tools.test.ts
++++ b/src/agents/bash-tools.test.ts
+@@ -881,7 +881,7 @@ describe("exec notifyOnExit", () => {
+   it("scopes notifyOnExit heartbeat wake to the exec session key", async () => {
+     await expectNotifyOnExitWake(createNotifyOnExitExecTool(), {
+       source: "exec-event",
+-      intent: "event",
++      intent: "immediate",
+       reason: "exec-event",
+       sessionKey: DEFAULT_NOTIFY_SESSION_KEY,
+     });
+@@ -890,7 +890,7 @@ describe("exec notifyOnExit", () => {
+   it("keeps notifyOnExit heartbeat wake unscoped for non-agent session keys", async () => {
+     await expectNotifyOnExitWake(createNotifyOnExitExecTool({ sessionKey: "global" }), {
+       source: "exec-event",
+-      intent: "event",
++      intent: "immediate",
+       reason: "exec-event",
+     });
+   });

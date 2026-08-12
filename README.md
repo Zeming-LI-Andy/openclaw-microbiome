@@ -18,6 +18,21 @@ OpenClaw plugin for **16S / metagenomics** analysis sessions.
 - Does not configure agent sandbox binds (out of scope for this plugin)
 - Does not ship host-specific DB locations in the repo
 
+## OpenClaw patches (required for background exec wake)
+
+Long steps use background `exec` + `notifyOnExit` wake (see
+`workspace/CODING.md`). Carry the pinned upstream fix pack instead of editing
+OpenClaw in-place:
+
+- Pack: [`patches/openclaw-exec-session-wake/`](./patches/openclaw-exec-session-wake/)
+- Target: see `manifest.json` (**OpenClaw `2026.7.2` @ `35c9c76b8c76…`**)
+
+```bash
+./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh --check
+./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh
+# then rebuild OpenClaw and restart the gateway
+```
+
 ## Install
 
 ```bash
@@ -152,39 +167,47 @@ export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
 `config.*` control **where** jobs, refs sync, and references.yaml go — they do
 not replace the `"skills": ["./skills"]` manifest declaration.
 
-## Long-running analysis (`exec`)
+## Gateway startup (bare-metal)
 
-Microbiome CLIs often exceed the default **exec process timeout** (~30 min).
-Workspace guidance (`workspace/CODING.md`) uses **background `exec`** with
-`timeout: 0` and exit wake — not cron poll loops.
+`exec` uses the gateway’s `SHELL`; if unset it falls back to `sh` (often
+**dash**), where `source` / bashisms fail. Start with bash; keep analysis on
+`conda run` (`CODING.md`), not `conda activate`.
 
-Recommended gateway settings in `~/.openclaw/openclaw.json` (reload gateway
-after change):
+```bash
+export SHELL=/bin/bash   # avoid dash as exec shell
+cd /path/to/openclaw
+node openclaw.mjs gateway --port 18789 --verbose
+```
+
+Recommended `~/.openclaw/openclaw.json` (restart gateway after edit):
 
 ```json5
 {
   tools: {
+    codeMode: { enabled: false }, // force direct exec/read; avoid Code Mode JS sandbox for CLIs
+    deny: ["skill_workshop"],    // block agent skill authoring mid-analysis
     exec: {
-      // default true: wake when a backgrounded exec exits
-      notifyOnExit: true,
-      // default false: also wake on successful exit with **no** captured stdout
-      // (needed if the agent redirects everything to a log file without tee/echo)
-      notifyOnExitEmptySuccess: true,
+      pathPrepend: ["~/miniconda3/bin"], // so `conda` resolves without login profile
+      notifyOnExit: true,                // wake agent when background exec finishes
+      notifyOnExitEmptySuccess: true,    // also wake if stdout was empty (log-only redirects)
+    }
+  },
+  skills: {
+    workshop: {
+      autonomous: { mode: "off" }, // default is "auto": self-learning writes workspace/skills/
+      approvalPolicy: "pending",   // if workshop is used, require operator apply
     }
   }
 }
 ```
 
-| Key | Default | Meaning |
-|-----|---------|---------|
-| `tools.exec.notifyOnExit` | `true` | System event + heartbeat when a backgrounded exec exits |
-| `tools.exec.notifyOnExitEmptySuccess` | `false` | Also notify when exit code is 0 and session stdout is empty |
+Analysis skills live in **`plugin-skills/`** (`$OPENCLAW_STATE_DIR/plugin-skills`),
+not `workspace/skills/`. Keep `workspace/skills/` absent (or empty) so workshop
+auto-skills cannot shadow plugin procedures.
 
-These are **gateway config**, not per-call `exec` parameters. Agent-side still
-prefer `… 2>&1 | tee <job>/reproducibility/logs/<step>.log` so progress is on
-disk and the session captures output for wake.
-
-See also: [Background exec](https://docs.openclaw.ai/gateway/background-process).
+Long CLIs: background `exec` + `timeout: 0` + exit wake (`CODING.md`).
+See [Exec](https://docs.openclaw.ai/tools/exec) /
+[Background](https://docs.openclaw.ai/gateway/background-process).
 
 ## Session job
 

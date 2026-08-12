@@ -8,18 +8,20 @@ Plugin id: `microbiome`
 |------|---------|
 | `mgx_create_job` | Create or reuse **this conversation’s** job; bookmark under `.microbiome/session_jobs/<sessionId>` |
 
-Other work uses native OpenClaw **Read** plus the shell **`openclaw:core:exec`**.
+Other work uses native OpenClaw **Read** plus the shell **`exec`**.
 
 ## Shell execution (mandatory)
 
-Run all analysis CLIs through **`openclaw:core:exec`** (the OpenClaw shell tool).
+Run all analysis CLIs through **`exec`** (the OpenClaw shell tool).
 
-- Code Mode: `await tools.callValue("openclaw:core:exec", { command: "…" })`.
-- Dialogue-layer `exec` (`{ language, code }`) is **JS/TS only** — never put a
-  shell command there.
 - **Never use `terminal`** for analysis CLIs; it is an operator-facing UI PTY.
-- Long jobs: `background: true`, `timeout: 0`, completion wake; 
-  status via **`openclaw:core:process`** when needed — see `CODING.md`.
+- Long jobs: call `exec` with **`yieldMs: 30000`** and **`timeout: 0`**; omit
+  `background: true` so startup failures can return during the 30-second
+  observation window. Keep the command itself in the foreground. Never use
+  `nohup`, trailing `&`, `disown`, `setsid`, or equivalent shell detachment.
+- Inspect the exec result. If it reports `status: "running"` with a valid
+  `sessionId`, call `sessions_yield`; otherwise handle the returned completion,
+  failure, or approval state directly. See `CODING.md`.
 
 ## Registries (read these)
 
@@ -42,18 +44,22 @@ the user — do not invent paths.
 
 Bound to the OpenClaw **conversation** (`sessionId`; fallback `sessionKey`):
 
-1. `OPENCLAW_SESSION_JOB_ID` if set and the job dir exists  
-2. else workspace `.microbiome/session_jobs/<sessionId>`  
-3. else mint a new id and write that per-session bookmark  
+1. workspace `.microbiome/session_jobs/<sessionId>` if present → reuse that job
+2. else mint a new id and write that per-session bookmark
 
-Different conversations → different `job_id` directories. Same conversation →
+Different conversations → different `job_id`s. Same conversation →
 reuse. `force_new: true` mints another job for the current conversation.
 
 Jobs: `${OPENCLAW_JOBS_ROOT:-/data/output}/<job_id>/` (or plugin `jobsRoot`).
 
 ## Skills
 
-Under `skills/<name>/SKILL.md`. See `AGENTS.md` for the skill map.
+Use **plugin-shipped** skills only: `plugin-skills/<name>/SKILL.md`
+(`$OPENCLAW_STATE_DIR/plugin-skills`). Discover needed tasks there (see
+`AGENTS.md`).
+
+Do **not** create or edit skills during analysis (`skill_workshop` / writing
+under `workspace/skills/`). Analysis follows existing plugin skills.
 
 Some skills include a `scripts/` folder with **reference** helpers (CLI args /
 env for paths — no hardwired machine DBs). Copy or adapt them under the session
@@ -69,5 +75,5 @@ per reference DB). REST skills (`annotation-kegg`, `annotation-uniprot`,
 
 Read **`CODING.md`**: one analysis step at a time, small self-contained runs,
 outputs under `analysis/<step>/`, `conda run -n …` from the registry. For
-multi-hour CLIs, background `openclaw:core:exec` + exit wake (not cron
-babysitting).
+multi-hour CLIs, background `exec` + `sessions_yield`, then continue when
+background exec ends (not automations babysitting).

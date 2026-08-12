@@ -41,8 +41,7 @@ export async function executeProjectTool(
       one_session_one_job: true,
       binding: result.session_binding
         ? "OpenClaw sessionId (fallback: sessionKey)"
-        : "legacy workspace .current_job_id (no session context)",
-      env_var: "OPENCLAW_SESSION_JOB_ID",
+        : "no session context (legacy fallback)",
       hint: result.reused
         ? "Reusing this conversation's job_id. Keep all analysis I/O under this job directory."
         : "New session job created. Remember job_id for this conversation; write all outputs under root/stage/analysis.",

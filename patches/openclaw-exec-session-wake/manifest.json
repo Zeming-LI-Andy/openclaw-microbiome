@@ -1,0 +1,60 @@
+{
+  "id": "openclaw-exec-session-wake",
+  "name": "Exec session wake (continue prompt + ALS clear + immediate/steer notify)",
+  "created": "2026-08-11",
+  "target": {
+    "package": "openclaw",
+    "version": "2026.7.2",
+    "gitCommit": "35c9c76b8c76c5d79f8f06b4bdce982518e61449",
+    "gitCommitShort": "35c9c76b8c76",
+    "gitCommitDate": "2026-08-03T04:52:52-07:00",
+    "gitSubject": "fix(otel): fail closed when configured TLS material is invalid (#118648)",
+    "note": "Patch was authored against this exact checkout. Rebase/retest before applying to other commits."
+  },
+  "series": [
+    "0001-session-continue-exec-event-prompt.patch",
+    "0002-clear-disposed-transcript-als-on-exec-wake.patch",
+    "0003-exec-notify-immediate-and-steer-wake.patch",
+    "0004-tool-guidance-yield-before-poll.patch"
+  ],
+  "problems": [
+    {
+      "id": "silent-exec-wake",
+      "summary": "When outbound delivery is disabled (webchat/dashboard), exec completion wake forced HEARTBEAT_OK-only and hid the turn in Control UI."
+    },
+    {
+      "id": "disposed-als-no-run",
+      "summary": "Background exec notifyOnExit inherited a disposed attempt transcript ALS, so admitUserTurn failed before embedded agent run started."
+    },
+    {
+      "id": "exec-event-agent-cooldown-delay",
+      "summary": "notifyOnExit used intent:event, so agent-level nextDueMs deferred dashboard wakes for minutes after main heartbeats; active sessions only busy-retried instead of steering."
+    },
+    {
+      "id": "background-exec-polling-guidance",
+      "summary": "Model-facing exec guidance, running-exec responses, and sessions_yield text encouraged process polling or subagent-only waits, conflicting with completion-wake handoff."
+    }
+  ],
+  "filesTouched": [
+    "src/infra/heartbeat-events-filter.ts",
+    "src/infra/heartbeat-events-filter.test.ts",
+    "src/infra/heartbeat-runner.ghost-reminder.test.ts",
+    "src/infra/heartbeat-runner.returns-default-unset.test.ts",
+    "src/agents/bash-tools.exec-runtime.ts",
+    "src/agents/bash-tools.exec-runtime.test.ts",
+    "src/agents/bash-tools.exec-notify-wake.ts",
+    "src/agents/bash-tools.exec-notify-wake.test.ts",
+    "src/agents/bash-tools.test.ts",
+    "src/agents/bash-tools.descriptions.ts",
+    "src/agents/bash-tools.schemas.ts",
+    "src/agents/bash-tools.exec-run.ts",
+    "src/agents/agent-tools.deferred-followup-guidance.test.ts",
+    "src/agents/agent-tools.schema.test.ts",
+    "src/agents/system-prompt.ts",
+    "src/agents/system-prompt.test.ts",
+    "src/agents/tools/sessions-yield-tool.ts",
+    "src/agents/tools/sessions-yield-tool.test.ts",
+    "src/infra/heartbeat-wake.ts",
+    "src/infra/heartbeat-wake.test.ts"
+  ]
+}

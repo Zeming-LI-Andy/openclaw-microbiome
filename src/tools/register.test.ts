@@ -83,7 +83,7 @@ describe("session job", () => {
     expect((b.details as { reused: boolean }).reused).toBe(false);
   });
 
-  it("reuses OPENCLAW_SESSION_JOB_ID", () => {
+  it("reuses OPENCLAW_SESSION_JOB_ID only without session binding", () => {
     const root = tempRoot();
     const config = {
       jobsRoot: path.join(root, "jobs"),
@@ -92,16 +92,36 @@ describe("session job", () => {
     fs.mkdirSync(config.workspaceRoot, { recursive: true });
     const created = createOrReuseSessionJob(config, {
       label: "env",
-      session: { sessionId: "sess-env" },
+      forceNew: true,
     });
     process.env.OPENCLAW_SESSION_JOB_ID = created.jobId;
 
-    const again = createOrReuseSessionJob(config, {
-      session: { sessionId: "sess-env" },
-    });
+    const again = createOrReuseSessionJob(config, {});
     expect(again.reused).toBe(true);
     expect(again.source).toBe("env");
     expect(again.jobId).toBe(created.jobId);
+  });
+
+  it("ignores OPENCLAW_SESSION_JOB_ID when session binding is present", () => {
+    const root = tempRoot();
+    const config = {
+      jobsRoot: path.join(root, "jobs"),
+      workspaceRoot: path.join(root, "workspace"),
+    };
+    fs.mkdirSync(config.workspaceRoot, { recursive: true });
+    const shared = createOrReuseSessionJob(config, {
+      label: "shared",
+      forceNew: true,
+    });
+    process.env.OPENCLAW_SESSION_JOB_ID = shared.jobId;
+
+    const a = createOrReuseSessionJob(config, { session: { sessionId: "sess-a" } });
+    const b = createOrReuseSessionJob(config, { session: { sessionId: "sess-b" } });
+    expect(a.jobId).not.toBe(shared.jobId);
+    expect(b.jobId).not.toBe(shared.jobId);
+    expect(a.jobId).not.toBe(b.jobId);
+    expect(a.source).toBe("created");
+    expect(b.source).toBe("created");
   });
 
   it("force_new mints another job for the same session", async () => {

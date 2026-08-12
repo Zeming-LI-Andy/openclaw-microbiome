@@ -4,10 +4,12 @@
 
 **One OpenClaw conversation = one `job_id`.**
 
-1. At the start of an analysis session, call `mgx_create_job` once.
-2. It creates or **reuses** this conversation’s job (`OPENCLAW_SESSION_JOB_ID`
-   → per-session bookmark under `.microbiome/session_jobs/<sessionId>` → new
-   id). Different OpenClaw conversations get different `job_id`s.
+1. **On conversation start — before anything else** (regardless of what the user
+   said): call `mgx_create_job` once. Do not answer, plan, or run tools until
+   this returns a `job_id`.
+2. It creates or **reuses** this conversation’s job (per-session bookmark under
+   `.microbiome/session_jobs/<sessionId>` → new id). Different OpenClaw
+   conversations get different `job_id`s.
 3. All inputs/outputs for this conversation go under that job directory.
 4. Do not mint a second job mid-chat unless the user explicitly wants a new
    analysis (`force_new: true`).
@@ -26,55 +28,45 @@ Resolve the job dir as:
 
 ## How you work
 
-1. `mgx_create_job` → remember `job_id` / paths.
-2. Follow `CODING.md` (one step → run → verify → next).
-3. Read **`registry/runtimes.yaml`** for CLIs/libraries and `conda_env`.
-4. Read **`registry/references.yaml`** for reference DB paths when a step needs
-   them. If a needed path is missing, ask the user — do not invent paths.
-5. Read `skills/<step>/SKILL.md` for the step procedure.
-6. Run with **`openclaw:core:exec`**: `conda run -n <conda_env>
-   --no-capture-output …` For long steps, use **background
-   `openclaw:core:exec` + `timeout: 0`** and completion wake (see `CODING.md` →
-   Long-running steps) — do not block the turn for hours.
-7. Write under `analysis/<step>/` in **this** session job.
+1. Read `TOOLS.md` and `CODING.md`. Follow `CODING.md` for how to run analysis.
+2. Discover needed analysis tasks under **`plugin-skills/`**.
+   Read the relevant `SKILL.md` when you take a step.
+3. Use `registry/runtimes.yaml` and `registry/references.yaml` for envs and DB
+   paths. If a needed path is missing, ask — do not invent paths.
+4. Keep all I/O under this conversation’s job (`mgx_create_job` already ran at
+   start).
 
-## Session startup
+## Plan then execute
 
-1. Read `TOOLS.md` and `CODING.md`.
-2. Skim `registry/runtimes.yaml` (and `references.yaml` when DBs are needed).
-3. If no job yet, `mgx_create_job`.
-4. Prefer the returned `job_id` (and `root` / `stage` / `analysis`) for the
-   rest of the session.
+When the user gives an analysis goal:
+
+1. **Always create an analysis plan first** (ordered tasks, what “done” means).
+   Ask only for blockers; otherwise state assumptions.
+   Do **not** start heavy compute until the user confirms the plan
+   (or clearly says to run).
+2. After confirm: follow the `CODING.md` to execute the plan. **Keep the plan status
+   updated in real time** as you go. After each background `exec` ends and the
+   session wakes, briefly report result + updated plan status, then continue the
+   next unfinished task. Do not stop between tasks unless you hit a blocker that
+   needs the user.
+3. If a task fails and you confirm it cannot succeed: mark it **skipped** in the
+   plan (with the reason), and mark any later tasks that **depend on it** as
+   **skipped** too. Continue with remaining independent tasks. Do not invent
+   results.
+4. When no runnable tasks remain, summarize `job_id`, completed outputs, and
+   what was skipped.
 
 ## Hard rules
 
-1. All analysis I/O stays under the session job dir.
-2. Ask before provenance-sensitive choices when unknown.
-3. Never invent classifier / DB paths — read `registry/references.yaml`, or ask.
-4. Execute **one analysis step at a time** (see `CODING.md`); do not ship a
-   whole-pipeline script and run it once at the end.
-5. Long CLIs: background + exit wake — not cron/sleep poll loops (`CODING.md`).
-6. Never use `terminal` for analysis CLIs; shell commands go through
-   `openclaw:core:exec` only (`TOOLS.md`).
-
-## Skill map (high level)
-
-**16S:** `16s-import` → `16s-denoise-dada2` → `16s-feature-summarize` →
-`16s-taxonomy` → `16s-phylogeny` → `16s-diversity` → optional `16s-export` /
-`16s-picrust2`
-
-**Shotgun:** `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann`
-→ optional `shotgun-gene-catalog` / `shotgun-eggnog` / `shotgun-vfdb` /
-`shotgun-rgi` / `shotgun-aviary`
-
-**Public data:** `sra-search` (SRA metadata), `ncbi-assembly-proteins` (Assembly
-`.faa` download)
-
-**Stats / annotation:** `stats-diversity`, `stats-differential-abundance`,
-`stats-enrichment`, `annotation-kegg`, `annotation-uniprot`,
-`annotation-gene-ontology`, `annotation-ncbi-gene`, `annotation-metacyc`,
-`annotation-eggnog-api`
-
-Skill `scripts/` are **reference** helpers (paths like `scripts/foo.py` are
-relative to that skill). **Copy/adapt** into the session job before running;
-do not treat the skill tree as the run cwd or as a fixed pipeline.
+1. **Every conversation must start with `mgx_create_job`** — first action, no
+   exceptions based on the user’s first message.
+2. All analysis I/O stays under the session job dir.
+3. Shell analysis commands go through **`exec` only** (`TOOLS.md`) — never
+   `terminal`.
+4. Long jobs use `exec` with **`yieldMs: 30000`** and **`timeout: 0`**, not
+   `background: true`. Call `sessions_yield` only if exec returns
+   **`status: "running"`** with a valid `sessionId`; otherwise handle the
+   returned state directly (see `CODING.md`).
+5. With exec **`yieldMs` parameter**, keep the command itself in the foreground;
+   never use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent shell
+   detachment.
