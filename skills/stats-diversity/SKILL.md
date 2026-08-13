@@ -5,7 +5,7 @@ description: >
   exported QIIME artifacts) with scikit-bio / vegan-style workflows in the
   stats env.
 runtime: stats
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - R
@@ -26,7 +26,7 @@ shotgun profiles (MetaPhlAn / HUMAnN).
 | Field | Value |
 |-------|-------|
 | Runtime id | `stats` |
-| Conda env | `mcp_server` |
+| Conda env | `mgx-base` |
 
 For QIIME-native core metrics, prefer skill `16s-diversity` instead.
 
@@ -34,4 +34,4 @@ For QIIME-native core metrics, prefer skill `16s-diversity` instead.
 
 1. Locate abundance table + metadata in the session job.
 2. Choose metrics (Shannon, Bray–Curtis, UniFrac only if tree available, etc.).
-3. Run Python/R in `mcp_server`; figures/tables under `analysis/stats-diversity/`.
+3. Run Python/R in `mgx-base`; figures/tables under `analysis/stats-diversity/`.

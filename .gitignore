@@ -1,6 +1,7 @@
 node_modules/
 dist/
 jobs/
+.worktrees/
 .dry-run-workspace/
 *.tgz
 .DS_Store

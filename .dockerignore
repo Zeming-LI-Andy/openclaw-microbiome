@@ -1,0 +1,13 @@
+node_modules
+dist
+jobs
+.dry-run-workspace
+.git
+.worktrees
+*.tgz
+coverage
+.vitest
+.DS_Store
+*.log
+.microbiome
+_vendor_src

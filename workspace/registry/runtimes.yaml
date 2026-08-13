@@ -1,10 +1,15 @@
 # Host conda runtimes and allowlisted CLIs / packages for microbiome analysis.
-# Agent: Read this file for tools + conda_env.
+# Agent: Read this file for tools + conda_env. Do not conda install from this file.
 # Example: conda run -n <conda_env> --no-capture-output <tool> …
 #
-
-conda_executable: /root/miniconda3/bin/conda
-conda_prefix: /root/miniconda3/envs
+# Operator recipes live in the plugin repo (not this workspace copy):
+#   environments/*.yml + scripts/bootstrap-runtimes.sh
+#
+# Resolve conda from PATH (Docker image prepends /opt/conda/bin). Optional:
+#   CONDA_EXE, CONDA_ROOT
+# Uncomment only for a machine-local pin:
+# conda_executable: /opt/conda/bin/conda
+# conda_prefix: /opt/conda/envs
 
 runtimes:
   qiime2-amplicon:
@@ -56,7 +61,7 @@ runtimes:
 
   stats:
     description: Downstream stats and viz (Python + R microbiome stack)
-    conda_env: mcp_server
+    conda_env: mgx-base
     tools:
       - python
       - python3
@@ -84,19 +89,15 @@ runtimes:
       - pheatmap
 
   host:
-    description: Lightweight host helpers shared with stats env
-    conda_env: mcp_server
+    description: Lightweight host helpers; shares conda env mgx-base with stats
+    conda_env: mgx-base
     tools:
       - python
       - python3
-      - ls
-      - find
-      - cat
-      - zcat
       - seqtk
       - samtools
       - pigz
       - lz4
-      - grep
       - jq
       - cd-hit
+      - zcat

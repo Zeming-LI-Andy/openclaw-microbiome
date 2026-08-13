@@ -1,0 +1,6 @@
+name: rgi
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - rgi

@@ -1,0 +1,8 @@
+# Official QIIME 2 amplicon distro — do not hand-edit a dependency list.
+# bootstrap-runtimes.sh fetches the platform YAML and creates this env name.
+name: qiime2-amplicon-2024.10
+kind: official-distro
+distro_files:
+  linux-64: https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2024.10-py310-linux-conda.yml
+  osx-64: https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2024.10-py310-osx-conda.yml
+  osx-arm64: https://data.qiime2.org/distro/amplicon/qiime2-amplicon-2024.10-py310-osx-conda.yml

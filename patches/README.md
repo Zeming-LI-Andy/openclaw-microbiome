@@ -14,3 +14,4 @@ Each pack has:
 - `scripts/apply-openclaw-patches.sh` — apply / check / reverse
 
 Do not leave equivalent edits as untracked dirty state under `../openclaw`.
+Check pin vs checkout: `./scripts/check-openclaw-pin.sh`.

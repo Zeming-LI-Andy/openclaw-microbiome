@@ -27,11 +27,64 @@ OpenClaw in-place:
 - Pack: [`patches/openclaw-exec-session-wake/`](./patches/openclaw-exec-session-wake/)
 - Target: see `manifest.json` (**OpenClaw `2026.7.2` @ `35c9c76b8c76…`**)
 
+Do **not** use `ghcr.io/openclaw/openclaw` as the runtime image: those builds
+do not include this pack. Check a local checkout first:
+
+```bash
+./scripts/check-openclaw-pin.sh --root /path/to/openclaw
+```
+
+In-place apply (only when HEAD **is** the pin):
+
 ```bash
 ./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh --check
 ./patches/openclaw-exec-session-wake/scripts/apply-openclaw-patches.sh
 # then rebuild OpenClaw and restart the gateway
 ```
+
+If `../openclaw` is newer than the pin, leave it alone and use
+`scripts/build-openclaw-mgx-image.sh` (worktree at the pin).
+
+## Conda runtimes (host)
+
+Recipes live in [`environments/`](./environments/) (one file per
+`runtimes.yaml` `conda_env`). `stats` and `host` share **`mgx-base`**.
+
+```bash
+# Miniforge/Miniconda already on PATH, or: --prefix /opt/conda
+./scripts/bootstrap-runtimes.sh --all
+./scripts/verify-runtimes.sh
+```
+
+Subset: `./scripts/bootstrap-runtimes.sh --only mgx-base,qiime2-amplicon-2024.10`.
+
+Reference DBs are **not** part of bootstrap — still `microbiome-refs.yaml`.
+
+## Docker image (patched OpenClaw + conda)
+
+```bash
+./scripts/build-openclaw-mgx-image.sh
+# 1) openclaw:patched  — OpenClaw Dockerfile @ pin + patch pack
+# 2) openclaw-mgx:local — Miniforge + all environments/*.yml
+```
+
+Then point OpenClaw compose at that image (do not pull GHCR):
+
+```bash
+export OPENCLAW_IMAGE=openclaw-mgx:local
+export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro,/data/output:/data/output
+# from the OpenClaw repo:
+./scripts/docker/setup.sh
+```
+
+The gateway user is `node`; conda is `/opt/conda`. Prepend
+`/opt/conda/bin` in `tools.exec.pathPrepend` (or rely on
+`/etc/profile.d/mgx-conda.sh` inside the image). Plugin install is still
+`openclaw plugins install /opt/openclaw-microbiome` (sources are copied into
+the image) or a bind-mount of this repo.
+
+Full conda stack is tens of GB. `MGX_ENVS=mgx-base,qiime2-amplicon-2024.10`
+limits what the derived image installs.
 
 ## Install
 
@@ -119,7 +172,8 @@ Agent / skills: use **`references.<id>.path` only**.
 existing env (no OpenClaw core changes):
 
 ```bash
-export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
+export OPENCLAW_IMAGE=openclaw-mgx:local   # patched + conda; not GHCR
+export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro,/data/output:/data/output
 # then run openclaw scripts/docker/setup.sh (writes docker-compose.extra.yml)
 ```
 
@@ -187,7 +241,7 @@ Recommended `~/.openclaw/openclaw.json` (restart gateway after edit):
     codeMode: { enabled: false }, // force direct exec/read; avoid Code Mode JS sandbox for CLIs
     deny: ["skill_workshop"],    // block agent skill authoring mid-analysis
     exec: {
-      pathPrepend: ["~/miniconda3/bin"], // so `conda` resolves without login profile
+      pathPrepend: ["/opt/conda/bin", "~/miniconda3/bin"], // conda on PATH (image vs host)
       notifyOnExit: true,                // wake agent when background exec finishes
       notifyOnExitEmptySuccess: true,    // also wake if stdout was empty (log-only redirects)
     }

@@ -3,7 +3,7 @@ name: annotation-uniprot
 description: >
   Query UniProtKB via REST for protein accessions, function text, and ID mapping.
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl

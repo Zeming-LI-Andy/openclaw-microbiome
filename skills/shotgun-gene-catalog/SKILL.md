@@ -18,7 +18,7 @@ tools:
 | Stage | Runtime id (registry) | Default conda env |
 |-------|----------------------|-------------------|
 | `predict` | `eggnog_mapper` | `eggnog_mapper` |
-| `cluster` | `host` | `mcp_server` |
+| `cluster` | `host` | `mgx-base` |
 
 No reference DBs required.
 

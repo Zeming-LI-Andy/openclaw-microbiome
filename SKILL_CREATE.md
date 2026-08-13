@@ -32,7 +32,7 @@ Minimal edits:
 
 | Action | Path |
 |--------|------|
-| Register or extend runtime | `workspace/registry/runtimes.yaml` (`conda_env` + `tools` allowlist) |
+| Register or extend runtime | `workspace/registry/runtimes.yaml` (`conda_env` + `tools` allowlist) and `environments/<env>.yml` |
 | New reference DB ids (if needed) | `examples/microbiome-refs.yaml` (`relative_path` or tree-exception); **never** hardcode host DB paths in the skill |
 | New skill | `skills/<name>/SKILL.md` (`<name>` = kebab-case, same as frontmatter `name`) |
 | Optional helpers | `skills/<name>/scripts/*` |

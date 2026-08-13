@@ -22,7 +22,11 @@
     "test": "node --experimental-vm-modules node_modules/vitest/dist/cli.js run",
     "dry-run": "node scripts/dry-run.mjs",
     "sync-refs": "node scripts/sync-refs.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check-openclaw-pin": "bash scripts/check-openclaw-pin.sh",
+    "bootstrap-runtimes": "bash scripts/bootstrap-runtimes.sh --all",
+    "verify-runtimes": "bash scripts/verify-runtimes.sh",
+    "build-image": "bash scripts/build-openclaw-mgx-image.sh"
   },
   "dependencies": {
     "typebox": "^1.3.11",

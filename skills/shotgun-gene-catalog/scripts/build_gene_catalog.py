@@ -130,7 +130,7 @@ def main() -> None:
     clu.add_argument("--output-dir", required=True)
     clu.add_argument(
         "--conda-env",
-        default=os.environ.get("CONDA_ENV_CDHIT", "mcp_server"),
+        default=os.environ.get("CONDA_ENV_CDHIT", "mgx-base"),
     )
     clu.add_argument(
         "--mode",

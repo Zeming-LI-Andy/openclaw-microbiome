@@ -4,7 +4,7 @@ description: >
   Query Gene Ontology (GO) via the Gene Ontology REST API for terms, gene
   products, and annotations.
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl

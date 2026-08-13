@@ -4,7 +4,7 @@ description: >
   Look up KEGG orthologs, pathways, and links via the KEGG REST API; optional
   local KO↔pathway tables for enrichment prep.
 runtime: stats
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl

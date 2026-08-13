@@ -1,0 +1,37 @@
+# Shared stats + host runtime (was mcp_server).
+# Install: scripts/bootstrap-runtimes.sh --only mgx-base
+name: mgx-base
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python >=3.11,<3.13
+  - pip
+  - numpy
+  - pandas
+  - scipy
+  - scikit-bio
+  - gseapy
+  - matplotlib
+  - seaborn
+  - tqdm
+  - r-base >=4.3
+  - r-dplyr
+  - r-tidyr
+  - r-stringr
+  - r-ggplot2
+  - r-pheatmap
+  - r-phytools
+  - r-wgcna
+  - r-spieceasi
+  - bioconductor-deseq2
+  - bioconductor-clusterprofiler
+  - bioconductor-keggrest
+  - seqtk
+  - samtools
+  - pigz
+  - lz4
+  - jq
+  - cd-hit
+  # MaAsLin3 is not always on conda. After env create, if needed:
+  #   conda run -n mgx-base Rscript -e "install.packages('maaslin3', repos='https://cloud.r-project.org')"

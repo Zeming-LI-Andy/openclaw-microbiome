@@ -1,0 +1,7 @@
+# Aviary CLI only. First assemble/recover may still pull Snakemake nested envs.
+name: aviary
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - aviary

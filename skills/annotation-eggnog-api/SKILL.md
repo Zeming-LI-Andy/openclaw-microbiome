@@ -4,7 +4,7 @@ description: >
   Query EggNOG orthologous groups via the EggNOG REST URL API (trees, alignments,
   domains, GO). Distinct from local eggnog-mapper runs (see `shotgun-eggnog`).
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl

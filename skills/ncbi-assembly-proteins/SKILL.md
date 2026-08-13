@@ -4,7 +4,7 @@ description: >
   Download NCBI Assembly protein FASTA (*_protein.faa) by organism name for
   downstream annotation (EggNOG / VFDB / RGI, etc.).
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
 ---

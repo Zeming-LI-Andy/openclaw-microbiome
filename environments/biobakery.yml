@@ -1,0 +1,11 @@
+# Env directory name is biobakery_workflows (runtimes.yaml conda_env).
+name: biobakery_workflows
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+dependencies:
+  - kneaddata
+  - metaphlan
+  - humann
+  - bowtie2

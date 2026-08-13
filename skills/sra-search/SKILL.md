@@ -4,7 +4,7 @@ description: >
   Search NCBI SRA for public sequencing datasets (metadata only: accessions,
   organism, platform, BioProject/BioSample). Does not download FASTQ.
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
 ---

@@ -28,8 +28,8 @@ Run all analysis CLIs through **`exec`** (the OpenClaw shell tool).
 ### `registry/runtimes.yaml`
 
 - Which tools/libraries exist
-- Which `conda_env` to use
-- Optional `conda_executable` / `conda_prefix`
+- Which `conda_env` to use (`mgx-base` is shared by `stats` and `host`)
+- Optional `conda_executable` / `conda_prefix` (prefer PATH / `CONDA_EXE`)
 
 ```bash
 conda run -n qiime2-amplicon-2024.10 --no-capture-output qiime --help

@@ -77,15 +77,26 @@ if [[ -d "${OPENCLAW_ROOT}/.git" ]]; then
   )
 fi
 
-mapfile -t PATCHES < <(grep -vE '^\s*(#|$)' "${PATCH_DIR}/series")
+PATCHES=()
+while IFS= read -r line || [[ -n "$line" ]]; do
+  case "$line" in
+    ''|\#*) continue ;;
+    *) PATCHES+=("$line") ;;
+  esac
+done < "${PATCH_DIR}/series"
 if [[ ${#PATCHES[@]} -eq 0 ]]; then
   echo "empty series" >&2
   exit 1
 fi
 
 if [[ "${MODE}" == "reverse" ]]; then
-  # shellcheck disable=SC2207
-  PATCHES=($(printf '%s\n' "${PATCHES[@]}" | tac))
+  reversed=()
+  i=${#PATCHES[@]}
+  while [[ "$i" -gt 0 ]]; do
+    i=$((i - 1))
+    reversed+=("${PATCHES[$i]}")
+  done
+  PATCHES=("${reversed[@]}")
 fi
 
 # --check must validate the series in order. Independently checking each file

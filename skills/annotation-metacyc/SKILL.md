@@ -3,7 +3,7 @@ name: annotation-metacyc
 description: >
   Query MetaCyc pathways, reactions, compounds, and genes via MetaCyc web services.
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl

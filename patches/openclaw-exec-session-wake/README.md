@@ -18,6 +18,15 @@ Apply this pack to a pinned OpenClaw checkout, then build/restart the gateway.
 
 Canonical machine-readable pin: [`manifest.json`](./manifest.json).
 
+Confirm a checkout matches before applying in place (from the plugin repo root):
+
+```bash
+./scripts/check-openclaw-pin.sh --root /path/to/openclaw
+```
+
+`scripts/build-openclaw-mgx-image.sh` always uses a worktree at this pin
+(so a newer OpenClaw `main` is not patched).
+
 If your OpenClaw commit differs, run a dry-apply first and expect hunks to need
 rebase:
 

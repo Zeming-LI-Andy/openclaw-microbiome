@@ -3,7 +3,7 @@ name: annotation-ncbi-gene
 description: >
   Query NCBI Gene via Entrez E-utilities (esearch, esummary, efetch, elink).
 runtime: host
-conda_env: mcp_server
+conda_env: mgx-base
 tools:
   - python
   - curl
