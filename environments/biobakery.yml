@@ -1,4 +1,6 @@
 # Env directory name is biobakery_workflows (runtimes.yaml conda_env).
+# Mixes the biobakery channel with conda-forge/bioconda.
+# channel_priority: flexible
 name: biobakery_workflows
 channels:
   - biobakery

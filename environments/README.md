@@ -10,6 +10,7 @@
 #   picrust2.yml              → picrust2
 #   eggnog_mapper.yml         → eggnog_mapper
 #   rgi.yml                   → rgi
+#   bakta.yml                 → bakta
 #   biobakery.yml             → biobakery_workflows
 #   aviary.yml                → aviary
 #   qiime2-amplicon.yml       → qiime2-amplicon-2024.10 (official distro URL)

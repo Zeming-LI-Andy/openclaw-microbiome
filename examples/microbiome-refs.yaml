@@ -84,6 +84,10 @@ references:
     description: CARD local DB for RGI
     kind: directory
     relative_path: card
+  bakta_db:
+    description: Bakta database directory (do not download during analysis)
+    kind: directory
+    relative_path: bakta
 
   # ── Aviary ─────────────────────────────────────────────────────────────────
   aviary_gtdb:

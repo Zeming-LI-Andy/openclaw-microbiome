@@ -53,6 +53,13 @@ runtimes:
     tools:
       - rgi
 
+  bakta:
+    description: Rapid bacterial genome annotation (Bakta)
+    conda_env: bakta
+    tools:
+      - bakta
+      - bakta_proteins
+
   aviary:
     description: Aviary metagenome assembly / binning / recovery workflows
     conda_env: aviary

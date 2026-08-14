@@ -25,7 +25,7 @@ Usage: bootstrap-runtimes.sh [--all | --only name,name] [--prefix DIR] [--force]
 
 Env names:
   mgx-base, qiime2-amplicon-2024.10, picrust2, biobakery_workflows,
-  eggnog_mapper, rgi, aviary
+  eggnog_mapper, rgi, aviary, bakta
 EOF
 }
 
@@ -94,6 +94,7 @@ recipe_for_env() {
     picrust2) echo "${ENV_DIR}/picrust2.yml" ;;
     eggnog_mapper) echo "${ENV_DIR}/eggnog_mapper.yml" ;;
     rgi) echo "${ENV_DIR}/rgi.yml" ;;
+    bakta) echo "${ENV_DIR}/bakta.yml" ;;
     biobakery_workflows) echo "${ENV_DIR}/biobakery.yml" ;;
     aviary) echo "${ENV_DIR}/aviary.yml" ;;
     qiime2-amplicon-2024.10) echo "${ENV_DIR}/qiime2-amplicon.yml" ;;
@@ -109,6 +110,7 @@ ALL_ENVS=(
   eggnog_mapper
   rgi
   aviary
+  bakta
 )
 
 resolve_prefix() {
@@ -153,6 +155,13 @@ is_official_distro() {
   grep -q '^kind: official-distro' "$1"
 }
 
+# QIIME 2 / bioBakery mix conda-forge + bioconda (+ extra channels).
+# Global channel_priority:strict makes sortmerna/deblur (and similar) unsatisfiable.
+needs_flexible_priority() {
+  is_official_distro "$1" && return 0
+  grep -Eq '^#?[[:space:]]*channel_priority:[[:space:]]*flexible' "$1"
+}
+
 env_exists() {
   local name=$1
   [[ -d "${PREFIX}/envs/${name}" ]]
@@ -178,7 +187,10 @@ create_env() {
       return 1
     fi
     url=$(distro_url_for "$recipe" "$platform")
-    tmp=$(mktemp)
+    # mamba/conda require .yml/.yaml/.txt; plain mktemp has no suffix.
+    tmp=$(mktemp "${TMPDIR:-/tmp}/mgx-distro.XXXXXX")
+    mv "$tmp" "${tmp}.yml"
+    tmp="${tmp}.yml"
     echo "==> fetching official distro YAML for ${name} (${platform})"
     echo "    ${url}"
     if command -v curl >/dev/null 2>&1; then
@@ -190,14 +202,24 @@ create_env() {
   fi
 
   echo "==> creating ${name} from ${recipe}"
+  local restore_priority="" rc=0
+  if needs_flexible_priority "$recipe"; then
+    restore_priority=$("$CONDA_BIN" config --show channel_priority | awk '{print $2}')
+    echo "==> channel_priority flexible for ${name} (was ${restore_priority:-unset})"
+    "$CONDA_BIN" config --system --set channel_priority flexible
+  fi
   if [[ "$CREATE_BIN" == *mamba ]]; then
-    "$CREATE_BIN" env create -n "$name" -f "$yml"
+    "$CREATE_BIN" env create -n "$name" -f "$yml" || rc=$?
   else
-    "$CONDA_BIN" env create -n "$name" -f "$yml"
+    "$CONDA_BIN" env create -n "$name" -f "$yml" || rc=$?
+  fi
+  if [[ -n "$restore_priority" ]]; then
+    "$CONDA_BIN" config --system --set channel_priority "$restore_priority"
   fi
   if [[ -n "${tmp:-}" && -f "${tmp:-}" ]]; then
     rm -f "$tmp"
   fi
+  return "$rc"
 }
 
 failed=0

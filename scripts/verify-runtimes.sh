@@ -36,6 +36,20 @@ check_cli() {
   return 1
 }
 
+check_r_pkg() {
+  local env=$1 pkg=$2
+  if [[ ! -d "${PREFIX}/envs/${env}" ]]; then
+    echo "MISSING env: ${env}"
+    return 1
+  fi
+  if "$CONDA_BIN" run -n "$env" --no-capture-output Rscript -e "quit(status=as.integer(!requireNamespace('${pkg}', quietly=TRUE)))" >/dev/null 2>&1; then
+    echo "OK  ${env}  R:${pkg}"
+    return 0
+  fi
+  echo "MISSING R pkg: ${env} → ${pkg}"
+  return 1
+}
+
 failed=0
 check_cli qiime2-amplicon-2024.10 qiime || failed=1
 check_cli picrust2 picrust2_pipeline.py || failed=1
@@ -46,11 +60,14 @@ check_cli eggnog_mapper emapper.py || failed=1
 check_cli eggnog_mapper prodigal || failed=1
 check_cli rgi rgi || failed=1
 check_cli aviary aviary || failed=1
+check_cli bakta bakta || failed=1
 check_cli mgx-base python || failed=1
 check_cli mgx-base Rscript || failed=1
 check_cli mgx-base seqtk || failed=1
 check_cli mgx-base samtools || failed=1
 check_cli mgx-base cd-hit || failed=1
+check_r_pkg mgx-base maaslin3 || failed=1
+check_r_pkg mgx-base DESeq2 || failed=1
 
 if [[ "$failed" -ne 0 ]]; then
   echo "verify failed" >&2

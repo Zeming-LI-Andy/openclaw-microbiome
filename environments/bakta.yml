@@ -1,0 +1,8 @@
+# Bacterial genome annotation (Bakta). Database is not installed here —
+# map bakta_db in ~/.openclaw/microbiome-refs.yaml.
+name: bakta
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bakta

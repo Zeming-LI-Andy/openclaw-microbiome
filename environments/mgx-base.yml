@@ -27,11 +27,10 @@ dependencies:
   - bioconductor-deseq2
   - bioconductor-clusterprofiler
   - bioconductor-keggrest
+  - bioconductor-maaslin3
   - seqtk
   - samtools
   - pigz
   - lz4
   - jq
   - cd-hit
-  # MaAsLin3 is not always on conda. After env create, if needed:
-  #   conda run -n mgx-base Rscript -e "install.packages('maaslin3', repos='https://cloud.r-project.org')"
