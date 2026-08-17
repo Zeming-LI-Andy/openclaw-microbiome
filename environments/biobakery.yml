@@ -7,7 +7,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - kneaddata
-  - metaphlan
-  - humann
-  - bowtie2
+  - kneaddata=0.12.4
+  - metaphlan=4.2.6
+  - humann=3.9
+  - bowtie2=2.5.5

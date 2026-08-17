@@ -58,7 +58,9 @@ Recipes live in [`environments/`](./environments/) (one file per
 
 Subset: `./scripts/bootstrap-runtimes.sh --only mgx-base,qiime2-amplicon-2024.10`.
 
-Reference DBs are **not** part of bootstrap — still `microbiome-refs.yaml`.
+Reference DBs are **not downloaded** during bootstrap. In Docker, bootstrap
+wires env defaults to `/refdb` (see `--refdb`). Still map the tree in
+`microbiome-refs.yaml`.
 
 ## Docker image (patched OpenClaw + conda)
 
@@ -282,7 +284,7 @@ a conversation stay under that conversation’s job directory.
 | Area | Skills |
 |------|--------|
 | 16S | `16s-import` → `16s-denoise-dada2` → `16s-feature-summarize` → `16s-taxonomy` → `16s-phylogeny` → `16s-diversity` → optional `16s-export` / `16s-picrust2` |
-| Shotgun | `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann` / `shotgun-gene-catalog` / `shotgun-eggnog` / `shotgun-vfdb` / `shotgun-rgi` / `shotgun-aviary` |
+| Shotgun | `shotgun-kneaddata` → `shotgun-metaphlan` → optional `shotgun-humann` / `shotgun-gene-catalog` / `shotgun-eggnog` / `shotgun-vfdb` / `shotgun-rgi` / `shotgun-bakta` / `shotgun-gapseq` / `shotgun-gutsmash` / `shotgun-antismash` / `shotgun-aviary` |
 | Public data | `sra-search`, `ncbi-assembly-proteins` |
 | Stats / REST | `stats-*`, `annotation-*` |
 

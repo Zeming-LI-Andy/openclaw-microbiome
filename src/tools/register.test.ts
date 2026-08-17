@@ -92,7 +92,6 @@ describe("session job", () => {
     fs.mkdirSync(config.workspaceRoot, { recursive: true });
     const created = createOrReuseSessionJob(config, {
       label: "env",
-      forceNew: true,
     });
     process.env.OPENCLAW_SESSION_JOB_ID = created.jobId;
 
@@ -111,7 +110,6 @@ describe("session job", () => {
     fs.mkdirSync(config.workspaceRoot, { recursive: true });
     const shared = createOrReuseSessionJob(config, {
       label: "shared",
-      forceNew: true,
     });
     process.env.OPENCLAW_SESSION_JOB_ID = shared.jobId;
 
@@ -124,7 +122,7 @@ describe("session job", () => {
     expect(b.source).toBe("created");
   });
 
-  it("force_new mints another job for the same session", async () => {
+  it("same session always reuses even if force_new is passed", async () => {
     const root = tempRoot();
     const config = {
       jobsRoot: path.join(root, "jobs"),
@@ -138,8 +136,9 @@ describe("session job", () => {
 
     const first = await tools.mgx_create_job!.execute({}, session);
     const second = await tools.mgx_create_job!.execute({ force_new: true }, session);
-    expect((second.details as { job_id: string }).job_id).not.toBe(
-      (first.details as { job_id: string }).job_id,
-    );
+    const a = first.details as { job_id: string };
+    const b = second.details as { job_id: string; reused: boolean };
+    expect(b.job_id).toBe(a.job_id);
+    expect(b.reused).toBe(true);
   });
 });

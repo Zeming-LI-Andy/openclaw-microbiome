@@ -1,0 +1,10 @@
+# Secondary metabolite BGC detection (antiSMASH).
+# Official Bioconda install: https://docs.antismash.secondarymetabolites.org/install/
+# Do not run `download-antismash-databases` here — map antismash_db in
+# ~/.openclaw/microbiome-refs.yaml and pass --databases PATH at runtime.
+name: antismash
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - antismash=8.0.4

@@ -1,9 +1,12 @@
 # User-owned reference DB map for openclaw-microbiome.
 # Copy to ~/.openclaw/microbiome-refs.yaml (or set plugins.entries.microbiome.config.refsConfig).
 #
-# Prefer one whole-tree bind:
-#   Host:      /data/refdb
-#   Container: /refdb   →  OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro
+# relative_path values match the on-disk layout of:
+#   /datahome/datasets/ericteam/cszmli/metagenome_workspace/Metagenome_profiling
+#
+# Prefer one whole-tree bind of that directory:
+#   Host:      <Metagenome_profiling>
+#   Container: /refdb   →  OPENCLAW_EXTRA_MOUNTS=<host>:/refdb:ro
 #
 # Then list each DB under that tree. description / kind are optional but
 # recommended — the plugin copies them into registry/references.yaml as-is
@@ -15,7 +18,7 @@
 version: 1
 
 refdb_root:
-  host_path: /data/refdb
+  host_path: /datahome/datasets/ericteam/cszmli/metagenome_workspace/Metagenome_profiling
   container_path: /refdb
 
 references:
@@ -23,99 +26,111 @@ references:
   silva_ssu_nr99_seqs:
     description: SILVA 138.2 SSURef NR99 full-length reference sequences (.qza)
     kind: file
-    relative_path: silva/silva-138.2-ssu-nr99-full-seqs.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-ssu-nr99-full-seqs.qza
   silva_ssu_nr99_tax:
     description: SILVA 138.2 SSURef NR99 taxonomy (.qza)
     kind: file
-    relative_path: silva/silva-138.2-ssu-nr99-tax.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-ssu-nr99-tax.qza
   silva_v4_seqs:
     description: SILVA 138.2 V4 (515F/806R) reference sequences (.qza)
     kind: file
-    relative_path: silva/silva-138.2-v4-515F-806R-seqs.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v4-515F-806R-seqs.qza
   silva_v4_tax:
     description: SILVA 138.2 V4 (515F/806R) taxonomy (.qza)
     kind: file
-    relative_path: silva/silva-138.2-v4-515F-806R-tax.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v4-515F-806R-tax.qza
   silva_v34_seqs:
     description: SILVA 138.2 V3-V4 (341F/806R) reference sequences (.qza)
     kind: file
-    relative_path: silva/silva-138.2-v34-341F-806R-seqs.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v34-341F-806R-seqs.qza
   silva_v34_tax:
     description: SILVA 138.2 V3-V4 (341F/806R) taxonomy (.qza)
     kind: file
-    relative_path: silva/silva-138.2-v34-341F-806R-tax.qza
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v34-341F-806R-tax.qza
 
   # ── Shotgun / bioBakery ────────────────────────────────────────────────────
   kneaddata_db_human_genome:
-    description: KneadData human genome Bowtie2 reference (hg37dec_v0.1)
+    description: KneadData human genome Bowtie2 reference (hg37dec_v0.1 indexes live in this directory)
     kind: directory
-    relative_path: kneaddata/hg37dec_v0.1
+    relative_path: kneaddata_db_human_genome
   metaphlan_bowtie2_db:
-    description: MetaPhlAn Bowtie2 database directory
+    description: MetaPhlAn Bowtie2 database directory (mpa_v30 / mpa_v31 CHOCOPhlAn 201901)
     kind: directory
-    relative_path: metaphlan
+    relative_path: metaphlan_databases
   humann_chocophlan:
-    description: HUMAnN ChocoPhlAn nucleotide database
+    description: HUMAnN ChocoPhlAn nucleotide database (v296_201901)
     kind: directory
-    relative_path: humann/chocophlan
+    relative_path: humann_databases/chocophlan_v296_201901
   humann_uniref:
-    description: HUMAnN UniRef protein database
+    description: HUMAnN UniRef protein database (uniref90_201901.dmnd)
     kind: directory
-    relative_path: humann/uniref
+    relative_path: humann_databases/uniref
   humann_utility_mapping:
     description: HUMAnN utility mapping database
     kind: directory
-    relative_path: humann/utility_mapping
+    relative_path: humann_databases/utility_mapping
 
   # ── Annotation DBs ─────────────────────────────────────────────────────────
   eggnog_mapper_data:
     description: EggNOG mapper data directory (eggnog.db, diamond DB)
     kind: directory
-    relative_path: eggnog
+    relative_path: eggnog/eggnog_5.0
   eggnog_bact_arch_dmnd:
     description: EggNOG bacteria/archaea Diamond database
     kind: file
-    relative_path: eggnog/bact_arch.dmnd
+    relative_path: eggnog/bact_arch/bact_arch.dmnd
   vfdb_dmnd:
     description: VFDB Diamond database
     kind: file
-    relative_path: vfdb/VFDB.dmnd
+    relative_path: VFDB_db/VFDB.dmnd
   card_db:
-    description: CARD local DB for RGI
+    description: CARD local DB for RGI (card.json + localDB)
     kind: directory
-    relative_path: card
+    relative_path: CARD_db
   bakta_db:
-    description: Bakta database directory (do not download during analysis)
+    description: Bakta full DB v6.0 (version.json + amrfinderplus-db; pass as --db / BAKTA_DB)
     kind: directory
-    relative_path: bakta
+    relative_path: bakta_db_full/db-v6.0
+  gapseq_sequences:
+    description: gapseq UniProt reference sequences (Bacteria/Archaea under dat/seq; pass as find/doall -D)
+    kind: directory
+    relative_path: gapseq_db/dat/seq
+  gutsmash_db:
+    description: gutSMASH --databases root (pfam/, clusterblast/, resfam/)
+    kind: directory
+    relative_path: gutsmash/databases
+  antismash_db:
+    description: official antiSMASH 8 --databases root (pfam 35, clusterblast, knownclusterblast, …)
+    kind: directory
+    relative_path: antiSMASH_db/databases
 
   # ── Aviary ─────────────────────────────────────────────────────────────────
   aviary_gtdb:
     description: GTDB for Aviary / GTDB-Tk
     kind: directory
-    relative_path: aviary/gtdb
+    relative_path: aviary_db/gtdb
   aviary_checkm2:
     description: CheckM2 database for Aviary
     kind: directory
-    relative_path: aviary/checkm2db
+    relative_path: aviary_db/checkm2db
   aviary_eggnog:
     description: EggNOG data directory for Aviary (set only for aviary runs)
     kind: directory
-    relative_path: aviary/eggnog
+    relative_path: aviary_db/eggnog
   aviary_singlem:
     description: SingleM metapackage for Aviary
     kind: directory
-    relative_path: aviary/singlem
+    relative_path: aviary_db/singlem
 
   # ── KEGG local maps ────────────────────────────────────────────────────────
   kegg_ko_link:
     description: KEGG link ko→pathway table
     kind: file
-    relative_path: kegg/kegg_link_ko_pathway.txt
+    relative_path: KEGG_ko/kegg_link_ko_pathway.txt
   kegg_pathway_list:
     description: KEGG pathway list (ko)
     kind: file
-    relative_path: kegg/kegg_list_pathway_ko.txt
+    relative_path: KEGG_ko/kegg_list_pathway_ko.txt
 
   # Tree-exception example (uncomment and adjust):
   # my_custom_db:

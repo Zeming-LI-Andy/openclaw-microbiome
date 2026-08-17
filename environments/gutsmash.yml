@@ -1,0 +1,35 @@
+# Anaerobic gut metabolic gene cluster detection (gutSMASH).
+# Not on bioconda as a single package. This env has the documented binaries +
+# Python deps; bootstrap then `pip install --no-deps` from a pinned commit of
+# https://github.com/victoriapascal/gutsmash (branch gutsmash).
+# Do not run `download-antismash-databases` / `antismash --databases` here —
+# map gutsmash_db in ~/.openclaw/microbiome-refs.yaml.
+name: gutsmash
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.7.12
+  - pip=24.0
+  - git=2.42.0
+  - hmmer2=2.3.2
+  - hmmer=3.4
+  - diamond=0.8.36
+  - fasttree=2.2.0
+  - prodigal=2.6.3
+  - blast=2.16.0
+  - muscle=5.3
+  - glimmerhmm=3.0.4
+  - numpy=1.21.6
+  - scipy=1.7.3
+  - biopython=1.76
+  - helperlibs=0.2.1
+  - bcbio-gff=0.7.1
+  - pysvg-py3=0.2.2.post3
+  - scikit-learn=0.22.1
+  - matplotlib=3.5.3
+  - pyscss=1.4.0
+  - jinja2=2.11.1
+  - markupsafe=1.1.1
+  - orjson=3.8.1
+  - moods=1.9.4.1

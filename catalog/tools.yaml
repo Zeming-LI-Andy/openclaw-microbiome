@@ -10,8 +10,8 @@ tools:
       sessionId ↔ one job_id). Scaffolds stage/, analysis/, and reproducibility/
       under jobsRoot, bookmarks the job under workspace
       .microbiome/session_jobs/<sessionId>, and returns paths. Call once when
-      starting analysis; later calls in the same conversation reuse the same
-      job unless force_new is true. Different conversations get different jobs.
+      starting analysis; later calls in the same conversation always reuse the
+      same job. Different conversations get different jobs.
     optional: false
     parameters:
       type: object
@@ -23,9 +23,4 @@ tools:
         notes:
           type: string
           description: Optional notes stored in job.json when creating.
-        force_new:
-          type: boolean
-          description: >
-            If true, mint a new job_id even if this conversation already has one.
-            Default false (reuse OPENCLAW_SESSION_JOB_ID or this session's bookmark).
       required: []

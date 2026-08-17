@@ -26,6 +26,10 @@
 | `shotgun-eggnog` | EggNOG-mapper 基因功能注释（可选） |
 | `shotgun-vfdb` | VFDB 毒力因子筛选（可选） |
 | `shotgun-rgi` | CARD RGI 耐药基因（可选） |
+| `shotgun-bakta` | Bakta 细菌基因组注释（可选） |
+| `shotgun-gapseq` | gapseq 通路预测 / GEM 重建（可选） |
+| `shotgun-gutsmash` | gutSMASH 肠道代谢基因簇（可选） |
+| `shotgun-antismash` | antiSMASH 次级代谢 BGC（可选） |
 | `shotgun-aviary` | Aviary 组装 / MAG 回收 / MAG 注释 / 多样本去冗余（可选） |
 
 ### 公共数据
@@ -72,6 +76,10 @@
 | | `eggnog_bact_arch_dmnd` | EggNOG 细菌/古菌 Diamond DB |
 | | `vfdb_dmnd` | VFDB Diamond DB |
 | | `card_db` | CARD（RGI） |
+| | `bakta_db` | Bakta（`--db` / `BAKTA_DB`） |
+| | `gapseq_sequences` | gapseq UniProt 序列（`find`/`doall` `-D`） |
+| | `gutsmash_db` | gutSMASH `--databases` |
+| | `antismash_db` | antiSMASH 8 `--databases` |
 | Aviary | `aviary_gtdb` | GTDB / GTDB-Tk |
 | | `aviary_checkm2` | CheckM2 DB |
 | | `aviary_eggnog` | Aviary 用 EggNOG |

@@ -11,8 +11,8 @@
    `.microbiome/session_jobs/<sessionId>` → new id). Different OpenClaw
    conversations get different `job_id`s.
 3. All inputs/outputs for this conversation go under that job directory.
-4. Do not mint a second job mid-chat unless the user explicitly wants a new
-   analysis (`force_new: true`).
+4. This conversation has exactly one `job_id`. Later `mgx_create_job` calls
+   reuse it.
 
 Resolve the job dir as:
 
@@ -70,3 +70,6 @@ When the user gives an analysis goal:
 5. With exec **`yieldMs` parameter**, keep the command itself in the foreground;
    never use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent shell
    detachment.
+6. **Always use absolute paths** for every file and directory you read, write,
+   or pass to a tool (commands, scripts, configs, arguments). Never relative
+   paths; never depend on cwd.

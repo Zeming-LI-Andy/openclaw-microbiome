@@ -60,6 +60,26 @@ runtimes:
       - bakta
       - bakta_proteins
 
+  gapseq:
+    description: Bacterial metabolic pathway prediction and genome-scale model reconstruction
+    conda_env: gapseq
+    tools:
+      - gapseq
+
+  gutsmash:
+    description: Anaerobic gut metabolic gene cluster detection (gutSMASH)
+    conda_env: gutsmash
+    tools:
+      - gutsmash
+      - python
+      - prodigal
+
+  antismash:
+    description: Secondary metabolite biosynthetic gene cluster detection (antiSMASH)
+    conda_env: antismash
+    tools:
+      - antismash
+
   aviary:
     description: Aviary metagenome assembly / binning / recovery workflows
     conda_env: aviary

@@ -161,7 +161,6 @@ export function createOrReuseSessionJob(
   opts: {
     label?: string;
     notes?: string;
-    forceNew?: boolean;
     session?: SessionBinding;
   } = {},
 ): SessionJobResult {
@@ -173,30 +172,28 @@ export function createOrReuseSessionJob(
     ? sessionBookmarkPath(config, bindingId)
     : legacyBookmarkPath(config);
 
-  if (!opts.forceNew) {
-    // OPENCLAW_SESSION_JOB_ID is process-wide on a multi-session gateway.
-    // Only honor it when we have no per-conversation binding; otherwise every
-    // chat would collapse onto the same job_id.
-    if (!bindingId) {
-      const fromEnv = process.env.OPENCLAW_SESSION_JOB_ID?.trim();
-      if (fromEnv) {
-        const reused = tryReuse(config, fromEnv, "env", bookmark);
-        if (reused) {
-          writeBookmark(bookmark, fromEnv);
-          return reused;
-        }
+  // OPENCLAW_SESSION_JOB_ID is process-wide on a multi-session gateway.
+  // Only honor it when we have no per-conversation binding; otherwise every
+  // chat would collapse onto the same job_id.
+  if (!bindingId) {
+    const fromEnv = process.env.OPENCLAW_SESSION_JOB_ID?.trim();
+    if (fromEnv) {
+      const reused = tryReuse(config, fromEnv, "env", bookmark);
+      if (reused) {
+        writeBookmark(bookmark, fromEnv);
+        return reused;
       }
     }
-    if (bindingId && fs.existsSync(bookmark)) {
-      const fromFile = fs.readFileSync(bookmark, "utf8").trim();
-      const reused = tryReuse(config, fromFile, "session", bookmark, bindingId);
-      if (reused) return reused;
-    }
-    if (!bindingId && fs.existsSync(bookmark)) {
-      const fromFile = fs.readFileSync(bookmark, "utf8").trim();
-      const reused = tryReuse(config, fromFile, "legacy_bookmark", bookmark);
-      if (reused) return reused;
-    }
+  }
+  if (bindingId && fs.existsSync(bookmark)) {
+    const fromFile = fs.readFileSync(bookmark, "utf8").trim();
+    const reused = tryReuse(config, fromFile, "session", bookmark, bindingId);
+    if (reused) return reused;
+  }
+  if (!bindingId && fs.existsSync(bookmark)) {
+    const fromFile = fs.readFileSync(bookmark, "utf8").trim();
+    const reused = tryReuse(config, fromFile, "legacy_bookmark", bookmark);
+    if (reused) return reused;
   }
 
   const jobId = mintJobId(opts.label);
@@ -226,7 +223,7 @@ export function createOrReuseSessionJob(
 
 /** @deprecated use createOrReuseSessionJob */
 export function createJob(config: PluginConfig, label?: string, notes?: string): JobPaths {
-  return createOrReuseSessionJob(config, { label, notes, forceNew: true });
+  return createOrReuseSessionJob(config, { label, notes });
 }
 
 export function resolveJob(config: PluginConfig, jobId: string): JobPaths {

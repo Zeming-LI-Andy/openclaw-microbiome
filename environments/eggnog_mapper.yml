@@ -3,5 +3,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - eggnog-mapper
-  - prodigal
+  - eggnog-mapper=2.1.13
+  - prodigal=2.6.3

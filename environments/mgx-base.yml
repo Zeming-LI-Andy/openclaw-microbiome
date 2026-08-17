@@ -1,36 +1,37 @@
 # Shared stats + host runtime (was mcp_server).
+# Versions pinned to a known-good solve in openclaw:patched (linux-64).
 # Install: scripts/bootstrap-runtimes.sh --only mgx-base
 name: mgx-base
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python >=3.11,<3.13
+  - python=3.12.13
   - pip
-  - numpy
-  - pandas
-  - scipy
-  - scikit-bio
-  - gseapy
-  - matplotlib
-  - seaborn
-  - tqdm
-  - r-base >=4.3
-  - r-dplyr
-  - r-tidyr
-  - r-stringr
-  - r-ggplot2
-  - r-pheatmap
-  - r-phytools
-  - r-wgcna
-  - r-spieceasi
-  - bioconductor-deseq2
-  - bioconductor-clusterprofiler
-  - bioconductor-keggrest
-  - bioconductor-maaslin3
-  - seqtk
-  - samtools
-  - pigz
-  - lz4
-  - jq
-  - cd-hit
+  - numpy=2.5.2
+  - pandas=3.0.5
+  - scipy=1.18.0
+  - scikit-bio=0.7.3
+  - gseapy=1.3.1
+  - matplotlib=3.11.1
+  - seaborn=0.13.2
+  - tqdm=4.70.0
+  - r-base=4.5.3
+  - r-dplyr=1.2.1
+  - r-tidyr=1.3.2
+  - r-stringr=1.6.0
+  - r-ggplot2=4.0.3
+  - r-pheatmap=1.0.13
+  - r-phytools=2.5_2
+  - r-wgcna=1.74
+  - r-spieceasi=1.1.1
+  - bioconductor-deseq2=1.50.2
+  - bioconductor-clusterprofiler=4.18.4
+  - bioconductor-keggrest=1.50.0
+  - bioconductor-maaslin3=1.2.0
+  - seqtk=1.5
+  - samtools=1.24
+  - pigz=2.8
+  - lz4=4.4.5
+  - jq=1.8.2
+  - cd-hit=4.8.1

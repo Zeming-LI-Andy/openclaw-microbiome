@@ -22,7 +22,6 @@ export async function executeProjectTool(
   const result = createOrReuseSessionJob(config, {
     label: typeof params.label === "string" ? params.label : undefined,
     notes: typeof params.notes === "string" ? params.notes : undefined,
-    forceNew: Boolean(params.force_new),
     session,
   });
 
@@ -53,8 +52,5 @@ export const projectParameterSchemas = {
   mgx_create_job: Type.Object({
     label: Type.Optional(Type.String({ description: "Short human label." })),
     notes: Type.Optional(Type.String({ description: "Optional notes." })),
-    force_new: Type.Optional(
-      Type.Boolean({ description: "Mint a new job even if the session already has one." }),
-    ),
   }),
 } as const;

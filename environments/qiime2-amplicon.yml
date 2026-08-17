@@ -1,4 +1,5 @@
 # Official QIIME 2 amplicon distro — do not hand-edit a dependency list.
+# Version pin is the 2024.10 distro YAML (not a local package list).
 # bootstrap-runtimes.sh fetches the platform YAML and creates this env name.
 # Must use channel_priority flexible (deblur → sortmerna 2.0 from bioconda).
 name: qiime2-amplicon-2024.10

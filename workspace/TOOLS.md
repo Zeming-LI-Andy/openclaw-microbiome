@@ -48,7 +48,7 @@ Bound to the OpenClaw **conversation** (`sessionId`; fallback `sessionKey`):
 2. else mint a new id and write that per-session bookmark
 
 Different conversations → different `job_id`s. Same conversation →
-reuse. `force_new: true` mints another job for the current conversation.
+always reuse the same `job_id`.
 
 Jobs: `${OPENCLAW_JOBS_ROOT:-/data/output}/<job_id>/` (or plugin `jobsRoot`).
 
@@ -65,8 +65,9 @@ Some skills include a `scripts/` folder with **reference** helpers (CLI args /
 env for paths — no hardwired machine DBs). Copy or adapt them under the session
 job; adjust to the real inputs and `registry/references.yaml` resolutions.
 
-Local DB annotation: `shotgun-eggnog`, `shotgun-vfdb`, `shotgun-rgi` (one skill
-per reference DB). REST skills (`annotation-kegg`, `annotation-uniprot`,
+Local DB annotation: `shotgun-eggnog`, `shotgun-vfdb`, `shotgun-rgi`,
+`shotgun-bakta`, `shotgun-gapseq`, `shotgun-gutsmash`, `shotgun-antismash`
+(one skill per tool / reference DB). REST skills (`annotation-kegg`, `annotation-uniprot`,
 `annotation-gene-ontology`, `annotation-ncbi-gene`, `annotation-metacyc`,
 `annotation-eggnog-api`) document API patterns. Public fetch: `sra-search`
 (SRA metadata), `ncbi-assembly-proteins` (Assembly proteins).

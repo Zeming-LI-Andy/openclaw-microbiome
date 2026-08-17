@@ -1,0 +1,10 @@
+# Bacterial metabolic pathway prediction / GEM reconstruction (gapseq).
+# Do not run `gapseq update-sequences` here — map sequence DBs in
+# ~/.openclaw/microbiome-refs.yaml. Official install:
+#   https://github.com/jotech/gapseq
+name: gapseq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - gapseq=2.1.0
