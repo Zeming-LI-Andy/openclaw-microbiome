@@ -1,13 +1,17 @@
 # Env directory name is biobakery_workflows (runtimes.yaml conda_env).
 # Mixes the biobakery channel with conda-forge/bioconda.
 # channel_priority: flexible
+# humann=3.0.0a4 is the bioconda package for upstream v3.0.0.alpha.4
+# (biobakery channel only has through 3.0.0.alpha.3).
 name: biobakery_workflows
 channels:
   - biobakery
   - conda-forge
   - bioconda
 dependencies:
+  # MetaPhlAn 3.0.7 imports distutils (removed in Python 3.12+).
+  - python=3.9
   - kneaddata=0.12.4
-  - metaphlan=4.2.6
-  - humann=3.9
+  - metaphlan=3.0.7
+  - humann=3.0.0a4
   - bowtie2=2.5.5

@@ -1,7 +1,10 @@
-# Aviary CLI only. First assemble/recover may still pull Snakemake nested envs.
+# Aviary CLI + pixi. bioconda aviary=0.13.2 does not pull pixi; nested tool
+# envs (SPAdes, GTDB-Tk R232, CheckM2, …) are pixi environments installed by
+# `aviary build` in bootstrap post_create (CPU only; not GPU, not DBs).
 name: aviary
 channels:
   - conda-forge
   - bioconda
 dependencies:
   - aviary=0.13.2
+  - pixi>=0.71

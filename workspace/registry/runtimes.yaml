@@ -2,10 +2,7 @@
 # Agent: Read this file for tools + conda_env. Do not conda install from this file.
 # Example: conda run -n <conda_env> --no-capture-output <tool> …
 #
-# Operator recipes live in the plugin repo (not this workspace copy):
-#   environments/*.yml + scripts/bootstrap-runtimes.sh
-#
-# Resolve conda from PATH (Docker image prepends /opt/conda/bin). Optional:
+# Resolve conda from PATH. Optional:
 #   CONDA_EXE, CONDA_ROOT
 # Uncomment only for a machine-local pin:
 # conda_executable: /opt/conda/bin/conda

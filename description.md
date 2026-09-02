@@ -80,7 +80,7 @@
 | | `gapseq_sequences` | gapseq UniProt 序列（`find`/`doall` `-D`） |
 | | `gutsmash_db` | gutSMASH `--databases` |
 | | `antismash_db` | antiSMASH 8 `--databases` |
-| Aviary | `aviary_gtdb` | GTDB / GTDB-Tk |
+| Aviary | `aviary_gtdb` | GTDB-Tk R232（Aviary 0.13.2） |
 | | `aviary_checkm2` | CheckM2 DB |
 | | `aviary_eggnog` | Aviary 用 EggNOG |
 | | `aviary_singlem` | SingleM metapackage |

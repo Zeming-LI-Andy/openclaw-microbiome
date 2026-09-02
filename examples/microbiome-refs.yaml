@@ -108,7 +108,7 @@ references:
   aviary_gtdb:
     description: GTDB for Aviary / GTDB-Tk
     kind: directory
-    relative_path: aviary_db/gtdb
+    relative_path: aviary_db/gtdb/release232
   aviary_checkm2:
     description: CheckM2 database for Aviary
     kind: directory

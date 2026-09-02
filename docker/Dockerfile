@@ -37,7 +37,8 @@ COPY scripts/bootstrap-runtimes.sh /opt/mgx/scripts/bootstrap-runtimes.sh
 COPY scripts/verify-runtimes.sh /opt/mgx/scripts/verify-runtimes.sh
 RUN chmod +x /opt/mgx/scripts/*.sh
 
-# Same recipes as a bare-metal host. Full stack is large (tens of GB).
+# Same recipes as a bare-metal host. Full stack is large (tens of GB);
+# Aviary post_create also installs CPU pixi nested envs (`aviary build`).
 RUN if [ "${MGX_ENVS}" = "all" ]; then \
       /opt/mgx/scripts/bootstrap-runtimes.sh --prefix /opt/conda --all; \
     else \

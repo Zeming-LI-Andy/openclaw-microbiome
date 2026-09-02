@@ -8,6 +8,7 @@
 #
 # Never downloads reference DBs. post_create may point env defaults at --refdb
 # (container path /refdb, matching microbiome-refs.yaml relative_path).
+# Aviary post_create also runs `aviary build` (CPU pixi nested envs).
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -239,8 +240,13 @@ wire_refdb() {
       write_conda_env_vars bakta "BAKTA_DB=${root}/bakta_db_full/db-v6.0"
       ;;
     biobakery_workflows)
+      # MetaPhlAn 3.0.7 defaults to site-packages/.../metaphlan_databases and does
+      # not honor METAPHLAN_DB_DIR; symlink that folder to --refdb.
+      pkg=$(python_module_dir biobakery_workflows metaphlan) || return 1
+      replace_with_symlink "${pkg}/metaphlan_databases" "${root}/metaphlan_databases"
       write_conda_env_vars biobakery_workflows \
-        "METAPHLAN_DB_DIR=${root}/metaphlan_databases"
+        "METAPHLAN_DB_DIR=${root}/metaphlan_databases" \
+        "DEFAULT_DB_FOLDER=${root}/metaphlan_databases"
       echo "==> ${name}: humann_config database_folders -> ${root}/humann_databases"
       "$CONDA_BIN" run -n biobakery_workflows --no-capture-output humann_config \
         --update database_folders nucleotide "${root}/humann_databases/chocophlan_v296_201901" || return 1
@@ -315,6 +321,13 @@ create_env() {
       return 0
     fi
     echo "==> removing ${name}"
+    # conda refuses to delete the active env (CONDA_PREFIX).
+    if [[ "${CONDA_PREFIX:-}" == "${PREFIX}/envs/${name}" ]]; then
+      echo "==> deactivating ${name} before remove"
+      # shellcheck disable=SC1091
+      source "${PREFIX}/etc/profile.d/conda.sh"
+      conda activate base || conda deactivate || true
+    fi
     "$CONDA_BIN" env remove -y -n "$name"
   fi
 
@@ -365,6 +378,17 @@ create_env() {
 post_create() {
   local name=$1 bindir
   case "$name" in
+    aviary)
+      # Nested assemblers/binners/annotators live in pixi envs next to
+      # aviary's bundled pixi.toml, not in this conda env. CPU only:
+      # skip taxvamb-gpu / semibin-gpu / comebin-gpu (needs a GPU).
+      echo "==> aviary: installing CPU pixi nested environments (aviary build)"
+      if ! "$CONDA_BIN" run -n aviary --no-capture-output which pixi >/dev/null 2>&1; then
+        echo "aviary env is missing pixi (>=0.71). Recreate with --force after environments/aviary.yml includes pixi." >&2
+        return 1
+      fi
+      "$CONDA_BIN" run -n aviary --no-capture-output aviary build || return 1
+      ;;
     gutsmash)
       # Pinned to the commit that installed as gutsmash==2.0.1 in mgx-env-test.
       echo "==> pip install gutsmash from git (--no-deps; skip download-antismash-databases)"

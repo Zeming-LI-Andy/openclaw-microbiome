@@ -15,7 +15,7 @@
 #   gutsmash.yml              → gutsmash
 #   antismash.yml             → antismash
 #   biobakery.yml             → biobakery_workflows
-#   aviary.yml                → aviary
+#   aviary.yml                → aviary  (CLI + pixi; bootstrap runs `aviary build`)
 #   qiime2-amplicon.yml       → qiime2-amplicon-2024.10 (official distro URL)
 #
 # Top-level package versions are pinned to a known-good linux-64 solve.
@@ -32,3 +32,7 @@
 # Reference DBs are not downloaded here. bootstrap may symlink / set conda
 # activate.d vars so a missing CLI flag still hits /refdb instead of
 # auto-downloading (MetaPhlAn, gapseq) or falling back to DEMO (HUMAnN).
+#
+# Aviary: the conda env is only the CLI + pixi (>=0.71). post_create runs
+# `aviary build` to install CPU pixi nested envs (SPAdes, GTDB-Tk, CheckM2,
+# EggNOG, …). GPU nested envs are not prebuilt. This step is large/slow.
