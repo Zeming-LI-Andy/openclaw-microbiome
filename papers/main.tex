@@ -50,76 +50,70 @@ workflow.
 \label{sec:intro}
 %% ====================================================================
 
-% Lead with the analysis landscape, not with tomato/CRC biology.
-A competent microbiome study is not one pipeline.
-It is a choice among at least three families of analysis: 16S/amplicon
-workflows that produce ASVs, taxonomy, phylogeny, and diversity;
-reference-based shotgun workflows that profile species and gene or
-pathway abundance against prebuilt catalogues; and assembly-based
-shotgun workflows that recover metagenome-assembled genomes (MAGs) and
-then ask what those genomes can do.
-These families are mature, but they live in different expert toolchains,
-and moving between them still requires an analyst to re-plan tools,
-runtimes, and reference databases.
+Microbiome studies ask different questions of sequencing data: which
+organisms are present, how communities vary among samples, and which
+functions their members may encode.  The appropriate computational
+path depends on both the assay and the question.  A 16S rRNA gene
+amplicon analysis can infer amplicon sequence variants (ASVs), assign
+taxonomy, and compare community diversity; a reference-based shotgun
+analysis profiles taxa and gene families or pathways directly from
+reads; and an assembly-based shotgun analysis reconstructs
+metagenome-assembled genomes (MAGs) for genome-resolved annotation
+\parencite{bolyen2019qiime2,beghini2021biobakery,uritskiy2018metawrap}.
+These paths are complementary rather than interchangeable: amplicon
+profiles do not directly measure gene content, while reference-based
+profiling and MAG recovery answer different questions about shotgun
+data.
 
-% Gap: workflow managers vs chat agents. Add real citations in refs.bib.
-Workflow managers encode a directed acyclic graph once a path is known.
-Conversational agents can discuss the same tools but rarely finish
-multi-hour, multi-tool jobs or keep artifacts isolated across a session.
-The result is a gap between ``we have a 16S platform'', ``we have a
-bioBakery workflow'', ``we have a MAG workflow'', and ``an agent can
-traverse all three end-to-end''.
-
-% This work.
-Here we describe MicroBioAgent, a skill-driven agent for microbiome
-analysis whose unit of work is a \emph{skill} (one analysis step), not a
-hidden mega-pipeline (\cref{sec:methods}).
-One conversation maps to one job directory.
-MicroBioAgent plans, then executes on registered conda runtimes, and is
-evaluated on whether it can complete full-pipeline analyses in all three
-families---not on whether it introduces a new aligner or binner.
-
-The empirical span is three case studies plus later robustness and
-ablation experiments (\cref{tab:cases-overview}).
-Case~1 is a tomato rhizosphere study of bacterial-wilt resistance that
-runs a 16S pipeline and MetaPhlAn, bridging amplicon and reference-based
-taxonomy.
-Case~2 is a colorectal-cancer (CRC) case--control analysis that adds
-HUMAnN functional profiles and a supervised classifier.
-Case~3 is MAG recovery with community composition and metabolic
-potential---the assembly-based arm.
-Together they are intended as coverage of 16S, reference-based
-metagenomics, and de~novo/assembly-based metagenomics, not as three
-standalone biological papers.
+Mature software supports each path.  QIIME~2 provides an extensible
+environment for amplicon analysis, including DADA2-based denoising;
+bioBakery combines read preprocessing with MetaPhlAn taxonomic and
+HUMAnN functional profiling; and genome-resolved pipelines such as
+metaWRAP and Aviary organize assembly, binning, and downstream MAG
+analysis \parencite{bolyen2019qiime2,callahan2016dada2,
+beghini2021biobakery,uritskiy2018metawrap,newell2025aviary}.
+Using these tools in a study still involves decisions that lie between
+their documented commands: choosing a path from the available assay,
+checking metadata and intermediate artifacts, resolving software and
+reference databases, and adapting subsequent steps when an input or
+analysis fails.  These decisions become especially consequential when
+an analysis crosses tool families or runs for hours.
 
 \subsection{Related work}
 \label{sec:related}
 
-% Four buckets. Do not invent citations; add them to refs.bib first.
-\paragraph{Amplicon platforms.}
-QIIME~2, mothur, and DADA2 cover the 16S family as expert tools or
-plugin systems.
-They are not conversational and they are not shotgun platforms.
+Workflow managers such as Snakemake and Nextflow provide reproducible,
+scalable execution of specified computational workflows
+\parencite{koster2012snakemake,ditommaso2017nextflow}.  They are
+appropriate when the analysis graph has been defined in advance.
+Conversational execution addresses a different interface: the user
+states an analysis goal, and an agent must select and connect steps
+while preserving the provenance of a particular request.  The
+capabilities of the underlying bioinformatics tools and workflow
+engines remain essential; the open question here is how to expose them
+to an agent without requiring one fixed pipeline to cover every study.
 
-\paragraph{Reference-based shotgun.}
-The bioBakery stack (KneadData, MetaPhlAn, HUMAnN) is the standard
-reference-based path.
-The user still orchestrates QC, profiling, function, and downstream
-statistics.
+We developed MicroBioAgent to examine this question across three
+analysis families within one session model.  It is an OpenClaw plugin
+that binds a conversation to a persistent job directory and supplies
+step-level skills for 16S, reference-based shotgun, and assembly-based
+shotgun analysis.  The agent is instructed to plan an analysis,
+execute each step with a registered conda runtime and reference path,
+inspect outputs, and continue after long-running commands return
+(\cref{sec:methods}).  These mechanisms organize existing methods;
+MicroBioAgent does not introduce a new denoiser, taxonomic profiler,
+or assembler.
 
-\paragraph{Assembly and MAGs.}
-metaWRAP, ATLAS, Aviary, and nf-core/mag implement assemble--recover--
-annotate workflows with a different runtime and database burden.
-They are rarely mixed with 16S in one agent session.
-
-\paragraph{LLM agents for bioinformatics.}
-Recent agents can propose or run notebook-scale commands.
-They typically do not keep a twelve-hour MAG or HUMAnN job inside a
-single session model that also knows the 16S skill map.
-
-The gap we target is therefore not another wrapper around one family,
-but one named system---MicroBioAgent---that is honest about all three
-and can actually run them.
+We use three case studies to examine the breadth of this design:
+tomato rhizosphere amplicon analysis with a shotgun taxonomic component,
+colorectal cancer case--control profiling and classification,
+and assembly-based MAG recovery with community and metabolic analyses
+(\cref{tab:cases-overview}).  The cases are intended to test whether
+one agent can carry a study-specific path through each family and
+produce inspectable artifacts.  Reliability experiments will assess
+how sensitive completion is to changes in prompts and to the removal
+of system components; their outcomes will be reported only after the
+cloud job records have been verified.
 
 %% ====================================================================
 \section{Results}

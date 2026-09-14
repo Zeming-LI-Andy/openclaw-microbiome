@@ -22,8 +22,9 @@ Switch engine in Cursor: `Ctrl+Shift+P` → **LaTeX Workshop: Build with recipe*
 | Path | Role |
 |------|------|
 | `main.tex` | Article body |
+| `project-review.md` | Source-checked system summary and evidence gaps for the manuscript |
 | `refs.bib` | BibLaTeX sources |
 | `figures/` | Images (`\includegraphics`) |
 | `.latexmkrc` | pdfLaTeX + biber, output in `build/` |
 
-Default stack: **pdfLaTeX** + **biblatex/biber** (`authoryear`). Replace `example2020` before submitting; do not invent citations.
+Default stack: **pdfLaTeX** + **biblatex/biber** (`authoryear`). Verify each added citation against its primary source before submitting.
