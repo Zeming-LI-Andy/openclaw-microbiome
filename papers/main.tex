@@ -1,0 +1,436 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage[backend=biber,style=authoryear,maxbibnames=99,uniquename=false]{biblatex}
+
+\addbibresource{refs.bib}
+\graphicspath{{figures/}}
+
+% Working title; see papers/outline.md for alternatives.
+\title{End-to-end 16S and metagenomic analysis with a skill-driven agent:\\
+covering amplicon, reference-based, and assembly-based workflows}
+\author{Author Name}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% Four beats: gap, system, three cases + reliability, implication.
+Microbiome analysis is split across expert toolchains for 16S amplicon
+profiling, reference-based shotgun taxonomy and function, and
+assembly-based MAG recovery.
+% TODO: name the agent/plugin once the public name is fixed.
+We implement a skill-driven OpenClaw plugin that binds one conversation to
+one analysis job and executes step-level procedures on host conda runtimes,
+with registries for reference databases and background execution for
+long-running tools.
+Three case studies span that landscape: tomato rhizosphere 16S plus
+MetaPhlAn in a bacterial-wilt resistance setting; colorectal-cancer
+case--control MetaPhlAn, HUMAnN, and a supervised classifier; and MAG
+recovery with community composition and metabolic potential.
+% TODO: one sentence of robustness/ablation once metrics exist.
+The implication is that full-pipeline analysis across 16S and shotgun
+metagenomics---both reference-based and de~novo---can be driven
+conversationally without collapsing those families into a single rigid
+workflow.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+% Lead with the analysis landscape, not with tomato/CRC biology.
+A competent microbiome study is not one pipeline.
+It is a choice among at least three families of analysis: 16S/amplicon
+workflows that produce ASVs, taxonomy, phylogeny, and diversity;
+reference-based shotgun workflows that profile species and gene or
+pathway abundance against prebuilt catalogues; and assembly-based
+shotgun workflows that recover metagenome-assembled genomes (MAGs) and
+then ask what those genomes can do.
+These families are mature, but they live in different expert toolchains,
+and moving between them still requires an analyst to re-plan tools,
+runtimes, and reference databases.
+
+% Gap: workflow managers vs chat agents. Add real citations in refs.bib.
+Workflow managers encode a directed acyclic graph once a path is known.
+Conversational agents can discuss the same tools but rarely finish
+multi-hour, multi-tool jobs or keep artifacts isolated across a session.
+The result is a gap between ``we have a 16S platform'', ``we have a
+bioBakery workflow'', ``we have a MAG workflow'', and ``an agent can
+traverse all three end-to-end''.
+
+% This work.
+Here we describe a skill-driven OpenClaw agent for microbiome analysis
+whose unit of work is a \emph{skill} (one analysis step), not a hidden
+mega-pipeline.
+One conversation maps to one job directory.
+The agent plans, then executes on registered conda runtimes, and is
+evaluated on whether it can complete full-pipeline analyses in all three
+families---not on whether it introduces a new aligner or binner.
+
+The empirical span is three case studies plus later robustness and
+ablation experiments (\cref{tab:cases-overview}).
+Case~1 is a tomato rhizosphere study of bacterial-wilt resistance that
+runs a 16S pipeline and MetaPhlAn, bridging amplicon and reference-based
+taxonomy.
+Case~2 is a colorectal-cancer (CRC) case--control analysis that adds
+HUMAnN functional profiles and a supervised classifier.
+Case~3 is MAG recovery with community composition and metabolic
+potential---the assembly-based arm.
+Together they are intended as coverage of 16S, reference-based
+metagenomics, and de~novo/assembly-based metagenomics, not as three
+standalone biological papers.
+
+\section{Related work}
+\label{sec:related}
+
+% Four buckets. Do not invent citations; add them to refs.bib first.
+\paragraph{Amplicon platforms.}
+QIIME~2, mothur, and DADA2 cover the 16S family as expert tools or
+plugin systems.
+They are not conversational and they are not shotgun platforms.
+
+\paragraph{Reference-based shotgun.}
+The bioBakery stack (KneadData, MetaPhlAn, HUMAnN) is the standard
+reference-based path.
+The user still orchestrates QC, profiling, function, and downstream
+statistics.
+
+\paragraph{Assembly and MAGs.}
+metaWRAP, ATLAS, Aviary, and nf-core/mag implement assemble--recover--
+annotate workflows with a different runtime and database burden.
+They are rarely mixed with 16S in one agent session.
+
+\paragraph{LLM agents for bioinformatics.}
+Recent agents can propose or run notebook-scale commands.
+They typically do not keep a twelve-hour MAG or HUMAnN job inside a
+single session model that also knows the 16S skill map.
+
+The gap we target is therefore not another wrapper around one family,
+but one agent that is honest about all three and can actually run them.
+
+\section{System}
+\label{sec:system}
+
+\subsection{Design principles}
+\label{sec:principles}
+
+The plugin does not compile 16S, MetaPhlAn, and Aviary into one
+hard-coded DAG.
+Each shipped skill is a step procedure; the agent reads the skill,
+runs one step, checks artifacts, then continues
+(\cref{fig:architecture}).
+Design constraints that matter for full-pipeline work:
+
+\begin{itemize}
+  \item \textbf{One conversation, one job.}
+    The tool \texttt{mgx\_create\_job} creates or reuses a
+    \texttt{job\_id} bound to the OpenClaw session key.
+  \item \textbf{Plan, then execute.}
+    Heavy compute starts only after a plan is stated (and, in normal
+    use, confirmed).
+    Failed steps are marked skipped, together with their dependents;
+    results are not invented.
+  \item \textbf{Host-owned runtimes and reference libraries.}
+    Conda environments and database paths come from registries, not
+    from paths hallucinated by the model.
+  \item \textbf{Long-running execution.}
+    Multi-hour CLIs use timed-yield \texttt{exec} and process-exit
+    notification, which requires a pinned OpenClaw exec-wake patch.
+\end{itemize}
+
+\subsection{Session job}
+\label{sec:job}
+
+All inputs and outputs for a conversation live under
+\texttt{jobsRoot/\textless job\_id\textgreater/}:
+\texttt{stage/} for reads and metadata,
+\texttt{analysis/\textless step\textgreater/} for one skill's products,
+and \texttt{reproducibility/} for logs.
+Rewinding the chat does not mint a new job.
+
+\subsection{Skill coverage of the analysis landscape}
+\label{sec:skills}
+
+\Cref{tab:skills} is the coverage claim in tabular form.
+The 16S family follows a QIIME~2 path from import through diversity
+(and optional PICRUSt2).
+The reference-based shotgun family runs host depletion, taxonomic
+profiling, functional profiling, and targeted annotation.
+The assembly-based family recovers and annotates MAGs and can
+reconstruct metabolic potential.
+Shared skills cover public-data lookup, association statistics, and
+REST annotation.
+
+Supervised classification, used in the CRC case, is not a dedicated
+skill.
+It is an agent-composed step on MetaPhlAn and/or HUMAnN tables in the
+shared statistics runtime.
+We treat that as a feature of a skill system (study-specific modeling
+on top of standard profiles), not as a missing pipeline stage.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Shipped skills grouped by analysis family.
+    This table is the operational meaning of ``full pipeline'' in this
+    paper: the agent can select a path through a family, not that every
+    optional skill runs in every study.}
+  \label{tab:skills}
+  {\small
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Family & Stages & Skills \\
+    \midrule
+    16S / amplicon
+      & Import, DADA2 ASVs, QC, taxonomy, phylogeny, diversity, export / function
+      & \texttt{16s-import}, \texttt{16s-denoise-dada2},
+        \texttt{16s-feature-summarize}, \texttt{16s-taxonomy},
+        \texttt{16s-phylogeny}, \texttt{16s-diversity},
+        \texttt{16s-export}, \texttt{16s-picrust2} \\
+    Shotgun, reference-based
+      & QC / host depletion, species, pathways / gene families, gene catalog, annotation
+      & \texttt{shotgun-kneaddata}, \texttt{shotgun-metaphlan},
+        \texttt{shotgun-humann}, \texttt{shotgun-gene-catalog},
+        \texttt{shotgun-eggnog}, \texttt{shotgun-vfdb},
+        \texttt{shotgun-rgi} \\
+    Shotgun, assembly-based
+      & Assemble, recover, annotate, cluster MAGs; genome and metabolism
+      & \texttt{shotgun-aviary}, \texttt{shotgun-bakta},
+        \texttt{shotgun-gapseq}, \texttt{shotgun-gutsmash},
+        \texttt{shotgun-antismash} \\
+    Shared
+      & Public data, statistics, REST annotation
+      & \texttt{sra-search}, \texttt{ncbi-assembly-proteins},
+        \texttt{stats-diversity},
+        \texttt{stats-differential-abundance},
+        \texttt{stats-enrichment}, \texttt{annotation-*} \\
+    \bottomrule
+  \end{tabularx}}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Schematic: conversation $\rightarrow$ \texttt{mgx\_create\_job}
+    $\rightarrow$ skill / conda / reference registry
+    $\rightarrow$ \texttt{analysis/\textless step\textgreater/};
+    timed-yield \texttt{exec} and exit wake.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig2-architecture.pdf}
+  \vspace{2.2em}}}
+  \caption{System architecture.
+    Skills are step procedures; the plugin only bootstraps the session
+    job and resolves reference paths.}
+  \label{fig:architecture}
+\end{figure}
+
+\subsection{Execution and deployment}
+\label{sec:exec}
+
+Analysis commands run as \texttt{conda run -n \textless env\textgreater}
+with absolute paths confined to the session job.
+Reference databases are declared in a user file
+(\texttt{microbiome-refs.yaml}) and synced to an agent-facing
+\texttt{references.yaml} that contains \texttt{path} values only.
+A derived Docker image can bundle a patched OpenClaw gateway with the
+conda stack; database trees remain host-owned mounts.
+Gateway settings that matter in practice are a long heartbeat after
+background exec, process-exit notification (including empty success),
+and disabling skill authoring that would shadow the shipped skill tree.
+
+\section{Evaluation design}
+\label{sec:eval}
+
+\subsection{Capability demonstration}
+\label{sec:eval-cases}
+
+Cases~1--3 are naturalistic analysis requests chosen to pin one primary
+family each (\cref{tab:cases-overview}, \cref{fig:landscape}).
+For each case we will report the dataset, the skill sequence actually
+run, human confirmations or interventions, wall-clock time, and the
+scientific artifacts used in the corresponding results figure.
+Biological interpretation is kept to the minimum needed to show that
+the artifacts are usable.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Case studies as coverage of the analysis landscape.
+    Sample sizes, accessions, and wall times: see \texttt{papers/cases.md}
+    (filled from the server; not invented here).}
+  \label{tab:cases-overview}
+  \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Case & Primary family & Extra claim \\
+    \midrule
+    1 Tomato rhizosphere, bacterial-wilt resistance
+      & 16S end-to-end
+      & Same study also runs MetaPhlAn \\
+    2 CRC case--control
+      & Reference-based shotgun
+      & HUMAnN function + classifier \\
+    3 MAG recovery
+      & Assembly-based / de~novo
+      & Composition + metabolic potential \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Robustness and ablation}
+\label{sec:eval-reliability}
+
+Robustness experiments repeat the same analysis goal under controlled
+perturbations (prompt paraphrase, repeated trials, session resume after
+a long exec).
+Ablation experiments remove one system component at a time---shipped
+skills, plan-then-execute, session-job isolation, exec wake, or
+registries---and score completion, human interventions, and whether
+required artifacts exist.
+Protocols will be frozen before scoring; metrics will not be defined
+after looking at outcomes.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{One agent, three analysis families}
+\label{sec:landscape}
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Landscape figure: 16S / reference-based shotgun / assembly-based
+    shotgun as three backbones; shipped skills on each backbone;
+    Cases~1--3 as pins.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig1-landscape.pdf}
+  \vspace{2.2em}}}
+  \caption{The analysis landscape covered by the agent.
+    Case~1 sits on 16S and bridges to shotgun taxonomy; Case~2 sits on
+    reference-based function; Case~3 sits on MAG recovery and
+    metabolism.}
+  \label{fig:landscape}
+\end{figure}
+
+The lead result is coverage, not a $p$-value.
+\Cref{fig:landscape} places the skill map and the three cases on one
+figure: the same session model can traverse a 16S path, a
+reference-based shotgun path, and an assembly-based MAG path.
+The next three subsections are existence proofs of that span.
+
+\subsection{Case 1: tomato rhizosphere 16S and MetaPhlAn}
+\label{sec:case-tomato}
+
+% 16S full pipeline + MetaPhlAn. Heritability / Ralstonia resistance.
+This case demonstrates the amplicon family end-to-end and, on the same
+study, reference-based taxonomic profiling with MetaPhlAn.
+The scientific setting is the tomato rhizosphere in relation to
+resistance to bacterial wilt (\textit{Ralstonia}) and the heritability
+of community structure.
+% TODO: dataset, n, accessions, skill sequence, wall time from cases.md
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~1 panels: 16S diversity/taxonomy; MetaPhlAn composition;
+    genotype or resistance association.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig3-tomato.pdf}
+  \vspace{2.2em}}}
+  \caption{Tomato rhizosphere case.
+    16S pipeline products and MetaPhlAn profiles; association with
+    resistance or host genotype as implemented in the job.}
+  \label{fig:tomato}
+\end{figure}
+
+\subsection{Case 2: CRC case--control composition, function, and classification}
+\label{sec:case-crc}
+
+This case is the deep reference-based shotgun path: species profiles,
+community function, and a study-specific classifier trained on those
+tables.
+% TODO: n case/control, HUMAnN features, classifier and CV from the job.
+We will not claim a new CRC biomarker; we claim that the agent can
+produce a complete case--control functional and predictive analysis.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~2 panels: MetaPhlAn composition; HUMAnN pathways;
+    classifier performance.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig4-crc.pdf}
+  \vspace{2.2em}}}
+  \caption{CRC case--control case.
+    Composition, functional profiles, and classifier metrics from the
+    completed job.}
+  \label{fig:crc}
+\end{figure}
+
+\subsection{Case 3: MAG recovery, composition, and metabolic potential}
+\label{sec:case-mag}
+
+This case is the assembly-based arm: MAG recovery (Aviary assemble /
+recover / annotate / cluster as actually run), community composition
+from MAG abundances or a complementary profiler, and metabolic
+potential from the annotation or reconstruction tools used in that job.
+% TODO: which of gapseq, EggNOG, Bakta, gutSMASH, antiSMASH were run.
+This family is the strongest test of long-running exec: assemble and
+recover do not finish inside a default chat timeout.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~3 panels: MAG quality and taxonomy; composition;
+    metabolic overview.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig5-mag.pdf}
+  \vspace{2.2em}}}
+  \caption{MAG case.
+    Recovery quality, composition, and metabolic potential as produced
+    by the job.}
+  \label{fig:mag}
+\end{figure}
+
+\subsection{Robustness}
+\label{sec:robustness}
+
+% TODO: paraphrase / repeat / resume table from the server.
+Repeated or perturbed runs will be scored on task completion and on
+artifact-level checks, not on fluent explanation.
+
+\subsection{Ablation}
+\label{sec:ablation}
+
+% TODO: Table of component removed vs completion and interventions.
+The intended reading is that shipped skills, job isolation, and exec
+wake are necessary for full-pipeline coverage; the language model
+alone is not.
+
+\section{Discussion}
+\label{sec:discussion}
+
+``Full pipeline'' in this paper means that one agent can \emph{select
+and finish} a path through each analysis family, not that every
+optional skill runs in every study.
+Human confirmation of the plan is part of the execution model.
+The compute and reference-database burden remains that of the
+underlying tools.
+Workflow managers remain preferable when the same DAG must be replayed
+identically at scale; the agent is aimed at heterogeneous,
+study-specific paths that cross families.
+% TODO: residual risk of invented paths; what supervision still requires.
+
+\section{Availability}
+\label{sec:availability}
+
+The plugin, skills, conda recipes, and the pinned OpenClaw exec-wake
+patch live in the openclaw-microbiome repository.
+% TODO: URL, license, archived case jobs and prompts as data allow.
+
+\printbibliography
+
+\end{document}

@@ -1,0 +1,16 @@
+---
+description: English academic LaTeX writing conventions in papers/
+globs: papers/**/*.{tex,bib,sty,cls}
+alwaysApply: false
+---
+
+# LaTeX papers
+
+- Keep article sources under `papers/`. Do not mix analysis job outputs with manuscript files.
+- Default engine is **pdfLaTeX** via `latexmk`. Switch to XeLaTeX only when the user needs system fonts or Unicode-heavy input.
+- Compile with `latexmk`; write build artifacts to `build/` next to the `.tex` file. Never commit `build/` or aux files.
+- Do not invent citations, DOIs, or author lists. If a reference is missing, add a `TODO` comment and ask.
+- Prefer `biblatex` + `biber` with `authoryear` unless a journal class requires `natbib`/`bibtex`.
+- Use `graphicx`, `booktabs`, `siunitx`, and `cleveref`. Put figures in `papers/figures/` (or a per-article `figures/`).
+- Keep preamble packages minimal. Do not add font packages that require XeLaTeX unless that engine is in use.
+- After edits, rebuild and report whether `latexmk` succeeded; quote the first real error from the log if it failed.
