@@ -39,7 +39,7 @@ describe("session job", () => {
       catalogDir: path.resolve(process.cwd(), "catalog"),
     };
     fs.mkdirSync(config.workspaceRoot, { recursive: true });
-    const session = { sessionId: "conv-aaaa-1111" };
+    const session = { sessionKey: "agent:main:dashboard:conv-aaaa-1111" };
 
     const catalog = loadCatalog(config);
     const tools = Object.fromEntries(buildTools(catalog, () => config).map((t) => [t.name, t]));
@@ -52,8 +52,8 @@ describe("session job", () => {
       session_binding: string;
     };
     expect(a.reused).toBe(false);
-    expect(a.session_binding).toBe(session.sessionId);
-    expect(a.bookmark_path).toBe(sessionBookmarkPath(config, session.sessionId));
+    expect(a.session_binding).toBe(session.sessionKey);
+    expect(a.bookmark_path).toBe(sessionBookmarkPath(config, session.sessionKey));
     expect(fs.readFileSync(a.bookmark_path, "utf8").trim()).toBe(a.job_id);
 
     const second = await tools.mgx_create_job!.execute({}, session);
@@ -74,8 +74,8 @@ describe("session job", () => {
     const catalog = loadCatalog(config);
     const tools = Object.fromEntries(buildTools(catalog, () => config).map((t) => [t.name, t]));
 
-    const a = await tools.mgx_create_job!.execute({}, { sessionId: "session-a" });
-    const b = await tools.mgx_create_job!.execute({}, { sessionId: "session-b" });
+    const a = await tools.mgx_create_job!.execute({}, { sessionKey: "agent:main:dashboard:session-a" });
+    const b = await tools.mgx_create_job!.execute({}, { sessionKey: "agent:main:dashboard:session-b" });
     expect((a.details as { job_id: string }).job_id).not.toBe(
       (b.details as { job_id: string }).job_id,
     );
@@ -113,8 +113,8 @@ describe("session job", () => {
     });
     process.env.OPENCLAW_SESSION_JOB_ID = shared.jobId;
 
-    const a = createOrReuseSessionJob(config, { session: { sessionId: "sess-a" } });
-    const b = createOrReuseSessionJob(config, { session: { sessionId: "sess-b" } });
+    const a = createOrReuseSessionJob(config, { session: { sessionKey: "agent:main:dashboard:sess-a" } });
+    const b = createOrReuseSessionJob(config, { session: { sessionKey: "agent:main:dashboard:sess-b" } });
     expect(a.jobId).not.toBe(shared.jobId);
     expect(b.jobId).not.toBe(shared.jobId);
     expect(a.jobId).not.toBe(b.jobId);
@@ -132,7 +132,7 @@ describe("session job", () => {
     fs.mkdirSync(config.workspaceRoot, { recursive: true });
     const catalog = loadCatalog(config);
     const tools = Object.fromEntries(buildTools(catalog, () => config).map((t) => [t.name, t]));
-    const session = { sessionId: "sess-force" };
+    const session = { sessionKey: "agent:main:dashboard:sess-force" };
 
     const first = await tools.mgx_create_job!.execute({}, session);
     const second = await tools.mgx_create_job!.execute({ force_new: true }, session);
@@ -140,5 +140,40 @@ describe("session job", () => {
     const b = second.details as { job_id: string; reused: boolean };
     expect(b.job_id).toBe(a.job_id);
     expect(b.reused).toBe(true);
+  });
+
+  it("reuses the same job when only the rotating sessionId would have changed", () => {
+    const root = tempRoot();
+    const config = {
+      jobsRoot: path.join(root, "jobs"),
+      workspaceRoot: path.join(root, "workspace"),
+    };
+    fs.mkdirSync(config.workspaceRoot, { recursive: true });
+    const sessionKey = "agent:main:dashboard:4531d4a1-cacc-4558-9aa6-3d5f0968ddb0";
+
+    const first = createOrReuseSessionJob(config, { session: { sessionKey } });
+    const second = createOrReuseSessionJob(config, { session: { sessionKey } });
+    expect(first.reused).toBe(false);
+    expect(second.reused).toBe(true);
+    expect(second.jobId).toBe(first.jobId);
+    expect(second.session_binding).toBe(sessionKey);
+  });
+
+  it("ignores sessionId-only context and does not treat it as a conversation binding", () => {
+    const root = tempRoot();
+    const config = {
+      jobsRoot: path.join(root, "jobs"),
+      workspaceRoot: path.join(root, "workspace"),
+    };
+    fs.mkdirSync(config.workspaceRoot, { recursive: true });
+    const created = createOrReuseSessionJob(config, {});
+    process.env.OPENCLAW_SESSION_JOB_ID = created.jobId;
+
+    const again = createOrReuseSessionJob(config, {
+      session: { sessionKey: undefined },
+    });
+    expect(again.reused).toBe(true);
+    expect(again.source).toBe("env");
+    expect(again.jobId).toBe(created.jobId);
   });
 });

@@ -15,7 +15,8 @@
     "0001-session-continue-exec-event-prompt.patch",
     "0002-clear-disposed-transcript-als-on-exec-wake.patch",
     "0003-exec-notify-immediate-and-steer-wake.patch",
-    "0004-tool-guidance-yield-before-poll.patch"
+    "0004-tool-guidance-yield-before-poll.patch",
+    "0005-exec-wake-skip-steer-while-streaming.patch"
   ],
   "problems": [
     {
@@ -33,6 +34,10 @@
     {
       "id": "background-exec-polling-guidance",
       "summary": "Model-facing exec guidance, running-exec responses, and sessions_yield text encouraged process polling or subagent-only waits, conflicting with completion-wake handoff."
+    },
+    {
+      "id": "streaming-steer-lost-wake",
+      "summary": "notifyOnExit steered into an in-flight LLM stream; sessions_yield then aborted the run and cancelled the uncommitted steer, so same-session exec completions were lost. yieldMs running exec was also not treated as continuation evidence."
     }
   ],
   "filesTouched": [
@@ -44,6 +49,7 @@
     "src/agents/bash-tools.exec-runtime.test.ts",
     "src/agents/bash-tools.exec-notify-wake.ts",
     "src/agents/bash-tools.exec-notify-wake.test.ts",
+    "src/agents/embedded-agent-subscribe.handlers.tools.ts",
     "src/agents/bash-tools.test.ts",
     "src/agents/bash-tools.descriptions.ts",
     "src/agents/bash-tools.schemas.ts",

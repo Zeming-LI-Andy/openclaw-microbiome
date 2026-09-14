@@ -2,3 +2,4 @@
 0002-clear-disposed-transcript-als-on-exec-wake.patch
 0003-exec-notify-immediate-and-steer-wake.patch
 0004-tool-guidance-yield-before-poll.patch
+0005-exec-wake-skip-steer-while-streaming.patch

@@ -89,7 +89,7 @@ export default definePluginEntry({
     const catalog = loadCatalog(getConfig());
     const tools = buildTools(catalog, getConfig);
     for (const tool of tools) {
-      // Factory so each turn gets OpenClaw sessionId/sessionKey for per-conversation jobs.
+      // Factory so each turn gets the stable OpenClaw sessionKey for per-conversation jobs.
       api.registerTool(
         (ctx) => ({
           name: tool.name,
@@ -97,7 +97,6 @@ export default definePluginEntry({
           parameters: tool.parameters,
           async execute(_id, params) {
             return tool.execute(params as Record<string, unknown>, {
-              sessionId: ctx.sessionId,
               sessionKey: ctx.sessionKey,
             });
           },

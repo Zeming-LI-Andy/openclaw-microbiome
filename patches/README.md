@@ -4,7 +4,7 @@ Version-pinned **OpenClaw** patch packs carried by this microbiome repo.
 
 | Pack | Target | Purpose |
 |------|--------|---------|
-| [`openclaw-exec-session-wake/`](./openclaw-exec-session-wake/) | OpenClaw **`2026.7.2`** @ `35c9c76b8c76…` | Background exec wake and model-facing yield guidance |
+| [`openclaw-exec-session-wake/`](./openclaw-exec-session-wake/) | OpenClaw **`2026.7.2`** @ `35c9c76b8c76…` | Background exec wake, yield guidance, and streaming-steer lost-wake fix |
 
 Each pack has:
 

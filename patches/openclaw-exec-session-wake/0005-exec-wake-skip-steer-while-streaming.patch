@@ -1,0 +1,135 @@
+diff --git a/src/agents/bash-tools.exec-notify-wake.test.ts b/src/agents/bash-tools.exec-notify-wake.test.ts
+index e5f7d50..0958dc9 100644
+--- a/src/agents/bash-tools.exec-notify-wake.test.ts
++++ b/src/agents/bash-tools.exec-notify-wake.test.ts
+@@ -49,6 +49,7 @@ describe("wakeSessionAfterExecExit", () => {
+     setExecNotifyWakeDepsForTest({
+       resolveActiveSessionId: () => "session-active",
+       isSessionRunActive: (sessionId) => sessionId === "session-active",
++      isSessionStreaming: () => false,
+       queueSteerMessage,
+       enqueueSystemEvent,
+       requestHeartbeat,
+@@ -70,6 +71,40 @@ describe("wakeSessionAfterExecExit", () => {
+     expect(requestHeartbeat).not.toHaveBeenCalled();
+   });
+ 
++  it("heartbeats instead of steering when the active turn is still streaming", async () => {
++    const enqueueSystemEvent = vi.fn();
++    const requestHeartbeat = vi.fn();
++    const queueSteerMessage = vi.fn(async () => ({ queued: true }));
++    setExecNotifyWakeDepsForTest({
++      resolveActiveSessionId: () => "session-streaming",
++      isSessionRunActive: () => true,
++      isSessionStreaming: () => true,
++      queueSteerMessage,
++      enqueueSystemEvent,
++      requestHeartbeat,
++    });
++
++    await expect(
++      wakeSessionAfterExecExit({
++        sessionKey: "agent:main:dashboard:demo",
++        eventText: "Exec completed (glow-nex, code 0) :: STEP6_DONE",
++      }),
++    ).resolves.toBe("heartbeat");
++
++    expect(queueSteerMessage).not.toHaveBeenCalled();
++    expect(enqueueSystemEvent).toHaveBeenCalledWith(
++      "Exec completed (glow-nex, code 0) :: STEP6_DONE",
++      expect.objectContaining({ sessionKey: "agent:main:dashboard:demo" }),
++    );
++    expect(requestHeartbeat).toHaveBeenCalledWith(
++      expect.objectContaining({
++        source: "exec-event",
++        intent: "immediate",
++        reason: "exec-event",
++      }),
++    );
++  });
++
+   it("falls back to immediate heartbeat when steer does not queue", async () => {
+     const enqueueSystemEvent = vi.fn();
+     const requestHeartbeat = vi.fn();
+diff --git a/src/agents/bash-tools.exec-notify-wake.ts b/src/agents/bash-tools.exec-notify-wake.ts
+index cc77aea..7e50fcf 100644
+--- a/src/agents/bash-tools.exec-notify-wake.ts
++++ b/src/agents/bash-tools.exec-notify-wake.ts
+@@ -13,6 +13,7 @@ import type { DeliveryContext } from "../utils/delivery-context.shared.js";
+ import type { EmbeddedAgentQueueMessageOptions } from "./embedded-agent-runner/run-state.js";
+ import {
+   isEmbeddedAgentRunActive,
++  isEmbeddedAgentRunStreaming,
+   queueEmbeddedAgentMessageWithOutcomeAsync,
+   resolveActiveEmbeddedRunSessionId,
+ } from "./embedded-agent-runner/runs.js";
+@@ -20,6 +21,7 @@ import {
+ export type ExecNotifyWakeDeps = {
+   resolveActiveSessionId: (sessionKey: string) => string | undefined;
+   isSessionRunActive: (sessionId: string) => boolean;
++  isSessionStreaming: (sessionId: string) => boolean;
+   queueSteerMessage: (
+     sessionId: string,
+     text: string,
+@@ -32,6 +34,7 @@ export type ExecNotifyWakeDeps = {
+ const defaultDeps: ExecNotifyWakeDeps = {
+   resolveActiveSessionId: resolveActiveEmbeddedRunSessionId,
+   isSessionRunActive: isEmbeddedAgentRunActive,
++  isSessionStreaming: isEmbeddedAgentRunStreaming,
+   queueSteerMessage: queueEmbeddedAgentMessageWithOutcomeAsync,
+   enqueueSystemEvent,
+   requestHeartbeat,
+@@ -87,7 +90,16 @@ export async function wakeSessionAfterExecExit(params: {
+   }
+   const wakeSessionKey = resolveEventSessionKeyForPolicy(sessionKey, params.eventRouting);
+   const activeSessionId = execNotifyWakeDeps.resolveActiveSessionId(wakeSessionKey);
+-  if (activeSessionId && execNotifyWakeDeps.isSessionRunActive(activeSessionId)) {
++  const runActive = Boolean(
++    activeSessionId && execNotifyWakeDeps.isSessionRunActive(activeSessionId),
++  );
++  // A completion that arrives while the model is still streaming cannot enter
++  // that in-flight prompt. Waiting to steer lets sessions_yield abort the run
++  // and cancel the queued message, so persist + heartbeat instead.
++  const streaming = Boolean(
++    activeSessionId && runActive && execNotifyWakeDeps.isSessionStreaming(activeSessionId),
++  );
++  if (activeSessionId && runActive && !streaming) {
+     try {
+       const outcome = await execNotifyWakeDeps.queueSteerMessage(
+         activeSessionId,
+diff --git a/src/agents/embedded-agent-subscribe.handlers.tools.ts b/src/agents/embedded-agent-subscribe.handlers.tools.ts
+index 7e79bc6..381cd6c 100644
+--- a/src/agents/embedded-agent-subscribe.handlers.tools.ts
++++ b/src/agents/embedded-agent-subscribe.handlers.tools.ts
+@@ -456,9 +456,20 @@ function applyToolSendReceiptForExtraction(result: unknown, receiptResult: unkno
+   };
+ }
+ 
+-function isAsyncStartedToolResult(result: unknown): boolean {
++function isAsyncStartedToolResult(result: unknown, toolName?: string): boolean {
+   const details = readToolResultDetails(result);
+-  return details?.async === true && details.status === "started";
++  if (details?.async === true && details.status === "started") {
++    return true;
++  }
++  // yieldMs / background exec returns status=running (not async/started).
++  // Treat a live process session as continuation evidence so sessions_yield
++  // does not look like an empty hang.
++  return Boolean(
++    toolName &&
++      isExecToolName(toolName) &&
++      details?.status === "running" &&
++      readStringValue(details.sessionId),
++  );
+ }
+ 
+ function readAsyncStartedTaskIds(result: unknown): {
+@@ -1461,7 +1472,7 @@ export async function handleToolExecutionEnd(
+     (trackedExecutionStarted ?? evt.executionStarted ?? true) && !executionPrevented;
+   const attemptedPotentialSideEffect = !callSummary.replaySafe && executionStarted;
+   const meta = callSummary.meta;
+-  const asyncStarted = !isToolError && isAsyncStartedToolResult(sanitizedResult);
++  const asyncStarted = !isToolError && isAsyncStartedToolResult(sanitizedResult, toolName);
+   const asyncTaskIds = asyncStarted ? readAsyncStartedTaskIds(sanitizedResult) : {};
+   ctx.state.toolMetas.push({
+     toolName,

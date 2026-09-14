@@ -186,29 +186,31 @@ export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro,/data/output:/data/output
 
 ## Plugin config (`openclaw.json`)
 
-`openclaw plugins install` only **installs** the plugin files. This block in
-`~/.openclaw/openclaw.json` **enables** it and passes runtime options into
-`plugins.entries.microbiome.config` (validated by `openclaw.plugin.json`
-`configSchema`):
+`openclaw plugins install` only **installs** the plugin files. You still need
+`~/.openclaw/openclaw.json` to **enable** the plugin and set the runtime
+options that long 16S / shotgun sessions depend on.
 
-```json5
-{
-  plugins: {
-    entries: {
-      microbiome: {
-        enabled: true,
-        config: {
-          jobsRoot: "/data/output",
-          workspaceRoot: "/path/to/workspace",
-          // optional:
-          refsConfig: "~/.openclaw/microbiome-refs.yaml",
-          refsMode: "auto", // auto | docker | host
-        }
-      }
-    }
-  }
-}
-```
+The block below matches a working gateway. Adjust paths to your machine
+(jobs, workspace, refs, conda). Restart the gateway after editing.
+
+### Why these settings
+
+| Area | What to set | Why |
+|------|-------------|-----|
+| **Heartbeat** | `agents.defaults.heartbeat.timeoutSeconds: 43200` (12 hours) | After a background `exec` finishes, OpenClaw often wakes the agent on a heartbeat turn. The default abort is about **10 minutes**. Denoise / taxonomy / phylogeny follow-ups regularly exceed that. |
+| **Model HTTP timeout** | `models.providers.*.timeoutSeconds: 300` | The implicit LLM idle/stream watchdog is about **120 seconds**. Slow or tool-heavy replies hit that and surface as `LLM idle timeout`. 300s is the floor used in production here. |
+| **Exec wake** | `tools.exec.notifyOnExit` + `notifyOnExitEmptySuccess` | Long CLIs run with `yieldMs` / `timeout: 0`. The agent must wake when the process exits, including when all output went to a log file. |
+| **Conda on PATH** | `tools.exec.pathPrepend: ["/opt/conda/bin"]` | The gateway user must see `conda` without `conda activate`. In the `openclaw-mgx` image that path is `/opt/conda/bin`. On a host install, point this at your Miniforge/Miniconda `bin`. |
+| **Code Mode off** | `tools.codeMode.enabled: false` | Analysis CLIs go through native `exec` / `read`, not the Code Mode JS sandbox. |
+| **No skill workshop** | `tools.deny: ["skill_workshop"]` | Stops the agent from authoring extra skills mid-run that would shadow `plugin-skills/`. |
+| **Session memory** | `hooks.internal.entries.session-memory.enabled: true` | Keeps conversation memory hooks on across `/new`, `/reset`, and idle/daily rollover. |
+| **Plugin load path** | `plugins.load.paths` | Extra directory OpenClaw searches for the packaged plugin (for example a built `openclaw-microbiome-pkg`). Skip this if you only `openclaw plugins install` from this repo. |
+
+`enabled` / install control **whether** tools and skills appear.
+`plugins.entries.microbiome.config.*` control **where** jobs and refs go — they
+do not replace the `"skills": ["./skills"]` manifest declaration.
+
+### Microbiome plugin keys
 
 | Key | Meaning |
 |-----|---------|
@@ -219,9 +221,82 @@ export OPENCLAW_EXTRA_MOUNTS=/data/refdb:/refdb:ro,/data/output:/data/output
 | `refsMode` | `auto` / `docker` / `host` for generated `path` values |
 | `catalogDir` | Override `catalog/` for tools.yaml |
 
-`enabled` / install control **whether** tools & skills appear.  
-`config.*` control **where** jobs, refs sync, and references.yaml go — they do
-not replace the `"skills": ["./skills"]` manifest declaration.
+### Recommended `~/.openclaw/openclaw.json`
+
+Put API keys in OpenClaw **auth profiles** (or the environment), not in a
+committed file. The gateway token is read from `OPENCLAW_GATEWAY_TOKEN`.
+
+```json5
+{
+  agents: {
+    defaults: {
+      workspace: "/root/.openclaw/workspace",
+      // Heartbeat turns after long execs; 12h (default ~10 min will abort them)
+      heartbeat: { timeoutSeconds: 43200 }
+    },
+    entries: {
+      main: {
+        default: true,
+        name: "main",
+        workspace: "/root/.openclaw/workspace",
+        agentDir: "/root/.openclaw/agents/main/agent",
+      },
+    },
+  },
+  gateway: {
+    mode: "local",
+    port: 16789,
+    bind: "lan",
+    auth: {
+      mode: "token",
+      token: { source: "env", provider: "default", id: "OPENCLAW_GATEWAY_TOKEN" },
+    },
+    controlUi: {
+      allowedOrigins: [
+        "http://localhost:16789",
+        "http://127.0.0.1:16789",
+      ],
+    },
+  },
+  tools: {
+    codeMode: { enabled: false },
+    deny: ["skill_workshop"],
+    exec: {
+      pathPrepend: ["/opt/conda/bin"],
+      notifyOnExit: true,
+      notifyOnExitEmptySuccess: true,
+    },
+  },
+  plugins: {
+    load: {
+      // omit if the plugin was installed with `openclaw plugins install`
+      paths: ["/opt/openclaw-microbiome-pkg"],
+    },
+    entries: {
+      microbiome: {
+        enabled: true,
+        config: {
+          jobsRoot: "/root/.openclaw/jobs",
+          workspaceRoot: "/root/.openclaw/workspace",
+          refsConfig: "/root/.openclaw/microbiome-refs.yaml",
+          refsMode: "host", // docker image → container paths; use host on bare metal
+        },
+      }
+    },
+  },
+  hooks: {
+    internal: {
+      entries: {
+        "session-memory": { enabled: true },
+      },
+    },
+  },
+}
+```
+
+Also declare each provider’s models and auth profiles the way OpenClaw
+normally expects (`models.providers.<id>.models`, `auth.profiles`). The
+snippet above only shows the **timeouts and wiring** this plugin needs.
 
 ## Gateway startup (bare-metal)
 
@@ -231,35 +306,14 @@ not replace the `"skills": ["./skills"]` manifest declaration.
 
 ```bash
 export SHELL=/bin/bash   # avoid dash as exec shell
+export OPENCLAW_GATEWAY_TOKEN=…   # must match gateway.auth.token.id
 cd /path/to/openclaw
-node openclaw.mjs gateway --port 18789 --verbose
-```
-
-Recommended `~/.openclaw/openclaw.json` (restart gateway after edit):
-
-```json5
-{
-  tools: {
-    codeMode: { enabled: false }, // force direct exec/read; avoid Code Mode JS sandbox for CLIs
-    deny: ["skill_workshop"],    // block agent skill authoring mid-analysis
-    exec: {
-      pathPrepend: ["/opt/conda/bin", "~/miniconda3/bin"], // conda on PATH (image vs host)
-      notifyOnExit: true,                // wake agent when background exec finishes
-      notifyOnExitEmptySuccess: true,    // also wake if stdout was empty (log-only redirects)
-    }
-  },
-  skills: {
-    workshop: {
-      autonomous: { mode: "off" }, // default is "auto": self-learning writes workspace/skills/
-      approvalPolicy: "pending",   // if workshop is used, require operator apply
-    }
-  }
-}
+node openclaw.mjs gateway --port 16789 --verbose
 ```
 
 Analysis skills live in **`plugin-skills/`** (`$OPENCLAW_STATE_DIR/plugin-skills`),
 not `workspace/skills/`. Keep `workspace/skills/` absent (or empty) so workshop
-auto-skills cannot shadow plugin procedures.
+skills cannot shadow plugin procedures.
 
 Long CLIs: background `exec` + `timeout: 0` + exit wake (`CODING.md`).
 See [Exec](https://docs.openclaw.ai/tools/exec) /
@@ -268,12 +322,12 @@ See [Exec](https://docs.openclaw.ai/tools/exec) /
 ## Session job
 
 ```text
-mgx_create_job (per OpenClaw conversation / sessionId)
+mgx_create_job (per OpenClaw conversation / sessionKey)
   → reuse OPENCLAW_SESSION_JOB_ID
-  → else reuse .microbiome/session_jobs/<sessionId>
+  → else reuse .microbiome/session_jobs/<sessionKey>
   → else create jobsRoot/<YYYYMMDD-HHMMSS-hex>/
        stage/  analysis/  reproducibility/
-  → write .microbiome/session_jobs/<sessionId>
+  → write .microbiome/session_jobs/<sessionKey>
 ```
 
 Different conversations get different job directories. All analysis artifacts for

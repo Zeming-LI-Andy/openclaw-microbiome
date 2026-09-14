@@ -58,6 +58,13 @@ rebase:
    `background: true`, running-exec responses point to `sessions_yield` (not
    poll), and `sessions_yield` covers subagent and background exec events.
 
+5. **`0005-exec-wake-skip-steer-while-streaming.patch`**  
+   If the target session is still streaming when `notifyOnExit` fires, skip
+   steer (it cannot enter that prompt and is cancelled by `sessions_yield`).
+   Persist the completion and request an immediate heartbeat instead.
+   `yieldMs` exec results with `status: "running"` also count as continuation
+   evidence so yield is not treated as an empty hang.
+
 ## Apply
 
 From this directory, or via the helper (default OpenClaw root:

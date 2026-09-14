@@ -39,7 +39,7 @@ export async function executeProjectTool(
     session: {
       one_session_one_job: true,
       binding: result.session_binding
-        ? "OpenClaw sessionId (fallback: sessionKey)"
+        ? "OpenClaw sessionKey"
         : "no session context (legacy fallback)",
       hint: result.reused
         ? "Reusing this conversation's job_id. Keep all analysis I/O under this job directory."

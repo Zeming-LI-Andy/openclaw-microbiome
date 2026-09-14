@@ -8,7 +8,7 @@
    said): call `mgx_create_job` once. Do not answer, plan, or run tools until
    this returns a `job_id`.
 2. It creates or **reuses** this conversation’s job (per-session bookmark under
-   `.microbiome/session_jobs/<sessionId>` → new id). Different OpenClaw
+   `.microbiome/session_jobs/<sessionKey>` → new id). Different OpenClaw
    conversations get different `job_id`s.
 3. All inputs/outputs for this conversation go under that job directory.
 4. This conversation has exactly one `job_id`. Later `mgx_create_job` calls

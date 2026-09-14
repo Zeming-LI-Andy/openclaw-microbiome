@@ -10,15 +10,13 @@ export type SessionJobResult = JobPaths & {
   source: SessionJobSource;
   bookmark_path: string;
   jobs_root: string;
-  /** OpenClaw conversation id used for binding (sessionId preferred). */
+  /** OpenClaw conversation key used for binding (sessionKey). */
   session_binding?: string;
 };
 
 /** Trusted OpenClaw tool context used to isolate jobs per conversation. */
 export type SessionBinding = {
-  /** Ephemeral conversation UUID; regenerated on /new and /reset. */
-  sessionId?: string;
-  /** Stable routing key (e.g. agent:main:…). Fallback when sessionId missing. */
+  /** Stable conversation key (e.g. agent:main:dashboard:…). Survives sessionId rotation. */
   sessionKey?: string;
 };
 
@@ -39,13 +37,10 @@ export function resolveWorkspaceRoot(config: PluginConfig): string {
   return path.resolve(process.cwd());
 }
 
-/** Prefer sessionId (per conversation); fall back to sessionKey. */
+/** Bind jobs to the stable OpenClaw sessionKey (not the rotating sessionId). */
 export function resolveSessionBindingId(binding?: SessionBinding): string | undefined {
-  const sessionId = binding?.sessionId?.trim();
-  if (sessionId) return sessionId;
   const sessionKey = binding?.sessionKey?.trim();
-  if (sessionKey) return sessionKey;
-  return undefined;
+  return sessionKey || undefined;
 }
 
 /** Safe single-segment filename for a session binding id. */
@@ -58,7 +53,7 @@ function sessionJobsDir(config: PluginConfig): string {
   return path.join(resolveWorkspaceRoot(config), ".microbiome", "session_jobs");
 }
 
-/** Per-conversation bookmark: workspace/.microbiome/session_jobs/<session>. */
+/** Per-conversation bookmark: workspace/.microbiome/session_jobs/<sessionKey>. */
 export function sessionBookmarkPath(config: PluginConfig, bindingId: string): string {
   return path.join(sessionJobsDir(config), sanitizeSessionBindingId(bindingId));
 }
@@ -149,7 +144,7 @@ function writeBookmark(bookmark: string, jobId: string): void {
 /**
  * One OpenClaw conversation ↔ one job_id.
  * Resolve order:
- *   per-session bookmark (.microbiome/session_jobs/<sessionId|sessionKey>) →
+ *   per-session bookmark (.microbiome/session_jobs/<sessionKey>) →
  *   when no session binding: OPENCLAW_SESSION_JOB_ID → legacy .current_job_id →
  *   create.
  *

@@ -7,11 +7,12 @@ tools:
     kind: project
     description: >
       Create or reuse the analysis job for this OpenClaw conversation (one
-      sessionId ↔ one job_id). Scaffolds stage/, analysis/, and reproducibility/
+      sessionKey ↔ one job_id). Scaffolds stage/, analysis/, and reproducibility/
       under jobsRoot, bookmarks the job under workspace
-      .microbiome/session_jobs/<sessionId>, and returns paths. Call once when
+      .microbiome/session_jobs/<sessionKey>, and returns paths. Call once when
       starting analysis; later calls in the same conversation always reuse the
-      same job. Different conversations get different jobs.
+      same job. Different conversations get different jobs. SessionId rotation
+      (rewind / reset) does not mint a new job.
     optional: false
     parameters:
       type: object
