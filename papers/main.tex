@@ -50,70 +50,80 @@ workflow.
 \label{sec:intro}
 %% ====================================================================
 
-Microbiome studies ask different questions of sequencing data: which
-organisms are present, how communities vary among samples, and which
-functions their members may encode.  The appropriate computational
-path depends on both the assay and the question.  A 16S rRNA gene
-amplicon analysis can infer amplicon sequence variants (ASVs), assign
-taxonomy, and compare community diversity; a reference-based shotgun
-analysis profiles taxa and gene families or pathways directly from
-reads; and an assembly-based shotgun analysis reconstructs
-metagenome-assembled genomes (MAGs) for genome-resolved annotation
-\parencite{bolyen2019qiime2,beghini2021biobakery,uritskiy2018metawrap}.
-These paths are complementary rather than interchangeable: amplicon
-profiles do not directly measure gene content, while reference-based
-profiling and MAG recovery answer different questions about shotgun
-data.
+Microbiome studies increasingly seek to relate community composition
+to ecological conditions, host phenotypes, and microbial functional
+potential.  The analysis required to address these questions depends
+on the sequencing assay and on the biological resolution of interest.
+Analysis of 16S rRNA gene amplicons yields amplicon sequence variants,
+taxonomic assignments, and measures of community diversity, whereas
+shotgun metagenomic reads can be profiled against references to estimate
+species composition and gene or pathway abundance.  Assembly and binning
+of shotgun reads provide a complementary genome-resolved view through
+metagenome-assembled genomes (MAGs), which can subsequently be annotated
+for functional and metabolic potential
+\parencite{bolyen2019qiime2,callahan2016dada2,beghini2021biobakery,
+uritskiy2018metawrap}.  These approaches do not provide interchangeable
+measurements: marker-gene surveys cannot directly quantify gene content,
+and read-based profiles and reconstructed genomes support different
+inferences about community function.
 
-Mature software supports each path.  QIIME~2 provides an extensible
-environment for amplicon analysis, including DADA2-based denoising;
-bioBakery combines read preprocessing with MetaPhlAn taxonomic and
-HUMAnN functional profiling; and genome-resolved pipelines such as
-metaWRAP and Aviary organize assembly, binning, and downstream MAG
-analysis \parencite{bolyen2019qiime2,callahan2016dada2,
-beghini2021biobakery,uritskiy2018metawrap,newell2025aviary}.
-Using these tools in a study still involves decisions that lie between
-their documented commands: choosing a path from the available assay,
-checking metadata and intermediate artifacts, resolving software and
-reference databases, and adapting subsequent steps when an input or
-analysis fails.  These decisions become especially consequential when
-an analysis crosses tool families or runs for hours.
+Each analysis route is supported by mature computational methods.
+QIIME~2 organizes amplicon processing and downstream ecological analyses;
+the bioBakery suite supports taxonomic and functional profiling of
+shotgun data; and genome-resolved frameworks such as metaWRAP and Aviary
+coordinate assembly and MAG recovery
+\parencite{bolyen2019qiime2,beghini2021biobakery,
+uritskiy2018metawrap,newell2025aviary}.  Workflow systems including
+Snakemake and Nextflow provide reproducible execution of specified
+analysis graphs \parencite{koster2012snakemake,ditommaso2017nextflow}.
+Together, these methods establish the computational basis for
+microbiome research.  A domain agent builds on this basis by connecting
+assay-specific procedures, reference resources, and downstream
+interpretation within a study-specific analysis.
 
-\subsection{Related work}
-\label{sec:related}
+Recent biological agents have shown that such coordination can be
+automated.  AutoBA generates and executes analysis plans and code for
+multi-omics tasks, including automatic code repair
+\parencite{zhou2024autoba}.  Biomni combines retrieval, planning, and
+code-based execution across biomedical domains; its microbiome
+evaluation includes analyses of existing abundance tables and metadata
+\parencite{huang2025biomni}.  BioAgents further explores a multi-agent
+approach to bioinformatics reasoning and workflow guidance
+\parencite{mehandru2025bioagents}.  These studies establish planning
+and execution as demonstrated capabilities of biological agents, rather
+than capabilities unique to the present work.
 
-Workflow managers such as Snakemake and Nextflow provide reproducible,
-scalable execution of specified computational workflows
-\parencite{koster2012snakemake,ditommaso2017nextflow}.  They are
-appropriate when the analysis graph has been defined in advance.
-Conversational execution addresses a different interface: the user
-states an analysis goal, and an agent must select and connect steps
-while preserving the provenance of a particular request.  The
-capabilities of the underlying bioinformatics tools and workflow
-engines remain essential; the open question here is how to expose them
-to an agent without requiring one fixed pipeline to cover every study.
+MetaClaw is a closely related microbiome agent that connects auditable,
+registered workflows to study-specific analyses.  It executes
+standardized upstream metagenomic processing on FlowHub and performs
+downstream statistical analysis and reporting in local containers;
+its reported evaluation reproduces results from four shotgun
+metagenomic studies \parencite{zhang2026metaclaw}.  This architecture
+illustrates one way to divide computational work between a cloud
+workflow service and a local analytical environment.  We pursue a
+different execution model in which the agent invokes the upstream
+sequencing-data tools as well as downstream analyses locally, while
+retaining the ability to coordinate long-running steps in the same
+conversation.
 
-We developed MicroBioAgent to examine this question across three
-analysis families within one session model.  It is an OpenClaw plugin
-that binds a conversation to a persistent job directory and supplies
-step-level skills for 16S, reference-based shotgun, and assembly-based
-shotgun analysis.  The agent is instructed to plan an analysis,
-execute each step with a registered conda runtime and reference path,
-inspect outputs, and continue after long-running commands return
-(\cref{sec:methods}).  These mechanisms organize existing methods;
-MicroBioAgent does not introduce a new denoiser, taxonomic profiler,
-or assembler.
+Here we present MicroBioAgent, a microbiome analysis agent integrating
+three capabilities.  First, its domain procedures span 16S amplicon,
+reference-based shotgun, and assembly-based MAG analyses, extending
+from sequencing-data processing to community, gene, pathway, and
+genome-resolved annotations, including predictions of metabolic
+potential.  Second, sequencing-data computation uses locally configured
+tools and reference resources, allowing raw reads to remain within a
+user-controlled environment.  Third, long-running steps execute
+asynchronously: the agent yields its turn while a command continues,
+so a user can revise the analysis in the same session before that
+command finishes; a completion event then resumes the agent to inspect
+the result and continue with the updated plan.  This combination
+supports a locally executed analysis workflow that remains open to
+human guidance during extended computation.
 
-We use three case studies to examine the breadth of this design:
-tomato rhizosphere amplicon analysis with a shotgun taxonomic component,
-colorectal cancer case--control profiling and classification,
-and assembly-based MAG recovery with community and metabolic analyses
-(\cref{tab:cases-overview}).  The cases are intended to test whether
-one agent can carry a study-specific path through each family and
-produce inspectable artifacts.  Reliability experiments will assess
-how sensitive completion is to changes in prompts and to the removal
-of system components; their outcomes will be reported only after the
-cloud job records have been verified.
+% TODO: Reserve the closing Introduction paragraph for verified case-study
+% scope and evidence from the cloud jobs, including any mid-analysis user
+% intervention traces. Do not state results before those records are checked.
 
 %% ====================================================================
 \section{Results}
