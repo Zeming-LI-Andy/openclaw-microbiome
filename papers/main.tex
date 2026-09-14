@@ -17,8 +17,8 @@
 \graphicspath{{figures/}}
 
 % Working title; see papers/outline.md for alternatives.
-\title{End-to-end 16S and metagenomic analysis with a skill-driven agent:\\
-covering amplicon, reference-based, and assembly-based workflows}
+\title{MicroBioAgent: end-to-end 16S and metagenomic analysis\\
+across amplicon, reference-based, and assembly-based workflows}
 \author{Author Name}
 \date{}
 
@@ -30,11 +30,10 @@ covering amplicon, reference-based, and assembly-based workflows}
 Microbiome analysis is split across expert toolchains for 16S amplicon
 profiling, reference-based shotgun taxonomy and function, and
 assembly-based MAG recovery.
-% TODO: name the agent/plugin once the public name is fixed.
-We implement a skill-driven OpenClaw plugin that binds one conversation to
-one analysis job and executes step-level procedures on host conda runtimes,
-with registries for reference databases and background execution for
-long-running tools.
+We present MicroBioAgent, a skill-driven agent that binds one
+conversation to one analysis job and executes step-level procedures on
+host conda runtimes, with registries for reference databases and
+background execution for long-running tools.
 Three case studies span that landscape: tomato rhizosphere 16S plus
 MetaPhlAn in a bacterial-wilt resistance setting; colorectal-cancer
 case--control MetaPhlAn, HUMAnN, and a supervised classifier; and MAG
@@ -46,8 +45,10 @@ conversationally without collapsing those families into a single rigid
 workflow.
 \end{abstract}
 
+%% ====================================================================
 \section{Introduction}
 \label{sec:intro}
+%% ====================================================================
 
 % Lead with the analysis landscape, not with tomato/CRC biology.
 A competent microbiome study is not one pipeline.
@@ -70,11 +71,11 @@ bioBakery workflow'', ``we have a MAG workflow'', and ``an agent can
 traverse all three end-to-end''.
 
 % This work.
-Here we describe a skill-driven OpenClaw agent for microbiome analysis
-whose unit of work is a \emph{skill} (one analysis step), not a hidden
-mega-pipeline.
+Here we describe MicroBioAgent, a skill-driven agent for microbiome
+analysis whose unit of work is a \emph{skill} (one analysis step), not a
+hidden mega-pipeline (\cref{sec:methods}).
 One conversation maps to one job directory.
-The agent plans, then executes on registered conda runtimes, and is
+MicroBioAgent plans, then executes on registered conda runtimes, and is
 evaluated on whether it can complete full-pipeline analyses in all three
 families---not on whether it introduces a new aligner or binner.
 
@@ -91,7 +92,7 @@ Together they are intended as coverage of 16S, reference-based
 metagenomics, and de~novo/assembly-based metagenomics, not as three
 standalone biological papers.
 
-\section{Related work}
+\subsection{Related work}
 \label{sec:related}
 
 % Four buckets. Do not invent citations; add them to refs.bib first.
@@ -117,16 +118,187 @@ They typically do not keep a twelve-hour MAG or HUMAnN job inside a
 single session model that also knows the 16S skill map.
 
 The gap we target is therefore not another wrapper around one family,
-but one agent that is honest about all three and can actually run them.
+but one named system---MicroBioAgent---that is honest about all three
+and can actually run them.
 
-\section{System}
-\label{sec:system}
+%% ====================================================================
+\section{Results}
+\label{sec:results}
+%% ====================================================================
+
+\subsection{MicroBioAgent covers three analysis families}
+\label{sec:landscape}
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Landscape figure: 16S / reference-based shotgun / assembly-based
+    shotgun as three backbones; shipped skills on each backbone;
+    Cases~1--3 as pins.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig1-landscape.pdf}
+  \vspace{2.2em}}}
+  \caption{The analysis landscape covered by MicroBioAgent.
+    Case~1 sits on 16S and bridges to shotgun taxonomy; Case~2 sits on
+    reference-based function; Case~3 sits on MAG recovery and
+    metabolism.}
+  \label{fig:landscape}
+\end{figure}
+
+The lead result is coverage, not a $p$-value.
+\Cref{fig:landscape} places the skill map and the three cases on one
+figure: MicroBioAgent can traverse a 16S path, a
+reference-based shotgun path, and an assembly-based MAG path
+(\cref{tab:skills,fig:architecture}).
+Cases~1--3 were chosen to pin one primary family each
+(\cref{tab:cases-overview}).
+The next three subsections are existence proofs of that span.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Case studies as coverage of the analysis landscape.
+    Sample sizes, accessions, and wall times: see \texttt{papers/cases.md}
+    (filled from the server; not invented here).}
+  \label{tab:cases-overview}
+  \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Case & Primary family & Extra claim \\
+    \midrule
+    1 Tomato rhizosphere, bacterial-wilt resistance
+      & 16S end-to-end
+      & Same study also runs MetaPhlAn \\
+    2 CRC case--control
+      & Reference-based shotgun
+      & HUMAnN function + classifier \\
+    3 MAG recovery
+      & Assembly-based / de~novo
+      & Composition + metabolic potential \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Case 1: tomato rhizosphere 16S and MetaPhlAn}
+\label{sec:case-tomato}
+
+% 16S full pipeline + MetaPhlAn. Heritability / Ralstonia resistance.
+This case demonstrates the amplicon family end-to-end and, on the same
+study, reference-based taxonomic profiling with MetaPhlAn.
+The scientific setting is the tomato rhizosphere in relation to
+resistance to bacterial wilt (\textit{Ralstonia}) and the heritability
+of community structure.
+% TODO: dataset, n, accessions, skill sequence, wall time from cases.md
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~1 panels: 16S diversity/taxonomy; MetaPhlAn composition;
+    genotype or resistance association.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig3-tomato.pdf}
+  \vspace{2.2em}}}
+  \caption{Tomato rhizosphere case.
+    16S pipeline products and MetaPhlAn profiles; association with
+    resistance or host genotype as implemented in the job.}
+  \label{fig:tomato}
+\end{figure}
+
+\subsection{Case 2: CRC case--control composition, function, and classification}
+\label{sec:case-crc}
+
+This case is the deep reference-based shotgun path: species profiles,
+community function, and a study-specific classifier trained on those
+tables.
+% TODO: n case/control, HUMAnN features, classifier and CV from the job.
+We will not claim a new CRC biomarker; we claim that MicroBioAgent can
+produce a complete case--control functional and predictive analysis.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~2 panels: MetaPhlAn composition; HUMAnN pathways;
+    classifier performance.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig4-crc.pdf}
+  \vspace{2.2em}}}
+  \caption{CRC case--control case.
+    Composition, functional profiles, and classifier metrics from the
+    completed job.}
+  \label{fig:crc}
+\end{figure}
+
+\subsection{Case 3: MAG recovery, composition, and metabolic potential}
+\label{sec:case-mag}
+
+This case is the assembly-based arm: MAG recovery (Aviary assemble /
+recover / annotate / cluster as actually run), community composition
+from MAG abundances or a complementary profiler, and metabolic
+potential from the annotation or reconstruction tools used in that job.
+% TODO: which of gapseq, EggNOG, Bakta, gutSMASH, antiSMASH were run.
+This family is the strongest test of long-running exec: assemble and
+recover do not finish inside a default chat timeout.
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
+    Case~3 panels: MAG quality and taxonomy; composition;
+    metabolic overview.\\[0.4em]
+    \small\textit{Replace with} \texttt{figures/fig5-mag.pdf}
+  \vspace{2.2em}}}
+  \caption{MAG case.
+    Recovery quality, composition, and metabolic potential as produced
+    by the job.}
+  \label{fig:mag}
+\end{figure}
+
+\subsection{Robustness}
+\label{sec:robustness}
+
+% TODO: paraphrase / repeat / resume table from the server.
+Repeated or perturbed runs will be scored on task completion and on
+artifact-level checks, not on fluent explanation
+(\cref{sec:eval-reliability}).
+
+\subsection{Ablation}
+\label{sec:ablation}
+
+% TODO: Table of component removed vs completion and interventions.
+The intended reading is that shipped skills, job isolation, and exec
+wake are necessary for full-pipeline coverage; the language model
+alone is not.
+
+%% ====================================================================
+\section{Discussion}
+\label{sec:discussion}
+%% ====================================================================
+
+``Full pipeline'' in this paper means that MicroBioAgent can \emph{select
+and finish} a path through each analysis family, not that every
+optional skill runs in every study.
+Human confirmation of the plan is part of the execution model.
+The compute and reference-database burden remains that of the
+underlying tools.
+Workflow managers remain preferable when the same DAG must be replayed
+identically at scale; MicroBioAgent is aimed at heterogeneous,
+study-specific paths that cross families.
+% TODO: residual risk of invented paths; what supervision still requires.
+
+\subsection{Conclusion}
+\label{sec:conclusion}
+
+MicroBioAgent can span 16S amplicon analysis, reference-based shotgun
+profiling, and assembly-based MAG recovery without collapsing those
+families into one rigid workflow.
+The three case studies are the empirical span of that claim;
+robustness and ablation tests are what would show that the span comes
+from the system, not from a single lucky prompt.
+
+%% ====================================================================
+\section{Methods}
+\label{sec:methods}
+%% ====================================================================
 
 \subsection{Design principles}
 \label{sec:principles}
 
-The plugin does not compile 16S, MetaPhlAn, and Aviary into one
-hard-coded DAG.
+MicroBioAgent is implemented as an OpenClaw plugin.
+It does not compile 16S, MetaPhlAn, and Aviary into one hard-coded DAG.
 Each shipped skill is a step procedure; the agent reads the skill,
 runs one step, checks artifacts, then continues
 (\cref{fig:architecture}).
@@ -183,8 +355,8 @@ on top of standard profiles), not as a missing pipeline stage.
   \centering
   \caption{Shipped skills grouped by analysis family.
     This table is the operational meaning of ``full pipeline'' in this
-    paper: the agent can select a path through a family, not that every
-    optional skill runs in every study.}
+    paper: MicroBioAgent can select a path through a family, not that
+    every optional skill runs in every study.}
   \label{tab:skills}
   {\small
   \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
@@ -227,9 +399,9 @@ on top of standard profiles), not as a missing pipeline stage.
     timed-yield \texttt{exec} and exit wake.\\[0.4em]
     \small\textit{Replace with} \texttt{figures/fig2-architecture.pdf}
   \vspace{2.2em}}}
-  \caption{System architecture.
-    Skills are step procedures; the plugin only bootstraps the session
-    job and resolves reference paths.}
+  \caption{MicroBioAgent architecture.
+    Skills are step procedures; the OpenClaw plugin bootstraps the
+    session job and resolves reference paths.}
   \label{fig:architecture}
 \end{figure}
 
@@ -247,44 +419,18 @@ Gateway settings that matter in practice are a long heartbeat after
 background exec, process-exit notification (including empty success),
 and disabling skill authoring that would shadow the shipped skill tree.
 
-\section{Evaluation design}
+\subsection{Evaluation design}
 \label{sec:eval}
 
-\subsection{Capability demonstration}
-\label{sec:eval-cases}
-
 Cases~1--3 are naturalistic analysis requests chosen to pin one primary
-family each (\cref{tab:cases-overview}, \cref{fig:landscape}).
-For each case we will report the dataset, the skill sequence actually
-run, human confirmations or interventions, wall-clock time, and the
+family each (\cref{tab:cases-overview,fig:landscape}).
+For each case we report the dataset, the skill sequence actually run,
+human confirmations or interventions, wall-clock time, and the
 scientific artifacts used in the corresponding results figure.
 Biological interpretation is kept to the minimum needed to show that
 the artifacts are usable.
 
-\begin{table}[htbp]
-  \centering
-  \caption{Case studies as coverage of the analysis landscape.
-    Sample sizes, accessions, and wall times: see \texttt{papers/cases.md}
-    (filled from the server; not invented here).}
-  \label{tab:cases-overview}
-  \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
-    \toprule
-    Case & Primary family & Extra claim \\
-    \midrule
-    1 Tomato rhizosphere, bacterial-wilt resistance
-      & 16S end-to-end
-      & Same study also runs MetaPhlAn \\
-    2 CRC case--control
-      & Reference-based shotgun
-      & HUMAnN function + classifier \\
-    3 MAG recovery
-      & Assembly-based / de~novo
-      & Composition + metabolic potential \\
-    \bottomrule
-  \end{tabularx}
-\end{table}
-
-\subsection{Robustness and ablation}
+\subsection{Robustness and ablation protocols}
 \label{sec:eval-reliability}
 
 Robustness experiments repeat the same analysis goal under controlled
@@ -297,138 +443,11 @@ required artifacts exist.
 Protocols will be frozen before scoring; metrics will not be defined
 after looking at outcomes.
 
-\section{Results}
-\label{sec:results}
-
-\subsection{One agent, three analysis families}
-\label{sec:landscape}
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Landscape figure: 16S / reference-based shotgun / assembly-based
-    shotgun as three backbones; shipped skills on each backbone;
-    Cases~1--3 as pins.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig1-landscape.pdf}
-  \vspace{2.2em}}}
-  \caption{The analysis landscape covered by the agent.
-    Case~1 sits on 16S and bridges to shotgun taxonomy; Case~2 sits on
-    reference-based function; Case~3 sits on MAG recovery and
-    metabolism.}
-  \label{fig:landscape}
-\end{figure}
-
-The lead result is coverage, not a $p$-value.
-\Cref{fig:landscape} places the skill map and the three cases on one
-figure: the same session model can traverse a 16S path, a
-reference-based shotgun path, and an assembly-based MAG path.
-The next three subsections are existence proofs of that span.
-
-\subsection{Case 1: tomato rhizosphere 16S and MetaPhlAn}
-\label{sec:case-tomato}
-
-% 16S full pipeline + MetaPhlAn. Heritability / Ralstonia resistance.
-This case demonstrates the amplicon family end-to-end and, on the same
-study, reference-based taxonomic profiling with MetaPhlAn.
-The scientific setting is the tomato rhizosphere in relation to
-resistance to bacterial wilt (\textit{Ralstonia}) and the heritability
-of community structure.
-% TODO: dataset, n, accessions, skill sequence, wall time from cases.md
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~1 panels: 16S diversity/taxonomy; MetaPhlAn composition;
-    genotype or resistance association.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig3-tomato.pdf}
-  \vspace{2.2em}}}
-  \caption{Tomato rhizosphere case.
-    16S pipeline products and MetaPhlAn profiles; association with
-    resistance or host genotype as implemented in the job.}
-  \label{fig:tomato}
-\end{figure}
-
-\subsection{Case 2: CRC case--control composition, function, and classification}
-\label{sec:case-crc}
-
-This case is the deep reference-based shotgun path: species profiles,
-community function, and a study-specific classifier trained on those
-tables.
-% TODO: n case/control, HUMAnN features, classifier and CV from the job.
-We will not claim a new CRC biomarker; we claim that the agent can
-produce a complete case--control functional and predictive analysis.
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~2 panels: MetaPhlAn composition; HUMAnN pathways;
-    classifier performance.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig4-crc.pdf}
-  \vspace{2.2em}}}
-  \caption{CRC case--control case.
-    Composition, functional profiles, and classifier metrics from the
-    completed job.}
-  \label{fig:crc}
-\end{figure}
-
-\subsection{Case 3: MAG recovery, composition, and metabolic potential}
-\label{sec:case-mag}
-
-This case is the assembly-based arm: MAG recovery (Aviary assemble /
-recover / annotate / cluster as actually run), community composition
-from MAG abundances or a complementary profiler, and metabolic
-potential from the annotation or reconstruction tools used in that job.
-% TODO: which of gapseq, EggNOG, Bakta, gutSMASH, antiSMASH were run.
-This family is the strongest test of long-running exec: assemble and
-recover do not finish inside a default chat timeout.
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~3 panels: MAG quality and taxonomy; composition;
-    metabolic overview.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig5-mag.pdf}
-  \vspace{2.2em}}}
-  \caption{MAG case.
-    Recovery quality, composition, and metabolic potential as produced
-    by the job.}
-  \label{fig:mag}
-\end{figure}
-
-\subsection{Robustness}
-\label{sec:robustness}
-
-% TODO: paraphrase / repeat / resume table from the server.
-Repeated or perturbed runs will be scored on task completion and on
-artifact-level checks, not on fluent explanation.
-
-\subsection{Ablation}
-\label{sec:ablation}
-
-% TODO: Table of component removed vs completion and interventions.
-The intended reading is that shipped skills, job isolation, and exec
-wake are necessary for full-pipeline coverage; the language model
-alone is not.
-
-\section{Discussion}
-\label{sec:discussion}
-
-``Full pipeline'' in this paper means that one agent can \emph{select
-and finish} a path through each analysis family, not that every
-optional skill runs in every study.
-Human confirmation of the plan is part of the execution model.
-The compute and reference-database burden remains that of the
-underlying tools.
-Workflow managers remain preferable when the same DAG must be replayed
-identically at scale; the agent is aimed at heterogeneous,
-study-specific paths that cross families.
-% TODO: residual risk of invented paths; what supervision still requires.
-
-\section{Availability}
+\subsection{Availability}
 \label{sec:availability}
 
-The plugin, skills, conda recipes, and the pinned OpenClaw exec-wake
-patch live in the openclaw-microbiome repository.
+MicroBioAgent---skills, conda recipes, and the pinned OpenClaw
+exec-wake patch---lives in the openclaw-microbiome repository.
 % TODO: URL, license, archived case jobs and prompts as data allow.
 
 \printbibliography
