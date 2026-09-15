@@ -85,27 +85,48 @@ Methods. Implementation detail does not appear before the cases.
 
 ### 3.1 Introduction (includes related work)
 
-**Central claim.** We present MicroBioAgent as a microbiome analysis agent
-with four integrated capabilities: broad end-to-end analysis across 16S,
-reference-based shotgun and assembly/MAG routes with downstream annotation;
-goal- and evidence-guided composition of step-level skills rather than a
-predefined whole-analysis DAG; local execution of upstream and downstream
-computational steps; and an asynchronous workflow that allows user feedback
-while a long-running step continues. These are the work's contributions. Case
-studies and interaction traces provide evidence for their realized scope.
+**Problem solved.** Microbiome researchers face a tension between standardized
+workflows and study-specific analysis. A fixed whole-analysis pipeline is
+reproducible but prespecifies the route; an unconstrained agent is flexible but
+must still execute heterogeneous, multi-hour bioinformatics tools reliably.
+In practice, the software ecosystem is distributed across command-line tools,
+programming languages, runtime environments, file formats and reference
+databases. Turning their separate outputs into a coherent biological analysis
+therefore demands both computational proficiency and microbiome domain
+knowledge, creating a substantial entry barrier.
+MicroBioAgent addresses this tension by preserving standardization at the
+**step level** while allowing the agent to compose and revise the
+**study-level workflow**. It applies this model across the upstream and
+downstream stages of 16S, reference-based shotgun and assembly/MAG analysis,
+runs sequencing-data computation locally, and remains open to user guidance
+during long-running steps.
+
+**Why it matters.** The system is intended to let a researcher move from a
+biological question and sequencing data to inspectable taxonomic, functional
+and genome-resolved outputs without first engineering a complete pipeline for
+that study or manually coordinating every command, environment, database and
+file hand-off. It organizes fragmented tool knowledge and intermediate results
+into one goal-directed analysis process. Local execution keeps raw reads
+within the user's computational environment, while mid-analysis feedback lets
+the researcher retain control over decisions that arise after computation has
+begun. The practical significance is a lower operational barrier to
+microbiome analysis, especially for researchers with biological expertise but
+limited programming experience, while preserving inspectable steps and human
+scientific judgement.
 
 Use **five connected paragraphs**, without a separate `Related work`
-subsection. Aim for roughly 650–850 words in the eventual Introduction;
-give the biological and computational motivation more space than software
-implementation details.
+subsection. Aim for roughly 700–900 words in the eventual Introduction. Follow
+the same argumentative discipline as MetaClaw's Introduction—domain problem,
+existing solutions, precise unresolved problem, needed operating model, and
+contributions—while making our unresolved problem and contribution distinct.
 
 | Paragraph | Argument and content | Evidence / citation role | Transition |
 |-----------|----------------------|--------------------------|------------|
-| **1. Biological question and heterogeneous data** | Microbiome research links community composition, genes, pathways and genome-resolved metabolic potential to phenotype or environment. Assay and question determine different paths: 16S amplicon, reference-based shotgun, and assembly-based shotgun/MAG. These are complementary, not interchangeable. Mention representative outputs (ASVs and diversity; species, genes and pathways; MAGs and metabolic annotation), not a long tool list. | Cite authoritative amplicon, read-based and MAG workflow papers (QIIME 2, bioBakery, metaWRAP/Aviary, as appropriate). | One scientific question can require decisions and artifact handoffs across these paths. |
-| **2. Computational landscape, stated neutrally** | Explain that amplicon, read-based shotgun and assembly/MAG analyses have mature, specialized tools, and that workflow managers can execute specified pipelines reproducibly. This paragraph establishes what the field can already do and why the three routes have distinct inputs, references and outputs. Do **not** present routine path selection, configuration, intermediate-product checks or failure recovery as an established shortcoming of prior *agents*: several already automate those decisions. | Cite QIIME 2, bioBakery, MAG workflow(s), Snakemake/Nextflow concisely. | Once the established tool landscape is clear, turn to agent systems that coordinate it. |
-| **3. Bio-agent progress and nearest neighbour** | AutoBA and Biomni already plan and execute biological analyses; Biomni includes microbiome tasks on existing tables. BioAgents and newer benchmarks show an expanding field. Discuss independently developed MetaClaw as the closest microbiome neighbour: it also uses an agent/skill/job approach and reports amplicon and shotgun capabilities, with a different execution split between FlowHub and local components. State what each work *demonstrates*, not what it supposedly cannot do. | Primary AutoBA, Biomni, BioAgents and MetaClaw references; use the version of the MetaClaw preprint checked at submission. One compact paragraph, no catalogue of product features. | These systems establish the field; now state the distinct contribution of this work. |
-| **4. MicroBioAgent: four integrated contributions** | State affirmatively that MicroBioAgent **(i)** supports end-to-end 16S, reference-based shotgun and de novo/MAG analysis plus downstream taxonomic, gene, pathway and metabolism-related annotation; **(ii)** constructs a study-specific analysis plan by selecting and connecting step-level skills, verifies each step's products, and can revise remaining steps instead of submitting every study to a fixed end-to-end workflow or predefined DAG; **(iii)** executes sequencing-data computation locally with user-configured reference resources, allowing raw reads to remain on a user-controlled machine; and **(iv)** supports mid-analysis user feedback through background execution, turn yielding, plan revision and automatic completion wake. Give one concrete feedback example: while step A runs, the user changes a pending step B; the agent updates the plan and uses the new instruction after A finishes. Explain that this is a combined system contribution, without claiming each individual capability is unprecedented. | Ground all four in this repository's skill granularity, runtime configuration, workspace instructions and patch pack. The clear architectural contrast with MetaClaw is agent-directed local execution of individual upstream steps rather than submission to registered FlowHub workflows; do not assert that MetaClaw cannot receive messages. | The contribution motivates the paper's demonstrations. |
-| **5. Evidence and scope** | State that three case studies demonstrate the three analysis routes and identify the outputs and study-specific skill sequences actually produced. If intervention traces are available, state that they demonstrate user feedback during a long-running step and the subsequent plan change. Close by returning to the four contributions, without presenting them as hypotheses awaiting confirmation. Keep protocol and metrics for Results/Methods. | Match each empirical statement to cloud job records; distinguish implemented annotation skills from those exercised in the cases. | End Introduction; no detailed Methods or case-study biology. |
+| **1. Why microbiome analysis is difficult and hard to enter** | Begin with the scientific goal: connecting microbial community structure and functional potential to phenotype or environment. Explain that 16S amplicon, reference-based shotgun and assembly/MAG routes answer different questions and produce different objects—ASVs and diversity, taxa/genes/pathways, or reconstructed genomes and metabolic potential. The corresponding tools are fragmented across command-line interfaces, languages, environments, file formats and databases. Selecting appropriate methods, executing them correctly and consolidating their outputs therefore requires programming ability together with microbiome and statistical knowledge. Studies may need one route or a study-specific combination, further raising the entry barrier. | Cite authoritative best-practice/workflow papers and empirical software papers that explicitly describe command-line learning curves, dependency complexity or fragmented resources. Use tool names only as examples. | The field has mature software for these stages, but accessibility and study-level coordination remain separate concerns. |
+| **2. What established tools and workflow systems solve—and their boundary** | QIIME 2, bioBakery and MAG toolkits provide validated domain methods; Snakemake/Nextflow and domain pipelines make predefined workflows reproducible and scalable. Graphical and web platforms improve access for particular analyses. A predefined workflow, however, assumes that a suitable complete route has already been selected and encoded, while graphical platforms generally expose a bounded collection of analyses. When a study crosses analysis families, changes direction after inspecting an intermediate result, or requires optional annotation, researchers still need to connect methods and interpret their outputs. Frame this as the boundary of predefined or bounded interfaces, not a defect in individual tools. | Cite QIIME 2, bioBakery, metaWRAP/Aviary, workflow managers and one suitable accessibility-oriented microbiome platform paper. | LLM agents offer a way to lower the interface barrier while making study-level orchestration adaptive. |
+| **3. What bio-agents already solve—and the remaining problem** | AutoBA, Biomni and other bio-agents demonstrate planning, code/tool execution and error recovery. Biomni also evaluates microbiome tasks. MetaClaw, developed independently from this project, is the nearest system: it demonstrates auditable end-to-end metagenomic study reproduction using registered FlowHub workflows upstream and customizable local skills downstream. These works establish that agents can execute bioinformatics; our problem is narrower: no fixed upstream/downstream split or registered whole-analysis flow should determine the study path, and the conversational agent should remain controllable while its local tools run for hours. Do not claim that prior agents cannot plan, cannot run end to end, or cannot receive messages. | Cite primary AutoBA, Biomni, BioAgents and the latest MetaClaw version. Describe MetaClaw's reported architecture and evaluation accurately. | Convert the comparison into the operating model the field needs. |
+| **4. The needed operating model and its practical significance** | Use the key sentence: **“What is needed is not another fixed microbiome pipeline, but an accessible and adaptive execution layer that standardizes individual analytical steps while organizing fragmented tools and outputs into a study-level workflow guided by the research goal, available data and verified intermediate results.”** Then add two requirements: sequencing computation and databases can remain local; long-running execution must not close the window for scientific supervision. Explain the concrete benefit: a researcher can express the biological objective instead of first authoring a complete DAG or manually translating between every tool, retain raw data in the local environment, inspect the resulting artifacts, and redirect pending analysis when new observations or priorities arise. This paragraph carries the paper's significance. | Support the entry-barrier premise with literature, then present the operating model as the paper's synthesis. Avoid “first,” “only,” “most comprehensive,” “template-free,” and guaranteed-security language. | Introduce MicroBioAgent as the implementation of this operating model. |
+| **5. What we contribute** | Present MicroBioAgent and four linked technical contributions: **(i) analytical breadth**, covering upstream and downstream 16S, reference-based shotgun and de novo/MAG routes plus taxonomic, gene, pathway and metabolism-related annotation; **(ii) adaptive composition**, selecting, connecting, checking and revising step-level skills without a predefined whole-analysis DAG; **(iii) local execution**, resolving user-owned runtimes and references so sequencing-data computation can remain local; and **(iv) asynchronous human guidance**, allowing user feedback while a long step runs and automatically resuming after completion. State their combined user-facing consequence: the agent converts a biological objective into an inspectable end-to-end process and thereby lowers the computational and operational barrier to microbiome analysis. End with the three case studies as demonstrations of the implemented scope; mention interaction traces only if they exist. | Ground contributions in repository components and match case statements to cloud records. Keep implementation details and evaluation metrics out of Introduction. | End with the practical result: broader access to study-specific microbiome analysis without hiding the analytical steps or removing human scientific judgement. |
 
 **Claim boundaries for drafting.** `skills/` contains 16S, shotgun profiling,
 assembly/MAG, gene/pathway, primary-metabolism-related and secondary-metabolism
@@ -117,6 +138,13 @@ does use standardized step-level skills and, for some steps, reference scripts;
 these provide tool contracts and execution guidance while the agent chooses,
 connects and revises the study-specific sequence. Do not call the system
 “template-free.”
+“Lowers the barrier” is supported mechanistically by natural-language goal
+specification, agent-generated plans, runtime/reference resolution, command
+execution, artifact checks and result organization. Use “substantially” or
+“greatly lowers” only if a usability comparison measures time, successful task
+completion or required programming interventions against an appropriate
+baseline. The system assists with domain decisions and synthesis; it does not
+remove the need for biological interpretation and study-design judgement.
 `gapseq`, KEGG/MetaCyc and BGC tools support metabolism-related inference and
 annotation, not direct measurement of metabolite concentrations. Local tool
 execution supports keeping reads local, but remote model providers and API
