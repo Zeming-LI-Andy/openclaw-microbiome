@@ -86,12 +86,13 @@ Methods. Implementation detail does not appear before the cases.
 ### 3.1 Introduction (includes related work)
 
 **Central claim.** We present MicroBioAgent as a microbiome analysis agent
-with three integrated capabilities: broad end-to-end analysis across 16S,
+with four integrated capabilities: broad end-to-end analysis across 16S,
 reference-based shotgun and assembly/MAG routes with downstream annotation;
-local execution of upstream and downstream computational steps; and an
-asynchronous workflow that allows user feedback while a long-running step
-continues. These are the work's contributions. Case studies and interaction
-traces provide evidence for their realized scope.
+goal- and evidence-guided composition of step-level skills rather than a
+predefined whole-analysis DAG; local execution of upstream and downstream
+computational steps; and an asynchronous workflow that allows user feedback
+while a long-running step continues. These are the work's contributions. Case
+studies and interaction traces provide evidence for their realized scope.
 
 Use **five connected paragraphs**, without a separate `Related work`
 subsection. Aim for roughly 650–850 words in the eventual Introduction;
@@ -103,13 +104,19 @@ implementation details.
 | **1. Biological question and heterogeneous data** | Microbiome research links community composition, genes, pathways and genome-resolved metabolic potential to phenotype or environment. Assay and question determine different paths: 16S amplicon, reference-based shotgun, and assembly-based shotgun/MAG. These are complementary, not interchangeable. Mention representative outputs (ASVs and diversity; species, genes and pathways; MAGs and metabolic annotation), not a long tool list. | Cite authoritative amplicon, read-based and MAG workflow papers (QIIME 2, bioBakery, metaWRAP/Aviary, as appropriate). | One scientific question can require decisions and artifact handoffs across these paths. |
 | **2. Computational landscape, stated neutrally** | Explain that amplicon, read-based shotgun and assembly/MAG analyses have mature, specialized tools, and that workflow managers can execute specified pipelines reproducibly. This paragraph establishes what the field can already do and why the three routes have distinct inputs, references and outputs. Do **not** present routine path selection, configuration, intermediate-product checks or failure recovery as an established shortcoming of prior *agents*: several already automate those decisions. | Cite QIIME 2, bioBakery, MAG workflow(s), Snakemake/Nextflow concisely. | Once the established tool landscape is clear, turn to agent systems that coordinate it. |
 | **3. Bio-agent progress and nearest neighbour** | AutoBA and Biomni already plan and execute biological analyses; Biomni includes microbiome tasks on existing tables. BioAgents and newer benchmarks show an expanding field. Discuss independently developed MetaClaw as the closest microbiome neighbour: it also uses an agent/skill/job approach and reports amplicon and shotgun capabilities, with a different execution split between FlowHub and local components. State what each work *demonstrates*, not what it supposedly cannot do. | Primary AutoBA, Biomni, BioAgents and MetaClaw references; use the version of the MetaClaw preprint checked at submission. One compact paragraph, no catalogue of product features. | These systems establish the field; now state the distinct contribution of this work. |
-| **4. MicroBioAgent: three integrated contributions** | State affirmatively that MicroBioAgent **(i)** supports end-to-end 16S, reference-based shotgun and de novo/MAG analysis plus downstream taxonomic, gene, pathway and metabolism-related annotation; **(ii)** executes sequencing-data computation locally with user-configured reference resources, allowing raw reads to remain on a user-controlled machine; and **(iii)** supports mid-analysis user feedback through stepwise background execution, turn yielding, plan revision and automatic completion wake. Give one concrete feedback example: while step A runs, the user changes a pending step B; the agent updates the plan and uses the new instruction after A finishes. Explain that this is a combined system contribution, without claiming each individual capability is unprecedented. | Ground all three in this repository's skills, runtime configuration, workspace instructions and patch pack. The clear architectural contrast with MetaClaw is local upstream execution versus FlowHub submission; do not assert that MetaClaw cannot receive messages. | The contribution motivates the paper's demonstrations. |
-| **5. Evidence and scope** | State that three case studies demonstrate the three analysis routes and identify the outputs actually produced. If intervention traces are available, state that they demonstrate user feedback during a long-running step and the subsequent plan change. Close by returning to the three contributions, without presenting them as hypotheses awaiting confirmation. Keep protocol and metrics for Results/Methods. | Match each empirical statement to cloud job records; distinguish implemented annotation skills from those exercised in the cases. | End Introduction; no detailed Methods or case-study biology. |
+| **4. MicroBioAgent: four integrated contributions** | State affirmatively that MicroBioAgent **(i)** supports end-to-end 16S, reference-based shotgun and de novo/MAG analysis plus downstream taxonomic, gene, pathway and metabolism-related annotation; **(ii)** constructs a study-specific analysis plan by selecting and connecting step-level skills, verifies each step's products, and can revise remaining steps instead of submitting every study to a fixed end-to-end workflow or predefined DAG; **(iii)** executes sequencing-data computation locally with user-configured reference resources, allowing raw reads to remain on a user-controlled machine; and **(iv)** supports mid-analysis user feedback through background execution, turn yielding, plan revision and automatic completion wake. Give one concrete feedback example: while step A runs, the user changes a pending step B; the agent updates the plan and uses the new instruction after A finishes. Explain that this is a combined system contribution, without claiming each individual capability is unprecedented. | Ground all four in this repository's skill granularity, runtime configuration, workspace instructions and patch pack. The clear architectural contrast with MetaClaw is agent-directed local execution of individual upstream steps rather than submission to registered FlowHub workflows; do not assert that MetaClaw cannot receive messages. | The contribution motivates the paper's demonstrations. |
+| **5. Evidence and scope** | State that three case studies demonstrate the three analysis routes and identify the outputs and study-specific skill sequences actually produced. If intervention traces are available, state that they demonstrate user feedback during a long-running step and the subsequent plan change. Close by returning to the four contributions, without presenting them as hypotheses awaiting confirmation. Keep protocol and metrics for Results/Methods. | Match each empirical statement to cloud job records; distinguish implemented annotation skills from those exercised in the cases. | End Introduction; no detailed Methods or case-study biology. |
 
 **Claim boundaries for drafting.** `skills/` contains 16S, shotgun profiling,
 assembly/MAG, gene/pathway, primary-metabolism-related and secondary-metabolism
 annotation skills. The Introduction may describe this *implemented scope*;
 Results must separately say which skills actually ran in the cloud cases.
+“Not dependent on a fixed workflow/template” means that MicroBioAgent does not
+require one predefined **whole-analysis** pipeline, DAG or study template. It
+does use standardized step-level skills and, for some steps, reference scripts;
+these provide tool contracts and execution guidance while the agent chooses,
+connects and revises the study-specific sequence. Do not call the system
+“template-free.”
 `gapseq`, KEGG/MetaCyc and BGC tools support metabolism-related inference and
 annotation, not direct measurement of metabolite concentrations. Local tool
 execution supports keeping reads local, but remote model providers and API
@@ -123,16 +130,17 @@ require session-level evidence.
 
 > Existing biological agents demonstrate planning and execution, while
 > MetaClaw demonstrates auditable metagenomic workflows with cloud-based
-> upstream processing. We present MicroBioAgent, which integrates local
-> execution of upstream and downstream analyses across amplicon,
-> reference-based shotgun and genome-resolved routes with an asynchronous
-> workflow that accepts user feedback while long-running steps continue in
-> the background.
+> upstream processing. We present MicroBioAgent, which composes step-level
+> skills into study-specific analyses rather than relying on a predefined
+> whole-analysis workflow, executes both upstream and downstream steps locally
+> across amplicon, reference-based shotgun and genome-resolved routes, and
+> accepts user feedback while long-running steps continue in the background.
 
 This sentence states what **this work contributes**. It does not assert that no
-other system implements any individual capability. The concrete distinction
-from MetaClaw is local execution of the upstream steps rather than submission
-to FlowHub; whether the feedback loop also differentiates them must be shown
+other system implements any individual capability. The concrete distinctions
+from MetaClaw are the agent-directed composition and local execution of
+individual upstream steps rather than submission to registered FlowHub
+workflows. Whether the feedback loop also differentiates them must be shown
 through implementation and interaction traces, not inferred from omission in
 a paper.
 

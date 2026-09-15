@@ -1,0 +1,175 @@
+{"kind":"deck","id":"pr/5kg4oo","name":"Deck"}
+{"kind":"layout","layoutId":"a1915a92-facf-4b2f-866e-0ffb640e18bf","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"4e3766a9-59d2-44b2-b287-fcfcaaa4680c","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/sbr81n","slide":1,"title":"a","textShapes":95}
+{"kind":"shape","id":"sh/6dobm90z","slide":1,"bbox":[18,18,382,694]}
+{"kind":"textbox","id":"sh/t0fuxozq","slide":1,"text":"a","textPreview":"a","textChars":1,"textLines":1,"bbox":[30,22,30,40]}
+{"kind":"textbox","id":"sh/sz6toji5","slide":1,"text":"Agent orchestration","textPreview":"Agent orchestration","textChars":19,"textLines":1,"bbox":[66,22,324,40]}
+{"kind":"shape","id":"sh/f2xczyhw","slide":1,"bbox":[414,18,420,694]}
+{"kind":"textbox","id":"sh/e1obqtgb","slide":1,"text":"b","textPreview":"b","textChars":1,"textLines":1,"bbox":[426,22,30,40]}
+{"kind":"textbox","id":"sh/14zu18zm","slide":1,"text":"Dynamic resource selection","textPreview":"Dynamic resource selection","textChars":26,"textLines":1,"bbox":[462,22,362,40]}
+{"kind":"shape","id":"sh/g36ts3y1","slide":1,"bbox":[844,18,540,694]}
+{"kind":"textbox","id":"sh/v6dsnuhc","slide":1,"text":"c","textPreview":"c","textChars":1,"textLines":1,"bbox":[856,22,30,40]}
+{"kind":"textbox","id":"sh/u54bep0r","slide":1,"text":"Local end-to-end analysis","textPreview":"Local end-to-end analysis","textChars":25,"textLines":1,"bbox":[892,22,482,40]}
+{"kind":"shape","id":"sh/0jilwrip","slide":1,"bbox":[1394,18,428,694]}
+{"kind":"textbox","id":"sh/1krmpcza","slide":1,"text":"d","textPreview":"d","textChars":1,"textLines":1,"bbox":[1406,22,30,40]}
+{"kind":"textbox","id":"sh/eh03uh0j","slide":1,"text":"Results and provenance","textPreview":"Results and provenance","textChars":22,"textLines":1,"bbox":[1442,22,370,40]}
+{"kind":"shape","id":"sh/zi94nmh4","slide":1,"bbox":[30,72,168,626]}
+{"kind":"textbox","id":"sh/on250ri1","slide":1,"text":"User input","textPreview":"User input","textChars":10,"textLines":1,"bbox":[30,72,168,54]}
+{"kind":"textbox","id":"sh/98bmtwz6","slide":1,"text":"Q","textPreview":"Q","textChars":1,"textLines":1,"bbox":[43,145,34,34]}
+{"kind":"textbox","id":"sh/mlknyh0v","slide":1,"text":"Research\nquestion","textPreview":"Research | question","textChars":17,"textLines":2,"bbox":[83,132,106,76]}
+{"kind":"shape","id":"sh/nmt4rmhg","slide":1,"bbox":[44,223,140,0]}
+{"kind":"textbox","id":"sh/4rylonih","slide":1,"text":"R","textPreview":"R","textChars":1,"textLines":1,"bbox":[43,255,34,34]}
+{"kind":"textbox","id":"sh/ps7mhsz2","slide":1,"text":"Raw reads\n(FASTQ, etc.)","textPreview":"Raw reads | (FASTQ, etc.)","textChars":23,"textLines":2,"bbox":[83,242,106,76]}
+{"kind":"shape","id":"sh/58z2lorq","slide":1,"bbox":[44,333,140,0]}
+{"kind":"textbox","id":"sh/47q1sjal","slide":1,"text":"M","textPreview":"M","textChars":1,"textLines":1,"bbox":[43,387,34,34]}
+{"kind":"textbox","id":"sh/j6hkjet0","slide":1,"text":"Metadata\n(sample info,\nphenotypes, etc.)","textPreview":"Metadata | (sample info, | phenotypes, etc.)","textChars":40,"textLines":3,"bbox":[83,374,106,91]}
+{"kind":"shape","id":"sh/il8jq9sf","slide":1,"bbox":[44,465,140,0]}
+{"kind":"textbox","id":"sh/tcj2p8r2","slide":1,"text":"F","textPreview":"F","textChars":1,"textLines":1,"bbox":[43,553,34,34]}
+{"kind":"textbox","id":"sh/sba1w3ah","slide":1,"text":"User feedback\n(requests,\nclarifications, etc.)","textPreview":"User feedback | (requests, | clarifications, etc.)","textChars":46,"textLines":3,"bbox":[83,540,106,91]}
+{"kind":"shape","id":"sh/ra1kny9w","slide":1,"bbox":[208,72,180,626]}
+{"kind":"textbox","id":"sh/698jutsb","slide":1,"text":"OpenClaw\nagent workflow","textPreview":"OpenClaw | agent workflow","textChars":23,"textLines":2,"bbox":[215,74,166,62]}
+{"kind":"textbox","id":"sh/1gj2t8ry","slide":1,"text":"orchestration runtime\nwithin MicroBioAgent","textPreview":"orchestration runtime | within MicroBioAgent","textChars":42,"textLines":2,"bbox":[218,134,160,54]}
+{"kind":"textbox","id":"sh/gfal03ad","slide":1,"text":"Load workspace\nprompts","textPreview":"Load workspace | prompts","textChars":22,"textLines":2,"bbox":[216,190,164,60]}
+{"kind":"textbox","id":"sh/yl4zu58v","slide":1,"text":"AGENTS.md\nCODING.md\nTOOLS.md","textPreview":"AGENTS.md | CODING.md | TOOLS.md","textChars":28,"textLines":3,"bbox":[226,260,144,96]}
+{"kind":"textbox","id":"sh/zmdgna9g","slide":1,"text":"Create / reuse\njob","textPreview":"Create / reuse | job","textChars":18,"textLines":2,"bbox":[216,382,164,64]}
+{"kind":"textbox","id":"sh/0nmhwfq1","slide":1,"text":"Plan and reason","textPreview":"Plan and reason","textChars":15,"textLines":1,"bbox":[216,476,164,64]}
+{"kind":"textbox","id":"sh/lovypkrm","slide":1,"text":"Agent pipeline","textPreview":"Agent pipeline","textChars":14,"textLines":1,"bbox":[216,574,164,64]}
+{"kind":"shape","id":"sh/mp4zyp87","slide":1,"bbox":[298,250,0,10]}
+{"kind":"shape","id":"sh/nqdgraps","slide":1,"bbox":[298,356,0,26]}
+{"kind":"shape","id":"sh/8r6h0fqd","slide":1,"bbox":[298,446,0,30]}
+{"kind":"shape","id":"sh/9cfitk7i","slide":1,"bbox":[298,540,0,34]}
+{"kind":"shape","id":"sh/adoz2p83","slide":1,"bbox":[196,343,4,4]}
+{"kind":"shape","id":"sh/vex0vupo","slide":1,"bbox":[200,345,16,69]}
+{"kind":"shape","id":"sh/jy98zqdw","slide":1,"bbox":[432,72,384,310]}
+{"kind":"textbox","id":"sh/ix07qlwb","slide":1,"text":"Tool repository","textPreview":"Tool repository","textChars":15,"textLines":1,"bbox":[432,72,384,46]}
+{"kind":"textbox","id":"sh/50bq10vm","slide":1,"text":"16S","textPreview":"16S","textChars":3,"textLines":1,"bbox":[442,119,134,34]}
+{"kind":"textbox","id":"sh/kzipsve1","slide":1,"text":"QIIME 2, DADA2, PICRUSt2","textPreview":"QIIME 2, DADA2, PICRUSt2","textChars":24,"textLines":1,"bbox":[578,119,228,34]}
+{"kind":"shape","id":"sh/7mt83ads","slide":1,"bbox":[440,153,368,0]}
+{"kind":"textbox","id":"sh/6lk7u5w7","slide":1,"text":"Read-based","textPreview":"Read-based","textChars":10,"textLines":1,"bbox":[442,153,134,44]}
+{"kind":"textbox","id":"sh/tobqp0vy","slide":1,"text":"KneadData, MetaPhlAn,\nHUMAnN","textPreview":"KneadData, MetaPhlAn, | HUMAnN","textChars":28,"textLines":2,"bbox":[578,153,228,44]}
+{"kind":"shape","id":"sh/sn2pwfed","slide":1,"bbox":[440,197,368,0]}
+{"kind":"textbox","id":"sh/nqpor6do","slide":1,"text":"Assembly / MAG","textPreview":"Assembly / MAG","textChars":14,"textLines":1,"bbox":[442,197,134,34]}
+{"kind":"textbox","id":"sh/mpg7i1w3","slide":1,"text":"Aviary, CheckM2, GTDB-Tk","textPreview":"Aviary, CheckM2, GTDB-Tk","textChars":24,"textLines":1,"bbox":[578,197,228,34]}
+{"kind":"shape","id":"sh/cve5s7ul","slide":1,"bbox":[440,231,368,0]}
+{"kind":"textbox","id":"sh/dwnmlcb6","slide":1,"text":"Annotation","textPreview":"Annotation","textChars":10,"textLines":1,"bbox":[442,231,134,66]}
+{"kind":"textbox","id":"sh/q9wnqxcv","slide":1,"text":"eggNOG-mapper, Bakta,\nRGI, VFDB, gapseq,\nantiSMASH, gutSMASH","textPreview":"eggNOG-mapper, Bakta, | RGI, VFDB, gapseq, | antiSMASH, gutSMASH","textChars":60,"textLines":3,"bbox":[578,231,228,66]}
+{"kind":"shape","id":"sh/ba54j2tg","slide":1,"bbox":[440,297,368,0]}
+{"kind":"textbox","id":"sh/o7u5o7up","slide":1,"text":"Statistics &\nvisualization","textPreview":"Statistics & | visualization","textChars":26,"textLines":2,"bbox":[442,297,134,76]}
+{"kind":"textbox","id":"sh/p83mhcba","slide":1,"text":"MaAsLin 3, scikit-bio,\nggplot2, Matplotlib,\nPython, R","textPreview":"MaAsLin 3, scikit-bio, | ggplot2, Matplotlib, | Python, R","textChars":53,"textLines":3,"bbox":[578,297,228,76]}
+{"kind":"textbox","id":"sh/25cnmxcj","slide":1,"text":"Dynamic tool and\ndatabase selection","textPreview":"Dynamic tool and | database selection","textChars":35,"textLines":2,"bbox":[556,386,182,48]}
+{"kind":"shape","id":"sh/36l4f2t4","slide":1,"bbox":[432,438,384,260]}
+{"kind":"textbox","id":"sh/83y50rut","slide":1,"text":"Reference database repository","textPreview":"Reference database repository","textChars":29,"textLines":1,"bbox":[432,438,384,43]}
+{"kind":"textbox","id":"sh/9476twbe","slide":1,"text":"SILVA","textPreview":"SILVA","textChars":5,"textLines":1,"bbox":[450,486,348,24]}
+{"kind":"textbox","id":"sh/hk3mdw3i","slide":1,"text":"MetaPhlAn / ChocoPhlAn","textPreview":"MetaPhlAn / ChocoPhlAn","textChars":22,"textLines":1,"bbox":[450,512,348,24]}
+{"kind":"textbox","id":"sh/wju5krmx","slide":1,"text":"HUMAnN ChocoPhlAn / UniRef","textPreview":"HUMAnN ChocoPhlAn / UniRef","textChars":26,"textLines":1,"bbox":[450,538,348,24]}
+{"kind":"textbox","id":"sh/vil4bmls","slide":1,"text":"EggNOG","textPreview":"EggNOG","textChars":6,"textLines":1,"bbox":[450,564,348,24]}
+{"kind":"textbox","id":"sh/uhcnih47","slide":1,"text":"GTDB / CheckM2","textPreview":"GTDB / CheckM2","textChars":14,"textLines":1,"bbox":[450,590,348,24]}
+{"kind":"textbox","id":"sh/9g3m9c3m","slide":1,"text":"CARD / VFDB / Bakta","textPreview":"CARD / VFDB / Bakta","textChars":19,"textLines":1,"bbox":[450,616,348,24]}
+{"kind":"textbox","id":"sh/8vu5g7m1","slide":1,"text":"KEGG / MetaCyc","textPreview":"KEGG / MetaCyc","textChars":14,"textLines":1,"bbox":[450,642,348,24]}
+{"kind":"textbox","id":"sh/7u147mlg","slide":1,"text":"gapseq / antiSMASH / gutSMASH","textPreview":"gapseq / antiSMASH / gutSMASH","textChars":29,"textLines":1,"bbox":[450,668,348,24]}
+{"kind":"shape","id":"sh/mts3eh4v","slide":1,"bbox":[430,576,4,4]}
+{"kind":"shape","id":"sh/lsjm5c3a","slide":1,"bbox":[380,578,50,28]}
+{"kind":"shape","id":"sh/kralc7m5","slide":1,"bbox":[400,421,432,0]}
+{"kind":"shape","id":"sh/ax8j6dkn","slide":1,"bbox":[816,421,28,0]}
+{"kind":"shape","id":"sh/byhkfi18","slide":1,"bbox":[856,72,516,160]}
+{"kind":"shape","id":"sh/czq18n2t","slide":1,"bbox":[892,89,66,68]}
+{"kind":"textbox","id":"sh/x0z2h8je","slide":1,"text":"●","textPreview":"●","textChars":1,"textLines":1,"bbox":[914,111,20,20]}
+{"kind":"textbox","id":"sh/2tojitkr","slide":1,"text":"User-controlled\ninfrastructure","textPreview":"User-controlled | infrastructure","textChars":30,"textLines":2,"bbox":[864,166,144,52]}
+{"kind":"shape","id":"sh/nuxkby1c","slide":1,"bbox":[1032,95,80,43.52]}
+{"kind":"shape","id":"sh/ov61k32x","slide":1,"bbox":[1072,137.88,0,12.8]}
+{"kind":"shape","id":"sh/pwz2d8j2","slide":1,"bbox":[1056,150.68,32,0]}
+{"kind":"textbox","id":"sh/e5ojetkf","slide":1,"text":"Local tools\nand databases","textPreview":"Local tools | and databases","textChars":25,"textLines":2,"bbox":[1008,166,126,52]}
+{"kind":"shape","id":"sh/fqx07y10","slide":1,"bbox":[1210,92,70,68]}
+{"kind":"textbox","id":"sh/3uhcv6h8","slide":1,"text":"L","textPreview":"L","textChars":1,"textLines":1,"bbox":[1260,134,28,28]}
+{"kind":"textbox","id":"sh/it8vm10n","slide":1,"text":"Raw sequencing\ndata remain local","textPreview":"Raw sequencing | data remain local","textChars":32,"textLines":2,"bbox":[1172,166,142,52]}
+{"kind":"shape","id":"sh/5gzuxwzy","slide":1,"bbox":[856,244,516,132]}
+{"kind":"textbox","id":"sh/4vqdobit","slide":1,"text":"16S amplicon","textPreview":"16S amplicon","textChars":12,"textLines":1,"bbox":[868,249,492,34]}
+{"kind":"textbox","id":"sh/vqhcrmhw","slide":1,"text":"QC","textPreview":"QC","textChars":2,"textLines":1,"bbox":[874,294,58,70]}
+{"kind":"textbox","id":"sh/up8bih0b","slide":1,"text":"ASV\ninference","textPreview":"ASV | inference","textChars":13,"textLines":2,"bbox":[946,294,84,70]}
+{"kind":"textbox","id":"sh/hszutwz2","slide":1,"text":"Taxonomy","textPreview":"Taxonomy","textChars":8,"textLines":1,"bbox":[1044,294,82,70]}
+{"kind":"textbox","id":"sh/grqdkrih","slide":1,"text":"Phylogeny &\ndiversity","textPreview":"Phylogeny & | diversity","textChars":21,"textLines":2,"bbox":[1140,294,104,70]}
+{"kind":"textbox","id":"sh/fm1c3qhg","slide":1,"text":"Functional\nprediction","textPreview":"Functional | prediction","textChars":21,"textLines":2,"bbox":[1258,294,96,70]}
+{"kind":"shape","id":"sh/elsvul0v","slide":1,"bbox":[932,329,14,0]}
+{"kind":"shape","id":"sh/wrm9onyd","slide":1,"bbox":[1030,329,14,0]}
+{"kind":"shape","id":"sh/xsvaxsfy","slide":1,"bbox":[1126,329,14,0]}
+{"kind":"shape","id":"sh/a5krmdg7","slide":1,"bbox":[1244,329,14,0]}
+{"kind":"shape","id":"sh/b6dsvixs","slide":1,"bbox":[856,390,516,146]}
+{"kind":"textbox","id":"sh/kvm9sny9","slide":1,"text":"Reference-based metagenomics","textPreview":"Reference-based metagenomics","textChars":28,"textLines":1,"bbox":[868,395,492,34]}
+{"kind":"textbox","id":"sh/lwva1sfu","slide":1,"text":"QC & host\ndepletion","textPreview":"QC & host | depletion","textChars":19,"textLines":2,"bbox":[879.5,440,94,84]}
+{"kind":"textbox","id":"sh/yt4rqdg3","slide":1,"text":"Taxonomic\nprofiling","textPreview":"Taxonomic | profiling","textChars":19,"textLines":2,"bbox":[987.5,440,103,84]}
+{"kind":"textbox","id":"sh/judszixo","slide":1,"text":"Gene families\n& pathways","textPreview":"Gene families | & pathways","textChars":24,"textLines":2,"bbox":[1104.5,440,118,84]}
+{"kind":"textbox","id":"sh/8z69w7yl","slide":1,"text":"Statistics &\nvisualization","textPreview":"Statistics & | visualization","textChars":26,"textLines":2,"bbox":[1236.5,440,112,84]}
+{"kind":"shape","id":"sh/t0fa5cfq","slide":1,"bbox":[973.5,482,14,0]}
+{"kind":"shape","id":"sh/e9wnutwj","slide":1,"bbox":[1090.5,482,14,0]}
+{"kind":"shape","id":"sh/za54nyx4","slide":1,"bbox":[1222.5,482,14,0]}
+{"kind":"shape","id":"sh/0be5w3ep","slide":1,"bbox":[856,550,516,148]}
+{"kind":"textbox","id":"sh/1wn6p8fa","slide":1,"text":"Assembly-based metagenomics","textPreview":"Assembly-based metagenomics","textChars":27,"textLines":1,"bbox":[868,555,492,34]}
+{"kind":"textbox","id":"sh/mxwnydwv","slide":1,"text":"QC","textPreview":"QC","textChars":2,"textLines":1,"bbox":[866,600,45,86]}
+{"kind":"textbox","id":"sh/ny5orixg","slide":1,"text":"Assembly","textPreview":"Assembly","textChars":8,"textLines":1,"bbox":[925,600,84,86]}
+{"kind":"textbox","id":"sh/oze50nel","slide":1,"text":"Binning / MAG\nreconstruction","textPreview":"Binning / MAG | reconstruction","textChars":28,"textLines":2,"bbox":[1023,600,130,86]}
+{"kind":"textbox","id":"sh/90n6t8f6","slide":1,"text":"Quality &\ntaxonomy","textPreview":"Quality & | taxonomy","textChars":18,"textLines":2,"bbox":[1167,600,78,86]}
+{"kind":"textbox","id":"sh/a1gn2dwr","slide":1,"text":"Gene / metabolic /\nBGC annotation","textPreview":"Gene / metabolic / | BGC annotation","textChars":33,"textLines":2,"bbox":[1259,600,103,86]}
+{"kind":"shape","id":"sh/b2povixc","slide":1,"bbox":[911,643,14,0]}
+{"kind":"shape","id":"sh/58byhg3q","slide":1,"bbox":[1009,643,14,0]}
+{"kind":"shape","id":"sh/472h8b25","slide":1,"bbox":[1153,643,14,0]}
+{"kind":"shape","id":"sh/j6tgf6lk","slide":1,"bbox":[1245,643,14,0]}
+{"kind":"shape","id":"sh/i50z61kz","slide":1,"bbox":[818,205,5,5]}
+{"kind":"shape","id":"sh/tcbilg3m","slide":1,"bbox":[846,205,5,5]}
+{"kind":"shape","id":"sh/sb2hcv2h","slide":1,"bbox":[823,207.5,23,0]}
+{"kind":"shape","id":"sh/ratgjqlw","slide":1,"bbox":[1412,72,392,326]}
+{"kind":"textbox","id":"sh/69kzalkb","slide":1,"text":"User-facing results","textPreview":"User-facing results","textChars":19,"textLines":1,"bbox":[1412,72,392,54]}
+{"kind":"textbox","id":"sh/10vip0jy","slide":1,"text":"F","textPreview":"F","textChars":1,"textLines":1,"bbox":[1438,137,51,51]}
+{"kind":"textbox","id":"sh/gzmhgv2d","slide":1,"text":"Figures","textPreview":"Figures","textChars":7,"textLines":1,"bbox":[1499,132,281,61]}
+{"kind":"shape","id":"sh/0ju1czap","slide":1,"bbox":[1430,193,356,0]}
+{"kind":"textbox","id":"sh/1432l4ra","slide":1,"text":"T","textPreview":"T","textChars":1,"textLines":1,"bbox":[1438,201,51,51]}
+{"kind":"textbox","id":"sh/ehcja9sj","slide":1,"text":"Tables","textPreview":"Tables","textChars":6,"textLines":1,"bbox":[1499,196,281,61]}
+{"kind":"shape","id":"sh/zilkju94","slide":1,"bbox":[1430,257,356,0]}
+{"kind":"textbox","id":"sh/o7u1gjal","slide":1,"text":"R","textPreview":"R","textChars":1,"textLines":1,"bbox":[1438,265,51,51]}
+{"kind":"textbox","id":"sh/9832por6","slide":1,"text":"Reports","textPreview":"Reports","textChars":7,"textLines":1,"bbox":[1499,260,281,61]}
+{"kind":"shape","id":"sh/m5cje9sf","slide":1,"bbox":[1430,321,356,0]}
+{"kind":"textbox","id":"sh/n6lkne90","slide":1,"text":"I","textPreview":"I","textChars":1,"textLines":1,"bbox":[1438,329,51,51]}
+{"kind":"textbox","id":"sh/4ba14fah","slide":1,"text":"Biological interpretation","textPreview":"Biological interpretation","textChars":25,"textLines":1,"bbox":[1499,324,281,61]}
+{"kind":"shape","id":"sh/pcjidkr2","slide":1,"bbox":[1412,412,392,286]}
+{"kind":"textbox","id":"sh/76p4jitk","slide":1,"text":"Reproducibility record","textPreview":"Reproducibility record","textChars":22,"textLines":1,"bbox":[1412,412,392,52]}
+{"kind":"textbox","id":"sh/65gnadcz","slide":1,"text":"D","textPreview":"D","textChars":1,"textLines":1,"bbox":[1438,475,33,33]}
+{"kind":"textbox","id":"sh/t8rmlsba","slide":1,"text":"Intermediate files","textPreview":"Intermediate files","textChars":18,"textLines":1,"bbox":[1481,470,299,43]}
+{"kind":"shape","id":"sh/s7y5cnu5","slide":1,"bbox":[1430,513,356,0]}
+{"kind":"textbox","id":"sh/j2p4fit8","slide":1,"text":"</>","textPreview":"</>","textChars":3,"textLines":1,"bbox":[1438,520,33,33]}
+{"kind":"textbox","id":"sh/y1g36dcn","slide":1,"text":"Generated code","textPreview":"Generated code","textChars":14,"textLines":1,"bbox":[1481,515,299,43]}
+{"kind":"shape","id":"sh/l47mhsbe","slide":1,"bbox":[1430,558,356,0]}
+{"kind":"textbox","id":"sh/k3yl8nut","slide":1,"text":"P","textPreview":"P","textChars":1,"textLines":1,"bbox":[1438,565,33,33]}
+{"kind":"textbox","id":"sh/by54bytc","slide":1,"text":"Parameters","textPreview":"Parameters","textChars":10,"textLines":1,"bbox":[1481,560,299,43]}
+{"kind":"shape","id":"sh/adw32tcr","slide":1,"bbox":[1430,603,356,0]}
+{"kind":"textbox","id":"sh/qlg7618b","slide":1,"text":"L","textPreview":"L","textChars":1,"textLines":1,"bbox":[1438,610,33,33]}
+{"kind":"textbox","id":"sh/b698f6pw","slide":1,"text":"Logs","textPreview":"Logs","textChars":4,"textLines":1,"bbox":[1481,605,299,43]}
+{"kind":"shape","id":"sh/c7ip8bqh","slide":1,"bbox":[1430,648,356,0]}
+{"kind":"textbox","id":"sh/d8rqhg72","slide":1,"text":"DB","textPreview":"DB","textChars":2,"textLines":1,"bbox":[1438,655,33,33]}
+{"kind":"textbox","id":"sh/2hg7218f","slide":1,"text":"Tool & database versions","textPreview":"Tool & database versions","textChars":24,"textLines":1,"bbox":[1481,650,299,43]}
+{"kind":"shape","id":"sh/3ip8bmp0","slide":1,"bbox":[1378,259,4,4]}
+{"kind":"shape","id":"sh/ojyp4rq5","slide":1,"bbox":[1408,259,4,4]}
+{"kind":"shape","id":"sh/pk7qdw7q","slide":1,"bbox":[1382,261,26,0]}
+{"kind":"shape","id":"sh/edw7eh83","slide":1,"bbox":[1378,589,4,4]}
+{"kind":"shape","id":"sh/fe587m9o","slide":1,"bbox":[1408,589,4,4]}
+{"kind":"shape","id":"sh/hkf2tovi","slide":1,"bbox":[1382,591,26,0]}
+{"kind":"shape","id":"sh/wj610jex","slide":1,"bbox":[294,731,1334,0]}
+{"kind":"shape","id":"sh/vidkredc","slide":1,"bbox":[294,638,0,93]}
+{"kind":"shape","id":"sh/uh4jy9wr","slide":1,"bbox":[284,628,20,18]}
+{"kind":"shape","id":"sh/9gv2p4v6","slide":1,"bbox":[1628,698,0,33]}
+{"kind":"textbox","id":"sh/8fm1wze1","slide":1,"text":"Human feedback during long-running analysis","textPreview":"Human feedback during long-running analysis","textChars":43,"textLines":1,"bbox":[688,711,536,38]}
+{"kind":"shape","id":"sh/7edknudg","slide":1,"bbox":[24,756,1792,80]}
+{"kind":"textbox","id":"sh/md4ju9wv","slide":1,"text":"Long-running task handoff and resumption","textPreview":"Long-running task handoff and resumption","textChars":40,"textLines":1,"bbox":[620,751,600,30]}
+{"kind":"textbox","id":"sh/lcv2l4va","slide":1,"text":"exec","textPreview":"exec","textChars":4,"textLines":1,"bbox":[304,789,242,36]}
+{"kind":"textbox","id":"sh/kbm1szep","slide":1,"text":"session_yield","textPreview":"session_yield","textChars":13,"textLines":1,"bbox":[610,789,276,36]}
+{"kind":"textbox","id":"sh/cv618zml","slide":1,"text":"user message or completion event","textPreview":"user message or completion event","textChars":32,"textLines":1,"bbox":[952,789,328,36]}
+{"kind":"textbox","id":"sh/dwz2h4n6","slide":1,"text":"resume","textPreview":"resume","textChars":6,"textLines":1,"bbox":[1346,789,242,36]}
+{"kind":"shape","id":"sh/qtoj6p4f","slide":1,"bbox":[326,798,16,16]}
+{"kind":"shape","id":"sh/buxkfu50","slide":1,"bbox":[632,797,7,7]}
+{"kind":"shape","id":"sh/or614fmp","slide":1,"bbox":[643,802,7,7]}
+{"kind":"shape","id":"sh/psf2dknu","slide":1,"bbox":[632,807,7,7]}
+{"kind":"textbox","id":"sh/25oj2p4j","slide":1,"text":"M","textPreview":"M","textChars":1,"textLines":1,"bbox":[969,796,22,22]}
+{"kind":"textbox","id":"sh/36xkbu54","slide":1,"text":"R","textPreview":"R","textChars":1,"textLines":1,"bbox":[1364,796,22,22]}
+{"kind":"shape","id":"sh/8nqlgjmt","slide":1,"bbox":[546,807,64,0]}
+{"kind":"shape","id":"sh/9oj2po3e","slide":1,"bbox":[886,807,66,0]}
+{"kind":"shape","id":"sh/jil4fi5g","slide":1,"bbox":[1280,807,66,0]}
+{"kind":"notes","id":"nt/sbr81n","slide":1,"text":"Editable reconstruction of the MicroBioAgent system architecture figure. All diagram boxes, labels, connectors and icons are native PowerPoint objects."}

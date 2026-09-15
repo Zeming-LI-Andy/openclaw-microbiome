@@ -305,7 +305,7 @@ MicroBioAgent is implemented as an OpenClaw plugin.
 It does not compile 16S, MetaPhlAn, and Aviary into one hard-coded DAG.
 Each shipped skill is a step procedure; the agent reads the skill,
 runs one step, checks artifacts, then continues
-(\cref{fig:architecture}).
+(\cref{fig:architecture,fig:workflow}).
 Design constraints that matter for full-pipeline work:
 
 \begin{itemize}
@@ -396,16 +396,17 @@ on top of standard profiles), not as a missing pipeline stage.
 
 \begin{figure}[htbp]
   \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Schematic: conversation $\rightarrow$ \texttt{mgx\_create\_job}
-    $\rightarrow$ skill / conda / reference registry
-    $\rightarrow$ \texttt{analysis/\textless step\textgreater/};
-    timed-yield \texttt{exec} and exit wake.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig2-architecture.pdf}
-  \vspace{2.2em}}}
-  \caption{MicroBioAgent architecture.
-    Skills are step procedures; the OpenClaw plugin bootstraps the
-    session job and resolves reference paths.}
+  \includegraphics[width=\linewidth]{microbioagent-architecture-image2-v7.png}
+  \caption{MicroBioAgent system architecture. An OpenClaw-based agent
+    workflow loads workspace instructions, binds the conversation to an
+    analysis job, and dynamically selects procedures and reference resources
+    required by the study. Upstream and downstream computation for 16S
+    amplicon, reference-based metagenomic, and assembly-based metagenomic
+    analysis runs on user-controlled local infrastructure. The system returns
+    figures, tables, reports, and biological interpretations while retaining
+    intermediate files, generated code, parameters, logs, and version records.
+    User messages and command-completion events provide separate paths for
+    resuming a long-running analysis in the same session.}
   \label{fig:architecture}
 \end{figure}
 
@@ -422,6 +423,20 @@ conda stack; database trees remain host-owned mounts.
 Gateway settings that matter in practice are a long heartbeat after
 background exec, process-exit notification (including empty success),
 and disabling skill authoring that would shadow the shipped skill tree.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{microbioagent-workflow.png}
+  \caption{Unified agent workflow for end-to-end reproduction of
+    metagenomic studies. After binding the request to a session job and
+    confirming a plan, the agent selects steps from the 16S amplicon,
+    read-based shotgun, or assembly/MAG route. Each selected step executes
+    locally and its outputs are checked before the next step. During a
+    long-running command, a user message may revise pending work; a separate
+    command-completion event resumes output verification. The loop produces
+    study outputs and a per-job execution record.}
+  \label{fig:workflow}
+\end{figure}
 
 \subsection{Evaluation design}
 \label{sec:eval}
