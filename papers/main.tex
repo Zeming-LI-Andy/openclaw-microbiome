@@ -52,78 +52,178 @@ workflow.
 
 Microbiome studies increasingly seek to relate community composition
 to ecological conditions, host phenotypes, and microbial functional
-potential.  The analysis required to address these questions depends
-on the sequencing assay and on the biological resolution of interest.
-Analysis of 16S rRNA gene amplicons yields amplicon sequence variants,
-taxonomic assignments, and measures of community diversity, whereas
-shotgun metagenomic reads can be profiled against references to estimate
-species composition and gene or pathway abundance.  Assembly and binning
-of shotgun reads provide a complementary genome-resolved view through
-metagenome-assembled genomes (MAGs), which can subsequently be annotated
-for functional and metabolic potential
-\parencite{bolyen2019qiime2,callahan2016dada2,beghini2021biobakery,
-uritskiy2018metawrap}.  These approaches do not provide interchangeable
-measurements: marker-gene surveys cannot directly quantify gene content,
-and read-based profiles and reconstructed genomes support different
-inferences about community function.
+potential.  Addressing these questions may require markedly different
+analytical routes.  Analysis of 16S rRNA gene amplicons yields amplicon
+sequence variants, taxonomic assignments, phylogenies, and measures of
+community diversity.  Reference-based analysis of shotgun reads can
+estimate species composition, gene families, and pathways, whereas
+assembly and binning provide a genome-resolved view through
+metagenome-assembled genomes (MAGs) that can be examined for functional
+and metabolic potential
+\parencite{knight2018bestpractices,bolyen2019qiime2,
+beghini2021biobakery,uritskiy2018metawrap}.  These routes are
+complementary rather than interchangeable, and a study may require one
+route or a question-specific combination of several.  Their software is
+distributed across command-line programs, programming languages,
+runtime environments, file formats, and reference databases.  Selecting
+appropriate methods, executing them correctly, and consolidating their
+outputs into a defensible biological interpretation consequently require
+both computational proficiency and microbiome domain knowledge.  This
+fragmentation creates a substantial entry barrier, particularly for
+researchers without specialist bioinformatics training
+\parencite{tong2020genepiper,liu2021practical}.
 
-Each analysis route is supported by mature computational methods.
-QIIME~2 organizes amplicon processing and downstream ecological analyses;
-the bioBakery suite supports taxonomic and functional profiling of
-shotgun data; and genome-resolved frameworks such as metaWRAP and Aviary
-coordinate assembly and MAG recovery
-\parencite{bolyen2019qiime2,beghini2021biobakery,
+Mature software provides robust methods for the individual stages of
+this process.  QIIME~2 supports reproducible amplicon analysis; the
+bioBakery suite integrates taxonomic and functional profiling of shotgun
+data; and frameworks such as metaWRAP and Aviary coordinate assembly and
+MAG recovery \parencite{bolyen2019qiime2,beghini2021biobakery,
 uritskiy2018metawrap,newell2025aviary}.  Workflow systems including
-Snakemake and Nextflow provide reproducible execution of specified
-analysis graphs \parencite{koster2012snakemake,ditommaso2017nextflow}.
-Together, these methods establish the computational basis for
-microbiome research.  A domain agent builds on this basis by connecting
-assay-specific procedures, reference resources, and downstream
-interpretation within a study-specific analysis.
+Snakemake and Nextflow make a specified analysis graph reproducible and
+scalable \parencite{koster2012snakemake,ditommaso2017nextflow}.  These
+systems establish the computational foundation of microbiome research.
+A predefined workflow, however, presupposes that an appropriate complete
+route has already been selected and encoded.  When a study crosses assay
+or analysis families, adds an optional annotation after inspecting an
+intermediate result, or changes direction as its biological question is
+refined, the study-level workflow must also be constructed or revised.
+Thus, reliable execution of established tools and accessible,
+study-specific orchestration remain distinct requirements.
 
-Recent biological agents have shown that such coordination can be
-automated.  AutoBA generates and executes analysis plans and code for
-multi-omics tasks, including automatic code repair
-\parencite{zhou2024autoba}.  Biomni combines retrieval, planning, and
-code-based execution across biomedical domains; its microbiome
-evaluation includes analyses of existing abundance tables and metadata
-\parencite{huang2025biomni}.  BioAgents further explores a multi-agent
-approach to bioinformatics reasoning and workflow guidance
-\parencite{mehandru2025bioagents}.  These studies establish planning
-and execution as demonstrated capabilities of biological agents, rather
-than capabilities unique to the present work.
+Large language model agents offer a natural-language interface for such
+orchestration.  AutoBA demonstrated automated planning, code generation,
+execution, and repair for multi-omics analyses; the open-source release
+of Biomni combined retrieval, planning, and tool execution across biomedical domains, including
+microbiome analyses of abundance tables and metadata; and BioAgents
+explored a multi-agent framework for bioinformatics workflows
+\parencite{zhou2024autoba,huang2025biomni,
+mehandru2025bioagents}.  These studies establish that biological agents
+can plan and execute analyses.  BIA focused on autonomous single-cell
+analysis; BioChatter provided an open-source framework for conversational
+biomedical applications; and the more recent BioMedAgent and BioMaster
+systems extended autonomous execution across broader collections of
+biomedical and bioinformatics tasks
+\parencite{xin2024bia,lobentanzer2025biochatter,
+bu2026biomedagent,su2026biomaster}.  The M3A framework also
+compared autonomous, human-on-the-loop, and human-in-the-loop modes in
+multi-omic single-cell analysis, with its human-in-the-loop mode pausing
+after each step for user input \parencite{johri2026m3a}.  MetaClaw is the closest
+microbiome-focused system, although MicroBioAgent was developed
+independently.  MetaClaw couples
+registered, standardized upstream workflows on FlowHub with customizable
+downstream analyses in local containers and evaluates conclusion-level
+reproduction across four shotgun metagenomic studies
+\parencite{zhang2026metaclaw}.  This design provides an auditable bridge
+between fixed cloud preprocessing and flexible downstream interpretation.
+It also highlights a complementary design opportunity: allowing the
+agent itself to compose and execute both upstream and downstream
+microbiome steps locally, without requiring a registered whole-analysis
+workflow to determine the study path, while preserving user control over
+analyses that may run for hours.
 
-MetaClaw is a closely related microbiome agent that connects auditable,
-registered workflows to study-specific analyses.  It executes
-standardized upstream metagenomic processing on FlowHub and performs
-downstream statistical analysis and reporting in local containers;
-its reported evaluation reproduces results from four shotgun
-metagenomic studies \parencite{zhang2026metaclaw}.  This architecture
-illustrates one way to divide computational work between a cloud
-workflow service and a local analytical environment.  We pursue a
-different execution model in which the agent invokes the upstream
-sequencing-data tools as well as downstream analyses locally, while
-retaining the ability to coordinate long-running steps in the same
-conversation.
+The reported capabilities most relevant to this design opportunity are
+summarized in \cref{tab:agent-capabilities}
+\parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
+johri2026m3a,xin2024bia,lobentanzer2025biochatter,
+bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.  The comparison concerns functional scope rather
+than benchmark performance: a capability is marked as present only when
+it can be confirmed from the cited publication or public implementation.
 
-Here we present MicroBioAgent, a microbiome analysis agent integrating
-three capabilities.  First, its domain procedures span 16S amplicon,
-reference-based shotgun, and assembly-based MAG analyses, extending
-from sequencing-data processing to community, gene, pathway, and
-genome-resolved annotations, including predictions of metabolic
-potential.  Second, sequencing-data computation uses locally configured
-tools and reference resources, allowing raw reads to remain within a
-user-controlled environment.  Third, long-running steps execute
-asynchronously: the agent yields its turn while a command continues,
-so a user can revise the analysis in the same session before that
-command finishes; a completion event then resumes the agent to inspect
-the result and continue with the updated plan.  This combination
-supports a locally executed analysis workflow that remains open to
-human guidance during extended computation.
+\begin{table}[htbp]
+  \centering
+  \caption{Capabilities of bioinformatics agents relevant to end-to-end
+    microbiome analysis.  The three microbiome columns specifically
+    concern analysis beginning with sequencing reads.}
+  \label{tab:agent-capabilities}
+  \scriptsize
+  \setlength{\tabcolsep}{2.5pt}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabularx}{\linewidth}{@{}l*{6}{>{\centering\arraybackslash}X}@{}}
+    \toprule
+      & \multicolumn{2}{c}{Agent operation}
+      & \multicolumn{3}{c}{Microbiome analysis from reads}
+      & Deployment \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(l){7-7}
+    Agent
+      & Autonomous workflow execution
+      & Human-in-the-loop
+      & 16S amplicon
+      & Reference-based shotgun
+      & Assembly / MAG
+      & On-premises analysis \\
+    \midrule
+    BIA
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    BioChatter
+      & $\times$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    AutoBA
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    \shortstack[l]{Biomni\\(open-source)}
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    BioAgents
+      & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+    M3A
+      & $\checkmark$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    BioMedAgent
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    BioMaster
+      & $\checkmark$ & $\times$ & $\times$ & $\checkmark$ & $\times$ & $\checkmark$ \\
+    MetaClaw
+      & $\checkmark$ & $\times$ & $\checkmark$ & $\checkmark$ & $\times$ & $\checkmark$(partial) \\
+    MicroBioAgent
+      & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
 
-% TODO: Reserve the closing Introduction paragraph for verified case-study
-% scope and evidence from the cloud jobs, including any mid-analysis user
-% intervention traces. Do not state results before those records are checked.
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} $\checkmark$, supported;
+    $\times$, not supported.  Biomni denotes the open-source release.
+  \end{minipage}
+\end{table}
+
+What is needed for this setting is not another fixed microbiome pipeline,
+but an accessible and adaptive execution layer that standardizes
+individual analytical steps while organizing fragmented tools and
+outputs into a study-level workflow guided by the research objective,
+available data, and verified intermediate results.  Such a layer should
+allow a researcher to begin with a biological question rather than a
+hand-written workflow definition; resolve the required software and
+reference resources; execute and inspect each step; and revise pending
+analyses as new results or priorities arise.  Keeping sequencing-data
+computation in a user-controlled environment reduces the need to transfer
+raw reads to an external analysis service.  Maintaining interaction while
+long-running commands continue is equally important: automation should
+reduce the computational and operational burden without removing the
+researcher's ability to redirect the analysis or exercise biological
+judgement.
+
+Here we present MicroBioAgent, which implements this operating model
+through four linked contributions.  First, it provides step-level domain
+skills spanning upstream and downstream 16S amplicon, reference-based
+shotgun, and assembly-based MAG analysis, together with taxonomic
+classification, gene and pathway annotation, metabolic reconstruction,
+and resistance, virulence, and biosynthetic gene-cluster prediction.
+Second, the
+agent selects and connects these standardized steps into a
+study-specific plan, checks the products of each step, and can revise the
+remaining sequence instead of submitting every study to a predefined
+end-to-end directed acyclic graph (DAG).  Third, it resolves user-configured runtimes and reference
+resources and executes sequencing-data analysis locally, allowing raw
+reads to remain in the user's computational environment.  Fourth, it
+supports asynchronous human guidance during extended computation: a
+long-running command continues in the background while the agent yields
+its turn, the user may revise the analysis in the same session, and a
+completion event resumes execution under the updated plan.  We demonstrate
+the resulting analytical scope in three case studies spanning plant
+rhizosphere amplicon and shotgun profiling, colorectal-cancer taxonomic
+and functional analysis with classification, and genome-resolved MAG
+recovery with metabolic characterization.  By translating a biological
+objective into an inspectable, locally controlled, and revisable
+end-to-end process, MicroBioAgent lowers the computational and operational
+barrier to study-specific microbiome analysis while retaining human
+scientific oversight.
 
 %% ====================================================================
 \section{Results}
