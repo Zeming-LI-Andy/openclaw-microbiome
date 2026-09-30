@@ -1,21 +1,19 @@
-# Case study 3 — CRC faecal metagenomes (species beta diversity, markers, functional classification)
+# Case study 3 — colorectal-cancer faecal metagenomes
 
-**Job:** `20260904-121722-user-requested-job-setup-f828dd01`  
-**Manuscript role:** Case 2 (reference-based shotgun: MetaPhlAn + HUMAnN + classifier).  
-**Source study:** Yu et al., *Gut* (2017) 66:70–78 (China discovery cohort C1).  
-**Figure:** `Fig1_crc_case_study.png`  
-**Design:** 128 faecal metagenomes; 74 CRC (36 stages I–II, 38 stages III–IV) and 54 controls. Species relative abundances from MetaPhlAn; gene-family and KO abundances from HUMAnN3.
+Cohort: 128 faecal metagenomes, 74 colorectal cancer (CRC; 36 early, stages I–II; 38 late, stages III–IV) and 54 controls. Species profiles are MetaPhlAn relative abundances. Functional panels use HUMAnN gene-family and KEGG Orthology (KO) abundances.
 
-These notes summarize only the specified six-panel figure. They do not claim a new CRC diagnostic marker.
+Figure: `case_studies/case_study_3/20260904-121722-user-requested-job-setup-f828dd01/.cursor/Case-study-3-Fig_composite.png` (Fig1_crc_case_study).
 
----
+## Species-level beta diversity
 
-## Fig. 1 | Species-level beta diversity, marker taxa and functional classification
+Bray–Curtis PCoA did not separate controls, early CRC and late CRC into discrete clusters (PC1 11.3%, PC2 9.2%). PERMANOVA nevertheless detected a community difference by CRC status (F = 2.32, P = 0.002, n = 128) and by disease stage (F = 1.65, P = 0.009). Sex (P = 0.88), age (P = 0.13) and BMI (P = 0.31; n = 127) were not significant.
 
-Species-level Bray–Curtis distances differed by disease status and stage. PERMANOVA gave *P* = 0.002 for CRC versus control (*F* = 2.32) and *P* = 0.009 for disease stage (*F* = 1.65). Sex (*P* = 0.88), age (*P* = 0.13) and BMI (*P* = 0.31; 127 of 128 samples) were not significant. PCoA (PC1 11.3%, PC2 9.2%) showed overlapping clouds with a shift of CRC samples relative to controls; early and late CRC were not fully separated.
+## Differential species and co-occurrence
 
-Wilcoxon rank-sum tests (CRC versus control, Benjamini–Hochberg) identified ten species at *q* < 0.05 (eight CRC-enriched, two control-enriched). The five taxa emphasized in the source study were recovered in the same direction: *Parvimonas micra* (*q* = 4 × 10⁻⁶), *Peptostreptococcus stomatis* (*q* = 5 × 10⁻⁵), *Fusobacterium nucleatum* (*q* = 0.003), *Solobacterium moorei* (*q* = 0.020) and control-enriched *Eubacterium ventriosum* (*q* = 0.015).
+Wilcoxon tests with Benjamini–Hochberg correction gave 8 CRC-enriched and 2 control-enriched species at q < 0.05. Among the labelled taxa, *Parvimonas micra* (q = 4 × 10⁻⁶), *Peptostreptococcus stomatis* (q = 5 × 10⁻⁵), *Fusobacterium nucleatum* (q = 0.003) and *Solobacterium moorei* (q = 0.020) were CRC-enriched. *Eubacterium ventriosum* was control-enriched (q = 0.015).
 
-Among those ten species, Spearman co-occurrence yielded 16 positive edges (|ρ| ≥ 0.4, BH *q* < 0.05). *P. micra* was the highest-degree hub (degree = 6). Annotated edges included *P. micra*–*S. moorei* (ρ = 0.53) and *P. micra*–*F. nucleatum* (ρ = 0.49), forming an oral-pathogen cluster with *P. stomatis*, *Dialister pneumosintes*, *Gemella morbillorum* and *F. nucleatum*. *E. ventriosum* and *Faecalibacterium saccharivorans* were isolated (degree 0). The *F. nucleatum*–*S. moorei* edge was not retained at this threshold (ρ = 0.375 in the underlying matrix).
+The Spearman network of the ten species with q < 0.05 contained 16 positive edges (|ρ| ≥ 0.4, BH q < 0.05). *P. micra* was the highest-degree hub. Annotated edges were *P. micra*–*F. nucleatum* (ρ = 0.49) and *P. micra*–*S. moorei* (ρ = 0.53). *E. ventriosum* and *F. saccharivorans* had no edges at this threshold.
 
-From 841,261 gene families (38,124 with *q* < 0.05) and 4,407 KOs (22 with *q* < 0.05), 15-feature mRMR panels were trained as L2-regularized logistic regression. Nested fivefold cross-validation gave pooled AUROC = 0.864 for the gene-family panel and 0.714 for the KO panel. Outer-fold AUROC ranges shown on the figure were 0.81–1.00 (gene families) and 0.65–0.79 (KOs). These values describe discrimination on this cohort under nested CV; they are not an external validation of the source study’s qPCR gene markers.
+## Functional marker panels
+
+mRMR selected 15-feature logistic-regression panels from gene-family and KO abundances. In nested 5-fold cross-validation, the gene-family panel had a pooled AUROC of 0.902 (outer-fold AUROCs 0.86–0.96; Youden sensitivity 0.82, specificity 0.89). The KO panel had a pooled AUROC of 0.632 (outer-fold AUROCs 0.59–0.72; Youden sensitivity 0.41, specificity 0.87). Most selected coefficients were positive (higher abundance in CRC) in both panels.

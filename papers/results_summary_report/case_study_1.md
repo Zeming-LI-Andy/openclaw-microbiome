@@ -1,50 +1,39 @@
-# Case study 1 — Tomato rhizosphere 16S diversity and genus enrichment
+# Case study 1 — tomato rhizosphere after *Ralstonia* inoculation
 
-**Job:** `20260903-161334-session-job-setup-0d690772`  
-**Manuscript role:** Case 1 (amplicon 16S end-to-end).  
-**Source study:** Yin et al., *Microbiome* (2022) 10:227.  
-**Figures:** `Fig1_diversity.png`, `Fig2_genus_enrichment.png`  
-**Design:** 16S V3–V4, 60 samples (4 cultivars × 5 timepoints × 3 biological replicates). Cultivars: A57 and HG70 (susceptible), HG64 (resistant parent), HF12 (resistant F1). Timepoints: T1 (day 0), T2C (day 5, uninoculated), T2 (day 5, inoculated), T3C (day 10, uninoculated), T3 (day 10, inoculated). Shannon indices were computed on ASV tables rarefied to 56,726 reads.
+Design: four cultivars (susceptible A57 and HG70; resistant HG64 and HF12), 16S rRNA profiles at five timepoints (T1, day 0; T2C, day 5 uninoculated; T2, day 5 inoculated; T3C, day 10 uninoculated; T3, day 10 inoculated; n = 3 per cultivar × timepoint, 60 samples), and shotgun species profiles at T1, T2C and T2 (36 samples). Genus and species enrichment tests are MaAsLin3 abundance models of each resistant cultivar against the pooled susceptible cultivars. Enrichment calls in Figs 2 and 3 use nominal P < 0.05 and a positive coefficient; they are not FDR-adjusted.
 
-These notes summarize only the two specified figures. They are demonstrations of pipeline coverage, not a standalone plant-pathology result.
+Figures:
 
-The matched shotgun analysis also provides a database-version sensitivity
-check for the two species emphasized by the source study.  MetaPhlAn3 detected
-*Pseudomonas putida*, which was significantly enriched in resistant cultivars,
-but did not resolve *Sphingopyxis unclassified*.  Reanalysis with MetaPhlAn2
-detected both *P. putida* and *Sphingopyxis unclassified*, and both showed
-significant between-phenotype differences.  This comparison is evidence that
-the agent can execute reference-based shotgun profiling, while also showing
-that recovery of a prespecified taxon depends on the reference database.  The
-manuscript should report the corresponding effect sizes, statistical test,
-adjusted P values, database builds, and numbers of detected samples directly
-from the archived output tables before treating either association as a formal
-result.
+- `case_studies/case_study_1/20260903-161334-session-job-setup-0d690772/.cursor/nature/Case-study-1-Fig1_diversity.png` (Fig1_diversity)
+- `case_studies/case_study_1/20260903-161334-session-job-setup-0d690772/.cursor/nature/Case-study-1-Fig2_16s_genus_enrichment.png` (Fig2_genus_enrichment)
+- `case_studies/case_study_1/20260903-161334-session-job-setup-0d690772/.cursor/nature/Case-study-1-Fig3_shotgun_species_enrichment.png` (Fig3_species_enrichment)
 
----
+## Diversity and composition
 
-## Fig. 1 | Diversity and community composition across cultivar and inoculation
+Shannon diversity was high and similar across cultivars in the uninoculated samples at T1 and T3C (medians about 9.9–10.5). The resistant-versus-susceptible contrast was significant at T1 (P = 0.009) and not at T3C (P = 0.70). At T2C, HG64 was the exception (median 6.90) while the other three cultivars remained near 10; the resistant-versus-susceptible test was not significant (P = 0.18).
 
-After inoculation with *Ralstonia*, Shannon diversity fell in all four cultivars relative to uninoculated timepoints, but the drop was larger in susceptible than in resistant plants. Mean Shannon remained near 10 at T1, T2C and T3C. At T2 it declined to 5.11 (A57), 6.82 (HG70), 6.32 (HG64) and 8.69 (HF12); at T3 it was 5.70, 5.07, 7.76 and 7.77, respectively. Two-sided Mann–Whitney tests of pooled resistant versus susceptible cultivars were significant at T1 (*P* = 0.009) and T3 (*P* = 0.004), but not at T2 (*P* = 0.24), T2C (*P* = 1.00) or T3C (*P* = 0.70). HG64 at T2 did not retain a higher Shannon index than the susceptible male parent HG70.
+After inoculation, Shannon fell in the susceptible cultivars and stayed higher in the resistant cultivars. At T2, medians were 4.87 (A57), 7.17 (HG70), 10.16 (HG64) and 8.56 (HF12) (P = 0.002). At T3 they were 6.16, 5.17, 7.59 and 7.06 (P = 0.004).
 
-Weighted UniFrac PCoA separated samples primarily by inoculation on PC1 (57.2% of variance) and secondarily by resistance phenotype on PC2 (12.8%). Uninoculated samples clustered independently of sampling day; inoculated samples shifted along PC1. Resistant inoculated samples lay closer to the uninoculated centroid than did susceptible inoculated samples.
+Weighted UniFrac PCoA separated samples mainly by inoculation (PC1, 56.3%). Uninoculated samples clustered at negative PC1 and inoculated samples at positive PC1. PC2 (12.2%) partly separated resistant from susceptible samples, with overlap between the two phenotypes.
 
-Genus-level stacked bars showed the same inoculation shift. Uninoculated communities were dominated by *Incertae sedis* and a mix of *Sphingomonas*, *Pseudarthrobacter*, *Gemmatimonas* and related genera. At T2 and T3, *Ralstonia* expanded, most strongly in A57 and HG70, concurrent with the Shannon collapse.
+Genus composition was diverse at T1, T2C and T3C, with a large unclassified / incertae-sedis fraction and no single dominant genus. At T2 and T3, *Ralstonia* expanded, most strongly in the susceptible cultivars A57 and HG70.
 
----
+## 16S genus enrichment
 
-## Fig. 2 | Genera enriched in HG64 and HF12 relative to susceptible cultivars
+Genera enriched in both resistant cultivars (nominal P < 0.05, positive coefficient) numbered 15 (T1), 6 (T2C), 7 (T2), 8 (T3C) and 7 (T3). Cultivar-private enriched genera were more numerous at several timepoints (HG64-only / HF12-only: 13/20, 15/4, 10/19, 37/19 and 9/4).
 
-MaAsLin 3 contrasted each resistant cultivar with pooled susceptible cultivars (A57 + HG70) within each timepoint (TSS + LOG). Volcano plots use nominal *P* = 0.05 (dashed line). Shared enrichment was defined as coefficient > 0 and *P* < 0.05 in both HG64 and HF12 at that timepoint.
+Shared genera, in order of increasing minimum P:
 
-Venn counts of nominally enriched genera were:
+- T1: *Tellurimicrobium*, *Bosea*, *Chthoniobacter*, *Emticicia*, *Candidatus* Udaeobacter, *Telluribacter*, *Sphingobacterium*, *Sphingopyxis*, *Stenotrophobacter*, *Endobacterium*, *Flavihumibacter*, an unclassified genus, *Chthonomonas*, *Luteitalea*, HT002.
+- T2C: *Flaviaestuariibacter*, *Candidatus* Berkiella, MND1, *Escherichia–Shigella*, *Candidatus* Koribacter, Subgroup 10.
+- T2: *Candidatus* Nitrosoarchaeum, *Aridibacter*, *Arenimicrobium*, *Stenotrophobacter*, *Aurantisolimonas*, *Tellurimicrobium*, *Hymenobacter*.
+- T3C: *Devosia*, *Sphingomonas*, *Hymenobacter*, *Bacillus*, *Lactobacillus*, *Prosthecomicrobium*, *Exiguobacterium*, *Brevundimonas*.
+- T3: *Pseudarthrobacter*, *Ramlibacter*, *Roseisolibacter*, *Sinomonas*, *Rossellomorea*, *Arenimonas*, *Deinococcus*.
 
-| Timepoint | HG64 only | Shared | HF12 only |
-|-----------|-----------|--------|-----------|
-| T1 | 17 | 14 | 22 |
-| T2C | 19 | 10 | 15 |
-| T2 | 7 | 4 | 27 |
-| T3C | 33 | 8 | 17 |
-| T3 | 10 | 7 | 4 |
+The shared set changed with timepoint. *Tellurimicrobium* and *Stenotrophobacter* recurred at two timepoints; the other shared genera were timepoint-specific.
 
-Shared genera at T1 included *Candidatus* Udaeobacter, *Tellurimicrobium*, *Rhodocytophaga*, *Chthoniobacter*, *Bosea* and *Sphingopyxis*; at T2C they included *Pelagerythrobacter*, *Sphingomonas* and *Flavisolibacter*; at T2 they included *Aridibacter* and *Candidatus* Koribacter; at T3 they included *Pseudarthrobacter*, *Ramlibacter* and *Roseisolibacter*. These lists are nominal *P* intersections. After Benjamini–Hochberg correction, no genus was shared at *q* < 0.05; a single genus (*Pelagerythrobacter* at T2C) was shared at *q* < 0.1. With three replicates per cultivar, per-timepoint tests have limited power. The more stable signal in this case is therefore the inoculation-driven diversity collapse and *Ralstonia* expansion in Fig. 1, not a conserved set of FDR-significant marker genera.
+## Shotgun species enrichment
+
+Species-level enrichment was sparse. The only species enriched in both HG64 and HF12 was the *Pseudomonas putida* group at T1 (HG64 coefficient 3.28, P = 0.013; HF12 coefficient 3.96, P = 0.009). Two additional species were enriched in HG64 only (*Stenotrophomonas acidaminiphila*, *Devosia riboflavina*) and one in HF12 only (*Azospirillum lipoferum*).
+
+No species was enriched in either resistant cultivar at T2C. At T2, five species were enriched in HG64 only and two in HF12 only, with no shared species. The HG64-only set was *Ferrovibrio* sp., *Pseudomonas alcaliphila*, *Sorangium cellulosum*, *Nannocystis exedens* and *Stenotrophomonas acidaminiphila*; the HF12-only set was *Alsobacter* sp. SH9 and *Gemmatirosa kalamazoonesis*.
