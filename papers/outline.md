@@ -22,6 +22,10 @@ system MicroBioAgent in the title, abstract, and results.
    single wrapped CLI.
 3. Reliability: robustness and ablation show that skills, session jobs, and
    long-running exec are what make that coverage usable.
+4. Asynchronous human guidance: a user can revise pending analysis while a
+   real tool remains running, and the same session resumes automatically after
+   completion; a targeted patched-versus-unpatched experiment must demonstrate
+   this behavior rather than leaving it as an architectural claim.
 
 Case studies are *demonstrations of coverage*, not three independent biology
 papers. Biological findings can be reported, but they are secondary to the
@@ -174,77 +178,178 @@ a paper.
 
 ### 3.2 Results
 
-#### 3.2.1 The analysis landscape (lead result)
+The Results must establish three layers of evidence in order: what the system
+does, whether it works on real microbiome studies, and which design components
+make the observed behavior reliable.  Human-in-the-loop is therefore not a
+standalone label in the architecture figure: Results Section 3.1 explains the
+mechanism, and Results Section 3.4.2 tests the distinctive asynchronous behavior and
+the contribution of the exec-session-wake patch.
 
-Open with **Figure 1**: MicroBioAgent, three families, three cases pinned on
-the map. This is the figure a reader should remember.
+#### 3.1 MicroBioAgent architecture, analytical scope, and asynchronous guidance
 
-Text: we do not claim a new 16S algorithm. We claim that MicroBioAgent
-can traverse each family end-to-end. Then point to Cases 1–3
-as the empirical span.
+Open with **Figure 1**, the system architecture and analytical landscape.  The
+text should explain one complete user-to-result cycle:
 
-#### 3.2.2 Case 1 — Tomato rhizosphere and bacterial-wilt resistance
+1. a biological objective starts a session-bound analysis job;
+2. the agent constructs an inspectable plan and selects step-level skills;
+3. runtime and reference registries resolve local tools and databases;
+4. one step runs at a time and its artifacts are checked before the next step;
+5. a long command moves to background execution and the session yields;
+6. a user message can revise pending steps without terminating the running
+   command; and
+7. command completion wakes the same session, which continues under the
+   revised plan.
 
-**Role in the paper.** 16S full pipeline *plus* shotgun taxonomic
-profiling (MetaPhlAn). Bridges amplicon and reference-based shotgun on a
-plant-microbiome genetics question (heritability of resistance via the
-rhizosphere community).
+Figure 1 should contain: **(a)** components and data flow; **(b)** the three
+analysis families (16S amplicon, reference-based shotgun, and
+assembly/genome-resolved shotgun); **(c)** representative shared annotation
+and statistical skills; and **(d)** a conceptual timeline showing the two
+same-session continuation paths, user feedback and command completion.
 
-**Expected story (fill from the server).**
+This section describes the operating mechanism and implemented scope.  It does
+not report HITL success rates or imply that every shipped skill ran in the
+cases.  End the section by stating that three public-data case studies test
+analytical breadth, while robustness and ablation test reliable operation.  A
+forward reference should direct the reader to the targeted HITL ablation in
+Results Section 3.4.2.
 
-1. 16S: import → DADA2 → taxonomy (SILVA) → phylogeny → α/β diversity
-2. Shotgun: KneadData (if used) → MetaPhlAn
-3. Statistics: community ~ host genotype / resistance phenotype;
-   heritability or genotype–microbiome association as designed in the study
-4. Optional: concordance between 16S taxa and MetaPhlAn species
+#### 3.2 Three case studies demonstrate complementary analysis families
 
-**What *not* to do.** Do not turn this section into a standalone plant
-pathology paper. One results page + one multi-panel figure is enough.
+Start this section with the evaluation design rather than immediately entering
+Case 1.  State that these are **capability-oriented independent reanalyses**, not
+exact computational reproductions of the source studies.  Software versions,
+reference databases and some statistical procedures differ; evaluation rests
+on end-to-end completion, valid artifacts, and recovery of prespecified major
+biological signals.
 
-#### 3.2.3 Case 2 — CRC case–control (composition, function, classifier)
+The overview reports 60 tomato 16S libraries and 36 matched shotgun libraries,
+128 CRC shotgun libraries, and six enrichment metagenomes: 230 sequencing
+library inputs representing 194 distinct biological samples if the 36 tomato
+shotgun libraries are confirmed to be a subset of the 60 specimens.  Table 1
+maps each case to the capability it tests, its executed stages, primary
+artifacts, and main biological concordance criterion.  Detailed datasets,
+commands, versions, statistics and session records are reserved under the
+stable working identifiers in `papers/supplementary_manifest.md`.
 
-**Role in the paper.** Deep *reference-based* shotgun: taxonomy +
-community function + a study-specific classifier. This is the bioBakery
-family, fully agent-driven.
+##### 3.2.1 Tomato rhizosphere: amplicon and reference-based taxonomic analysis
 
-**Expected story.**
+**Capability tested.** 16S upstream/downstream analysis, diversity, taxonomy,
+differential abundance, and matched MetaPhlAn profiling.
 
-1. MetaPhlAn: case vs control composition, diversity
-2. HUMAnN: pathways / gene families, differential abundance or enrichment
-3. Classifier: predict case/control from species and/or pathway features;
-   cross-validation, baseline (majority / simple richness), feature
-   importance
-4. Sanity: no leakage; report what the agent actually trained on
+**Result order.** Sample design and completed path; Shannon and weighted
+UniFrac results; inoculation-associated community shift and *Ralstonia*
+expansion; resistant-versus-susceptible differential abundance; matched
+shotgun profiling.  Report the stronger community-level signals before focal
+taxa.
 
-**What *not* to do.** Do not claim a new CRC biomarker. Claim that the
-agent can *produce* a complete case–control functional + ML analysis.
+Use the two source-study focal species as a prespecified database-sensitivity
+analysis.  MetaPhlAn3 recovered *Pseudomonas putida* but did not resolve
+*Sphingopyxis unclassified*; MetaPhlAn2 recovered both and found significant
+between-phenotype differences.  Show both versions transparently and report
+database builds, detection prevalence, effect sizes, tests, P values and
+adjusted P values in the Supplementary table.  Call this agent adaptation only
+if the archived trace shows that the agent itself diagnosed and changed the
+version; otherwise call it an investigator-guided sensitivity analysis.
 
-#### 3.2.4 Case 3 — MAG recovery, composition, metabolic potential
+##### 3.2.2 Colorectal cancer: taxonomic, functional, and predictive analysis
 
-**Role in the paper.** *Assembly-based / de novo* arm: Aviary (assemble,
-recover, annotate, cluster) plus composition and metabolism (EggNOG /
-Bakta / gapseq / gutSMASH as actually run).
+**Capability tested.** Reference-based shotgun profiling with MetaPhlAn3 and
+HUMAnN3, beta diversity, species and functional differential analysis, and
+gene-family/KO classifier construction.
 
-**Expected story.**
+Report the 128-sample C1 design; beta-diversity tests; recovery in the same
+direction of prespecified CRC-associated taxa; gene-family and KO results; and
+nested-cross-validation performance.  The classifiers demonstrate an
+end-to-end analytical route.  They do not reproduce the source study's
+20-gene marker panel or its external validation, and no new diagnostic marker
+is claimed.
 
-1. Assembly and MAG recovery, quality (CheckM2) and taxonomy (GTDB)
-2. Community composition from MAG abundances (and/or complementary
-   profilers if used)
-3. Metabolic potential: pathway completeness, models, or BGC/gut gene
-   clusters — whatever the job actually produced
-4. Tie-back: this family is unreachable if the agent cannot survive
-   multi-hour assemble/recover
+##### 3.2.3 Enrichment metagenomes: assembly, MAG recovery, and functional annotation
 
-#### 3.2.5 Robustness
+**Capability tested.** Assembly-based/genome-resolved analysis: assembly,
+binning/refinement, MAG quality control, dereplication, taxonomy, abundance,
+and focal-genome functional annotation.
 
-Report as a compact table or small figure: completion under paraphrase /
-repeat / resume. Emphasize *artifact checks*, not fluent chat.
+Report the six metagenomes; 151 HQ/MQ MAGs and 73 representatives after 95% ANI
+dereplication; dominant focal taxa; and annotated gene repertoires relevant to
+alkane oxidation, oxidized-derivative degradation and beta-oxidation.  Because
+the source study and reanalysis use different GTDB releases and annotation
+systems, claim recovery of principal taxonomic and functional patterns, not an
+identical MAG catalogue.  State that each enrichment is one metagenome and
+that predicted CDS counts are neither expression measurements nor direct
+evidence of substrate degradation.
 
-#### 3.2.6 Ablation
+#### 3.3 Robustness across models and prompt granularity
 
-One figure or table: each removed component vs completion and intervention
-count. The sentence we want: skills + job isolation + exec wake are
-necessary for full-pipeline coverage; the LLM alone is not.
+Use the frozen Case 1 inputs and the full system in a
+3 models × 3 prompt granularities × 3 independent runs design (27 sessions).
+The primary result is artifact-level completion of common scientific goals;
+method-specific adherence is scored only when the detailed prompt requested
+that method.  Secondary results quantify repeat consistency of Shannon values,
+distance matrices and ordinations.  Report individual runs and uncertainty;
+3/3 is an initial repeatability result, not proof of invariance.
+
+Main text: one compact heatmap or dot plot of completion by model and prompt.
+Supplementary: all session-level scores, analysis choices, pairwise
+correlations, Mantel tests and Procrustes results.
+
+#### 3.4 Ablation identifies components required for reliable execution
+
+##### 3.4.1 End-to-end component ablation: completion, artifacts, and efficiency
+
+Compare `full`, `no_skills`, `no_coding`, and `no_patch` under one model, the
+same detailed Case 1 prompt, the same frozen inputs, and three independent runs
+per condition.  No mid-run user feedback is supplied.  The three core outcomes
+are completion of nine requested task outputs, adherence to eight specified
+methods, and total token use.  Break task completion down by output type so
+omissions can be localized.  Raw token use must be interpreted together with
+completion because an early stall can consume fewer tokens by doing less work.
+
+The `no_patch` condition here asks whether an otherwise autonomous end-to-end
+analysis reliably resumes after a background command.  It is distinct from
+the targeted interactive test below.
+
+##### 3.4.2 Targeted patch ablation: feedback during a running analysis
+
+This subsection is the direct Results evidence for the asynchronous HITL
+claim.  Use a short, real Case 1 16S task rather than HUMAnN3.  A pilot selects
+a QIIME 2 taxonomy-classification input that runs long enough to enter
+background execution but normally completes within minutes.  The pilot is not
+scored and the task must not be lengthened with an artificial sleep.
+
+The initial pending plan pools resistant and susceptible samples across
+timepoints.  After taxonomy classification is confirmed running and the
+session yields, send the same instruction in every run: keep the current
+classification process, replace the pooled comparison with separate T1, T2C
+and T2 comparisons, and add a significant-genera heatmap.  The agent must
+incorporate the instruction and yield again while the same command remains
+running.  No later `continue` message is allowed.
+
+Compare complete MicroBioAgent (three runs) with an otherwise identical
+unpatched runtime (three runs).  A session succeeds only if all of the
+following hold:
+
+1. the running taxonomy process is neither terminated nor restarted;
+2. the user instruction is incorporated into the pending plan;
+3. command completion resumes the session without another user message;
+4. T1, T2C and T2 comparison artifacts and the requested heatmap are created;
+5. the cancelled pooled comparison is not executed; and
+6. no analysis step is duplicated.
+
+The primary endpoint is interactive-continuation success (all criteria met).
+Report each criterion separately, plus feedback-to-plan-update and
+tool-exit-to-resumption latency.  Token use may be retained in Supplementary
+records but is not the primary endpoint.  A representative timestamped trace
+and full-versus-unpatched outcome plot should appear in the main ablation
+figure; all six transcripts, timestamps and artifact checks belong in
+Supplementary tables.
+
+This subsection supports the bounded claim that MicroBioAgent accepts user
+feedback while a long-running tool continues, revises pending analysis, and
+automatically resumes after tool completion.  It does not claim that HITL in
+general is novel: M3A evaluates checkpoint-based HITL by pausing after each
+step, whereas this experiment tests asynchronous feedback during a running
+tool.
 
 ### 3.3 Discussion (includes conclusion)
 
@@ -266,88 +371,105 @@ and ablation are what would show the span is the system.
 
 ### 3.4 Methods
 
-This is the technical core. Write it from the repo; it does not wait on
-cloud results. First sentence: MicroBioAgent is implemented as an OpenClaw
-plugin. Do not lead the paper with OpenClaw.
+The Methods should explain the study design and the reproducible operating
+principles at the level needed to assess the claims.  Avoid internal API names,
+job-directory layouts, registry field names, and command-by-command pipeline
+instructions.
 
-**Design principles**
+#### 4.1 MicroBioAgent system overview
 
-- Skills, not a hidden mega-pipeline: each `SKILL.md` is one analysis step.
-- One OpenClaw conversation ↔ one `job_id` (`mgx_create_job`).
-- Agent plans first, then executes; failed steps are skipped with dependents,
-  not silently invented.
-- Long CLIs: timed-yield `exec` + `notifyOnExit` (requires the pinned
-  OpenClaw exec-wake patch).
-- Host-owned runtimes and reference DBs (`runtimes.yaml`,
-  `microbiome-refs.yaml` → generated `references.yaml`).
+Describe the system as an agent that maintains study context, produces an
+inspectable plan, chooses modular analytical procedures according to the
+scientific objective and verified intermediate products, and reports failed or
+unavailable steps without inventing results.  This section explains the
+system's operating principles; Results Section 3.1 describes the implemented
+analysis families shown in Figure 1.
 
-**Session job**
+#### 4.2 Skill-guided analysis and configured local execution
 
-```
-<job_id>/
-  stage/                 # reads, manifests, metadata
-  analysis/<step>/       # one skill’s outputs
-  reproducibility/logs/
-  job.json
-```
+Explain how `TOOLS.md` connects tool use, microbiome procedures, configured
+software environments, and reference resources.  Emphasize that procedures
+encode method-specific requirements without forcing a fixed end-to-end
+template.  Raw-read computation can remain in a user-controlled environment;
+state separately that optional public annotation services may receive query
+information.  Describe output inspection as procedure-specific artifact
+checking, not as a universal validation engine.  Summarize analytical breadth
+by family rather than listing internal skill identifiers.
 
-**Skill map (the “full pipeline” table)**
+#### 4.3 Long-running execution and asynchronous human guidance
 
-Group skills the way the paper claims coverage — not as a flat dump.
+Explain the behavior specified by `CODING.md`: one principal operation is
+completed and inspected before dependent work; a still-running command
+continues after the conversation yields; either a user message or tool-exit
+event can reactivate the same session.  A user message may revise pending work
+without terminating the running command, and the version-pinned runtime patch
+provides reliable automatic wake and continuation after command completion.
 
-| Family | Stage | Skills |
-|--------|-------|--------|
-| 16S | Import → ASV → QC → taxonomy → tree → diversity → export / function | `16s-import`, `16s-denoise-dada2`, `16s-feature-summarize`, `16s-taxonomy`, `16s-phylogeny`, `16s-diversity`, `16s-export`, `16s-picrust2` |
-| Shotgun, reference-based | QC → taxonomy → pathways / gene families → gene catalog → annotation | `shotgun-kneaddata`, `shotgun-metaphlan`, `shotgun-humann`, `shotgun-gene-catalog`, `shotgun-eggnog`, `shotgun-vfdb`, `shotgun-rgi` |
-| Shotgun, assembly-based | Assemble / recover / annotate / cluster MAGs; genome and metabolism | `shotgun-aviary`, `shotgun-bakta`, `shotgun-gapseq`, `shotgun-gutsmash`, `shotgun-antismash` |
-| Shared | Public data, statistics, REST annotation | `sra-search`, `ncbi-assembly-proteins`, `stats-*`, `annotation-*` |
+#### 4.4 Case study design
 
-Supervised classification (Case 2) is *not* a dedicated skill. It is an
-agent-composed step on MetaPhlAn / HUMAnN tables in the `mgx-base` runtime.
-Say this explicitly: the system covers profiling and then allows
-study-specific modeling without pretending a generic “classifier skill”
-exists.
+Introduce the three datasets as capability-oriented reanalyses rather than
+exact computational reproductions.  Define the common evaluation logic:
+completion of the requested analysis, usable artifacts, and recovery of
+biological signals selected from each source study before inspecting the new
+results.  Numerical identity is not required when software, databases, or
+statistical procedures differ.
 
-**Execution model**
+##### 4.4.1 Tomato rhizosphere case
 
-- `conda run -n <env>` from the runtime registry
-- Absolute paths only; I/O confined to the session job
-- Heartbeat / model timeouts sized for multi-hour denoise, HUMAnN, Aviary
-- Docker image `openclaw-mgx` = patched OpenClaw + conda stack (methods
-  detail; not the intro hook)
+Report the 60 V3–V4 16S samples and 36 matched shotgun libraries, the cultivar
+and time-point design, DADA2 and QIIME 2 taxonomy, alpha/beta-diversity methods,
+PERMANOVA/PERMDISP, MaAsLin 3 differential analysis, and MetaPhlAn3/2
+database-generation sensitivity analysis for the two prespecified taxa.
 
-**Evaluation design.** Each case is a naturalistic analysis request.
-Report: dataset, modalities used, skill sequence, human confirmations /
-interventions, wall time, and scientific outputs.
+##### 4.4.2 Colorectal cancer case
 
-**Robustness (to be specified with the server logs).** Same analysis goal
-under controlled perturbations, for example:
+Report the C1 cohort (74 CRC and 54 control samples), MetaPhlAn3 and HUMAnN3
+profiles, beta-diversity and differential tests, the positive species network,
+and gene-family/KO classifiers evaluated by nested cross-validation.  Frame the
+classifiers as execution of a complete analytical design within this cohort,
+not as external clinical validation.
 
-- Prompt paraphrase (same intent, different wording)
-- Model swap (if more than one LLM was used)
-- Repeated trials (completion, not just a single success)
-- Interrupted / resumed session (exec wake)
-- Missing or wrong reference-DB path (does the agent stop and ask?)
+##### 4.4.3 Genome-resolved enrichment case
 
-**Ablation (system components, not biology).** Typical knobs that match
-this codebase:
+Report the six enrichment metagenomes, MAG quality thresholds, 95% ANI
+dereplication, GTDB R232 assignment, CoverM abundance estimation, and focal-MAG
+eggNOG interpretation.  Treat abundance patterns descriptively because each
+inoculum–substrate combination has one metagenome, and describe gene counts as
+predicted coding potential.
 
-| Ablation | What is removed | Expected failure mode |
-|----------|-----------------|------------------------|
-| No skills | Agent has only raw `exec` / docs | Incomplete or unsafe commands |
-| No plan-then-execute | Jump to compute | Missed QC, wrong order, no user gate |
-| No session job | Outputs not bound to `job_id` | Scattered files, no reuse after rewind |
-| No exec wake | Foreground timeout or no notify | HUMAnN / Aviary / DADA2 never finish in-session |
-| No registries | Invented conda / DB paths | Silent wrong DB or crash |
+#### 4.5 Robustness and ablation experiments
 
-Metrics (fill with real numbers later): task completion rate, fraction of
-steps that match the canonical skill order, number of human interventions,
-whether key artifacts exist and pass sanity checks (not “the p-value looks
-nice”).
+##### Robustness across models and prompt granularity
 
-**Availability (last Methods subsection).** Plugin repository, skill
-versions, OpenClaw pin + patch pack, conda recipes, case-study jobs /
-prompts (as much as ethics and data licenses allow).
+Use the frozen Case 1 inputs in a 3 models × 3 prompt granularities × 3 runs
+design (27 sessions).  Score artifact-level completion, method adherence for
+detailed prompts, and repeat consistency of Shannon vectors, distance
+matrices, and ordinations.
+
+##### End-to-end component ablation
+
+Compare the complete system, no patch, no microbiome skills, and no coding
+guidance using one model and three sessions per condition (12 sessions).  Score
+nine requested task outputs, adherence to eight specified methods, and total
+token use.  Interpret tokens together with completion.
+
+##### Targeted patch ablation during a running analysis
+
+Compare patched and unpatched runtimes in three sessions each using a real
+Case 1 QIIME 2 taxonomy command.  During execution, replace the pooled
+phenotype comparison with separate T1, T2C, and T2 comparisons and add a
+significant-genera heatmap.  The two primary outcomes are whether the pending
+plan is updated while the tool runs and whether tool exit automatically wakes
+the same session.  Runs in which the command ends before intervention are
+excluded and repeated with the reason retained.
+
+#### Data availability and Code availability
+
+Place these after Methods as separate article sections.  Data availability
+covers source accessions, sample mapping, deposited derived data, and limits on
+redistribution.  Code availability covers the repository, tagged release,
+license, environment specifications, analysis scripts, runtime pin, patch, and
+immutable archive DOI.
 
 ---
 
@@ -385,23 +507,22 @@ Keep figures in `papers/figures/`. Case panels stay empty until rsync.
 
 | ID | Placement | Content |
 |----|-----------|---------|
-| **Fig. 1** | Opening Results | Landscape: 16S / ref-based / assembly; skills on the backbone; Cases 1–3 as pins |
-| **Fig. 2** | Methods | Architecture: conversation → `mgx_create_job` → skills / conda / refs → `analysis/<step>/`; exec wake |
-| **Fig. 3** | Case 1 | Tomato: diversity / taxonomy + MetaPhlAn + genotype or resistance association |
-| **Fig. 4** | Case 2 | CRC: composition, pathways, classifier performance |
-| **Fig. 5** | Case 3 | MAG quality/taxonomy, composition, metabolic overview |
-| **Fig. 6** | Robustness + ablation | Completion / interventions under perturbations and ablations |
+| **Fig. 1** | Results 3.1 | Integrated system figure: architecture and data flow; 16S / reference-based / assembly families; representative skills; asynchronous user-message and command-completion timeline |
+| **Fig. 2** | Case 1 | Tomato: diversity / taxonomy, MetaPhlAn2/3 sensitivity, and resistance-associated signals |
+| **Fig. 3** | Case 2 | CRC: composition, function, differential results, and classifier performance |
+| **Fig. 4** | Case 3 | MAG quality/taxonomy, composition, and focal-genome functional annotation |
+| **Fig. 5** | Results 3.3 | Robustness: artifact completion across 3 models × 3 prompt granularities, with repeat-consistency summary |
+| **Fig. 6** | Results 3.4 | Ablation: end-to-end completion/token efficiency plus targeted patched-versus-unpatched HITL timeline and outcomes |
 
 | ID | Content |
 |----|---------|
-| **Table 1** | Skill catalog by family (the coverage table above) |
-| **Table 2** | Related systems vs this work (16S / ref / MAG / agent / long-run) |
-| **Table 3** | Case-study card: data, *n*, modalities, skills used, wall time, artifacts |
-| **Table 4** | Robustness |
-| **Table 5** | Ablation |
+| **Table 1** | Case-study overview: data, biological samples, sequencing libraries, capability tested, executed stages, and concordance criterion |
+| **Table 2** | Related systems comparison in the Introduction |
+| **Supplementary** | Skill inventory, detailed case results, all robustness sessions, HITL traces, ablation sessions, token accounting, software and reference versions; working identifiers live in `papers/supplementary_manifest.md` |
 
-Fig. 1 is mandatory. If the journal is tight on figures, merge Fig. 6 into
-Tables 4–5 and merge Fig. 2 into Fig. 1.
+Fig. 1 is mandatory.  Keep the representative HITL timeline and its
+patched-versus-unpatched outcome in Fig. 6 rather than presenting the
+architecture schematic as proof that the behavior works.
 
 ---
 

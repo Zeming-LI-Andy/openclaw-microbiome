@@ -56,7 +56,7 @@ Upstream compute that is **not** the robustness question is frozen so repeats me
 
 **Shotgun** (`stage/shotgun/`): metadata plus paired FASTQ in `reads/` — KneadData-cleaned libraries randomly subsampled to **20%** of reads (`seqtk`, seed 42; 36 libraries). Do not re-run KneadData.
 
-**Off-limits:** precomputed diversity / PERMANOVA / figures under `PRJNA777724/qiime2_16s_outputs/diversity/` (except the frozen rooted tree), existing MetaPhlAn tables, KneadData directories, raw FASTQ, and project helper scripts. Reuse of those products would make five runs look identical for the wrong reason.
+**Off-limits:** precomputed diversity / PERMANOVA / figures under `PRJNA777724/qiime2_16s_outputs/diversity/` (except the frozen rooted tree), existing MetaPhlAn tables, KneadData directories, raw FASTQ, and project helper scripts. Reuse of those products would make repeated runs look identical for the wrong reason.
 
 The 16S metadata already carries corrected HG64 T2/T2C labels. 16S also includes T3/T3C; shotgun does not. Prompts keep the original “3 timepoints” wording for the shared-marker task (T1, T2C, T2).
 
@@ -68,7 +68,7 @@ The 16S metadata already carries corrected HG64 T2/T2C labels. 16S also includes
 2. Copy `robustness/stage/` into a **new** session job `stage/` (or equivalent bind). Do not point the agent at the original `PRJNA777724/` analysis tree.
 3. Paste **one** of the three prompts as the user message. Confirm the plan if the agent asks; then do not coach methods.
 4. After the session ends (or is marked blocked), archive `job_id`, model id, prompt file, transcript, and `analysis/`.
-5. Repeat until the 3 × 3 × 5 matrix is filled.
+5. Repeat until the 3 × 3 × 3 matrix is filled (27 sessions in total).
 
 Zero intervention except safety / disk failure. A hang or timeout is a failed replicate; record the last finished step.
 
@@ -80,11 +80,15 @@ Primary: **task completion** on a rubric aligned to the detailed prompt’s sect
 
 Secondary (from the same runs; freeze the 16S table so this is agent-choice variance):
 
-- Shannon vectors: correlation / ICC across the five repeats of a cell.
+- Shannon vectors: pairwise correlation and an agreement summary across the
+  three repeats of a cell.  Treat any ICC estimate as exploratory because each
+  cell has only three runs.
 - Distance matrices: Mantel, separately for each metric the run actually produced.
 - Ordinations: Procrustes (do not compare raw PCoA coordinates).
 - Discrete decisions: rarefaction depth, metrics chosen, PERMANOVA formula.
 
 Also record protocol adherence (did a detailed-prompt run use Shannon and the three β metrics?) so a complete but method-wrong job is not scored as a scientific success.
 
-*n* = 5 is a repeatability screen. Report rates with intervals; do not treat a 5/5 cell as proof that the model is insensitive.
+*n* = 3 is an initial repeatability screen.  Report the individual runs and
+rates with intervals; do not treat a 3/3 cell as proof that the model is
+insensitive.

@@ -8,6 +8,19 @@
 
 These notes summarize only the two specified figures. They are demonstrations of pipeline coverage, not a standalone plant-pathology result.
 
+The matched shotgun analysis also provides a database-version sensitivity
+check for the two species emphasized by the source study.  MetaPhlAn3 detected
+*Pseudomonas putida*, which was significantly enriched in resistant cultivars,
+but did not resolve *Sphingopyxis unclassified*.  Reanalysis with MetaPhlAn2
+detected both *P. putida* and *Sphingopyxis unclassified*, and both showed
+significant between-phenotype differences.  This comparison is evidence that
+the agent can execute reference-based shotgun profiling, while also showing
+that recovery of a prespecified taxon depends on the reference database.  The
+manuscript should report the corresponding effect sizes, statistical test,
+adjusted P values, database builds, and numbers of detected samples directly
+from the archived output tables before treating either association as a formal
+result.
+
 ---
 
 ## Fig. 1 | Diversity and community composition across cultivar and inoculation

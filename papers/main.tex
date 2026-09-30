@@ -9,16 +9,21 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{siunitx}
+\usepackage{placeins}
 \usepackage[hidelinks]{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
-\usepackage[backend=biber,style=authoryear,maxbibnames=99,uniquename=false]{biblatex}
+\usepackage[
+  backend=biber,
+  style=numeric-comp,
+  sorting=none,
+  maxbibnames=99
+]{biblatex}
 
 \addbibresource{refs.bib}
+\AtBeginBibliography{\sloppy}
 \graphicspath{{figures/}}
 
-% Working title; see papers/outline.md for alternatives.
-\title{MicroBioAgent: end-to-end 16S and metagenomic analysis\\
-across amplicon, reference-based, and assembly-based workflows}
+\title{MicroBioAgent: an AI agent for automated microbiome analysis}
 \author{Author Name}
 \date{}
 
@@ -26,23 +31,33 @@ across amplicon, reference-based, and assembly-based workflows}
 \maketitle
 
 \begin{abstract}
-% Four beats: gap, system, three cases + reliability, implication.
-Microbiome analysis is split across expert toolchains for 16S amplicon
-profiling, reference-based shotgun taxonomy and function, and
-assembly-based MAG recovery.
-We present MicroBioAgent, a skill-driven agent that binds one
-conversation to one analysis job and executes step-level procedures on
-host conda runtimes, with registries for reference databases and
-background execution for long-running tools.
-Three case studies span that landscape: tomato rhizosphere 16S plus
-MetaPhlAn in a bacterial-wilt resistance setting; colorectal-cancer
-case--control MetaPhlAn, HUMAnN, and a supervised classifier; and MAG
-recovery with community composition and metabolic potential.
-% TODO: one sentence of robustness/ablation once metrics exist.
-The implication is that full-pipeline analysis across 16S and shotgun
-metagenomics---both reference-based and de~novo---can be driven
-conversationally without collapsing those families into a single rigid
-workflow.
+Microbiome studies require analytical choices that depend on the biological
+question, available assays, and intermediate findings.  Translating these
+choices into executable analyses requires connecting heterogeneous methods,
+software environments, reference resources, and intermediate outputs.
+Here we present MicroBioAgent, a domain agent that translates biological
+questions into study-specific analyses across 16S amplicon, reference-based
+shotgun, and assembly-based metagenomic workflows.  MicroBioAgent uses
+microbiome-specific skills to select and execute analytical methods in
+user-controlled computational environments.  It evaluates intermediate results
+to determine subsequent analyses in line with the biological question.
+We evaluated MicroBioAgent on three published datasets through amplicon and
+shotgun analysis of tomato rhizosphere communities, taxonomic and functional
+profiling with classifier training in a colorectal cancer cohort, and
+metagenomic assembly and MAG generation from a model polyethylene degradation
+study, followed by taxonomic profiling and annotation of genes associated with
+alkane and oxidized-derivative degradation in focal MAGs.
+The reanalyses identified biological patterns
+consistent with the original studies, with differences in statistical support
+and taxon detection across analytical methods and reference databases.
+The system also retains the analysis context
+across long-running operations, allowing pending work to be revised and
+execution to continue after tool completion.  These applications demonstrate
+that MicroBioAgent can carry out upstream processing and downstream analysis
+across different microbiome study designs without requiring a fixed
+end-to-end workflow template.
+% TODO: add aggregate robustness and component-ablation findings only after
+% the planned experiments have been completed and scored.
 \end{abstract}
 
 %% ====================================================================
@@ -50,88 +65,757 @@ workflow.
 \label{sec:intro}
 %% ====================================================================
 
-Microbiome studies increasingly seek to relate community composition
-to ecological conditions, host phenotypes, and microbial functional
-potential.  Addressing these questions may require markedly different
-analytical routes.  Analysis of 16S rRNA gene amplicons yields amplicon
-sequence variants, taxonomic assignments, phylogenies, and measures of
-community diversity.  Reference-based analysis of shotgun reads can
-estimate species composition, gene families, and pathways, whereas
-assembly and binning provide a genome-resolved view through
-metagenome-assembled genomes (MAGs) that can be examined for functional
-and metabolic potential
-\parencite{knight2018bestpractices,bolyen2019qiime2,
-beghini2021biobakery,uritskiy2018metawrap}.  These routes are
-complementary rather than interchangeable, and a study may require one
-route or a question-specific combination of several.  Their software is
-distributed across command-line programs, programming languages,
-runtime environments, file formats, and reference databases.  Selecting
-appropriate methods, executing them correctly, and consolidating their
-outputs into a defensible biological interpretation consequently require
-both computational proficiency and microbiome domain knowledge.  This
-fragmentation creates a substantial entry barrier, particularly for
-researchers without specialist bioinformatics training
-\parencite{tong2020genepiper,liu2021practical}.
+Microbiome studies seek to explain how microbial communities vary with
+host phenotype, environmental conditions, and functional potential.
+The analytical route depends on the question and the available data:
+16S rRNA gene amplicons characterize community diversity and taxonomy,
+reference-based shotgun profiling estimates species and functional
+composition, and assembly-based analysis constructs metagenome-assembled
+genomes (MAGs) for taxonomic and functional characterization
+\parencite{knight2018bestpractices}.  A study may combine these routes
+or extend an analysis after an intermediate finding motivates a new
+comparison.  Researchers must therefore connect biological objectives to
+method selection, compatible inputs, reference resources, and statistical
+interpretation.  This work requires both domain knowledge and computational
+proficiency, creating barriers for researchers without specialist
+bioinformatics training \parencite{tong2020genepiper,liu2021practical}.
 
-Mature software provides robust methods for the individual stages of
-this process.  QIIME~2 supports reproducible amplicon analysis; the
-bioBakery suite integrates taxonomic and functional profiling of shotgun
-data; and frameworks such as metaWRAP and Aviary coordinate assembly and
-MAG recovery \parencite{bolyen2019qiime2,beghini2021biobakery,
-uritskiy2018metawrap,newell2025aviary}.  Workflow systems including
-Snakemake and Nextflow make a specified analysis graph reproducible and
-scalable \parencite{koster2012snakemake,ditommaso2017nextflow}.  These
-systems establish the computational foundation of microbiome research.
-A predefined workflow, however, presupposes that an appropriate complete
-route has already been selected and encoded.  When a study crosses assay
-or analysis families, adds an optional annotation after inspecting an
-intermediate result, or changes direction as its biological question is
-refined, the study-level workflow must also be constructed or revised.
-Thus, reliable execution of established tools and accessible,
-study-specific orchestration remain distinct requirements.
+Workflow managers such as Snakemake and Nextflow provide a foundation for
+building reproducible and scalable analysis pipelines
+\parencite{koster2012snakemake,ditommaso2017nextflow}.  They organize
+computational dependencies and coordinate execution of a specified workflow.
+Applying a pipeline to a biological study still requires researchers to
+select an appropriate analysis path, configure methods and resources, and
+interpret the resulting outputs.  Extending a study to another assay or
+adding a comparison prompted by an intermediate finding may require changes
+to that path.  Translating a research question into the workflow, and revising
+it as the analysis develops, therefore remains a substantial part of the
+researcher's task.
 
-Large language model agents offer a natural-language interface for such
-orchestration.  AutoBA demonstrated automated planning, code generation,
-execution, and repair for multi-omics analyses; the open-source release
-of Biomni combined retrieval, planning, and tool execution across biomedical domains, including
-microbiome analyses of abundance tables and metadata; and BioAgents
-explored a multi-agent framework for bioinformatics workflows
-\parencite{zhou2024autoba,huang2025biomni,
-mehandru2025bioagents}.  These studies establish that biological agents
-can plan and execute analyses.  BIA focused on autonomous single-cell
-analysis; BioChatter provided an open-source framework for conversational
-biomedical applications; and the more recent BioMedAgent and BioMaster
-systems extended autonomous execution across broader collections of
-biomedical and bioinformatics tasks
-\parencite{xin2024bia,lobentanzer2025biochatter,
-bu2026biomedagent,su2026biomaster}.  The M3A framework also
-compared autonomous, human-on-the-loop, and human-in-the-loop modes in
-multi-omic single-cell analysis, with its human-in-the-loop mode pausing
-after each step for user input \parencite{johri2026m3a}.  MetaClaw is the closest
-microbiome-focused system, although MicroBioAgent was developed
-independently.  MetaClaw couples
-registered, standardized upstream workflows on FlowHub with customizable
-downstream analyses in local containers and evaluates conclusion-level
-reproduction across four shotgun metagenomic studies
-\parencite{zhang2026metaclaw}.  This design provides an auditable bridge
-between fixed cloud preprocessing and flexible downstream interpretation.
-It also highlights a complementary design opportunity: allowing the
-agent itself to compose and execute both upstream and downstream
-microbiome steps locally, without requiring a registered whole-analysis
-workflow to determine the study path, while preserving user control over
-analyses that may run for hours.
+Large language model agents offer a means of connecting natural-language
+objectives to computational actions.  AutoBA demonstrated planning, code
+generation, execution, and repair for multi-omics analyses, while Biomni
+combined planning and tool use across biomedical tasks
+\parencite{zhou2024autoba,huang2025biomni}.  Other systems have explored
+broader bioinformatics execution and human supervision of multi-step analyses
+\parencite{bu2026biomedagent,su2026biomaster,johri2026m3a}.
+These developments suggest that agents can help compose the analytical path
+as well as execute its operations.  In microbiome research, this approach
+requires domain knowledge that connects method selection to assay type,
+software and database requirements, expected outputs, and downstream
+interpretation.  A central design question is how to organize that knowledge
+so that an agent can assemble study-specific analyses across complementary
+microbiome workflows.
 
-The reported capabilities most relevant to this design opportunity are
-summarized in \cref{tab:agent-capabilities}
-\parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
-johri2026m3a,xin2024bia,lobentanzer2025biochatter,
-bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.  The comparison concerns functional scope rather
-than benchmark performance: a capability is marked as present only when
-it can be confirmed from the cited publication or public implementation.
+Here we present MicroBioAgent, a domain agent that translates microbiome
+research questions into inspectable, study-specific analyses executed in
+user-controlled computational environments.  It represents analytical methods
+as modular domain procedures spanning 16S amplicon profiling, reference-based
+shotgun analysis, and assembly-based MAG construction.  The agent selects
+procedures suited to the research question and executes them using configured
+software and reference databases.  Before execution, it develops an analysis
+plan for the study.  During execution, it examines intermediate results to
+determine whether the remaining steps need to be revised.  MicroBioAgent also
+supports asynchronous human-in-the-loop interaction: users can provide feedback
+while a long-running operation continues, allowing the agent to revise pending
+analyses and resume execution automatically after the operation completes.
+
+MetaClaw is another AI agent designed for microbiome analysis.  It combines
+predefined, deterministic upstream workflows on FlowHub with customizable
+downstream analyses in an OpenClaw skill container.  A single YAML pipeline
+registry links the two layers \parencite{zhang2026metaclaw}.
+MicroBioAgent composes upstream processing and downstream analyses from
+modular skills without requiring a predefined end-to-end workflow template.
+Both stages can run in a user-controlled computational environment, allowing
+researchers to retain control over their sequencing data without uploading raw
+reads to an external analysis platform.  We reanalysed three published datasets
+comprising 230 sequencing libraries from plant, human, and environmental
+microbiomes to evaluate whether MicroBioAgent could complete diverse analytical
+tasks and recover biological patterns reported in the original studies despite
+differences in methods and reference databases.  To assess robustness, we
+designed 27 independent sessions spanning three language models, three levels
+of prompt detail, and three repeats per combination.  We also designed
+component ablations to examine how domain skills, execution guidance, and the
+runtime extension contribute to task completion, method adherence, and token
+consumption.  A separate runtime comparison tested whether user feedback could
+update the plan during an ongoing analysis and whether execution resumed
+automatically after tool completion.  Together, this work aims to enable
+researchers without specialist bioinformatics training to carry out end-to-end
+microbiome analysis while preserving flexibility in method selection and user
+control during execution.
+
+%% ====================================================================
+\section{Results}
+\label{sec:results}
+%% ====================================================================
+
+\subsection{Composing study-specific analyses across microbiome workflows}
+\label{sec:landscape}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{microbioagent-architecture-image2-v7.png}
+  \caption{MicroBioAgent architecture and operating model.  A user request is
+    bound to an analysis job, from which the agent plans, selects skills, and
+    resolves local runtimes and reference resources for 16S amplicon,
+    reference-based shotgun, and assembly-based metagenomic analyses.
+    Intermediate artifacts, commands, parameters, and logs remain associated
+    with the job.  During long-running computation, a user message can update
+    pending work, whereas command completion triggers output verification and
+    continuation in the same session.}
+  \label{fig:architecture}
+\end{figure}
+
+MicroBioAgent is an AI-agent framework that integrates flexible composition
+of upstream and downstream microbiome analyses, local execution, and
+asynchronous human-in-the-loop interaction (\cref{fig:architecture}).
+Given a research question expressed in natural language, it develops an
+analysis plan and selects microbiome skills to carry it out.  These
+skills provide method-specific guidance that the agent draws on when choosing
+analytical approaches, preparing commands, and interpreting outputs.  As each
+step completes, the agent examines its results and decides whether the pending
+plan needs adjustment.
+
+MicroBioAgent executes upstream processing and downstream analyses in a
+user-controlled local computational environment, without requiring raw
+sequencing data to be uploaded to an external analysis platform.  To support
+these analyses, the system manages analytical tools and reference databases
+through separate configuration files.  The tool configuration specifies
+available software and its associated execution environments, while the
+database configuration records reference resources and their local storage
+paths.  Users can modify these configurations to add or replace tools and
+reference databases according to their research needs.
+
+For upstream analysis, MicroBioAgent supports 16S amplicon processing,
+reference-based metagenomic profiling, and assembly-based metagenomic
+reconstruction (\cref{tab:skills}).  Its amplicon capabilities include sequence
+quality assessment, denoising, amplicon sequence variant inference, taxonomic
+classification, and phylogenetic reconstruction.  For shotgun data, it supports
+read quality control and host-read removal, taxonomic and functional profiling,
+and gene-catalogue construction.  Assembly-based capabilities include
+metagenomic assembly and binning, MAG quality assessment, dereplication,
+taxonomic assignment, and abundance estimation.
+
+MicroBioAgent supports a range of downstream analyses, such as comparisons of
+microbial communities and characterization of the functions of individual
+organisms.  These include comparisons of diversity and taxonomic or functional
+abundances between groups, covariate association testing, functional enrichment,
+association network analysis, and supervised classification.
+For genes and recovered genomes, available
+analyses include functional and pathway annotation, antimicrobial-resistance
+and virulence-gene annotation, metabolic reconstruction, and identification of
+primary metabolic and secondary-metabolite biosynthetic gene clusters.
+For visualization, MicroBioAgent supports ordination plots of community
+differences and heatmaps of taxonomic abundances or functional profiles,
+with customization to highlight the comparisons of interest.
+
+During long-running computations, such as MetaPhlAn or HUMAnN profiling,
+MicroBioAgent keeps the conversation available for user interaction while the
+analysis runs in the background.  Users can provide additional instructions or
+revise the pending analysis plan without waiting for the running task to finish.
+This asynchronous human-in-the-loop interaction allows the agent to incorporate
+feedback during execution and automatically resume the analysis under the
+updated plan after checking the completed task's outcome.  MicroBioAgent thus
+supports end-to-end microbiome analysis through flexible workflow composition
+and local execution, while allowing users to guide ongoing analyses.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{MicroBioAgent analytical capabilities, grouped by scientific task.
+    Functional predictions and genome annotations describe inferred biological
+    potential.}
+  \label{tab:skills}
+  \small
+  \renewcommand{\arraystretch}{1.12}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Task category & Supported analyses \\
+    \midrule
+    Amplicon characterization
+      & Read import and quality summaries; denoising and ASV inference;
+        taxonomy; phylogeny; predicted functional profiles \\
+    Shotgun profiling
+      & Read quality control and host depletion; species abundances;
+        gene-family and pathway profiles; nonredundant gene catalogues \\
+    MAG characterization
+      & Assembly and binning; quality assessment; dereplication;
+        taxonomic assignment; abundance estimation; genome annotation \\
+    Community comparisons
+      & Alpha and beta diversity; ordination; group comparisons;
+        differential abundance; covariate association testing \\
+    Functional interpretation
+      & Gene and protein annotation; orthology, pathway, and ontology mapping;
+        functional enrichment; resistance and virulence gene annotation \\
+    Metabolic characterization
+      & Metabolic pathway and model reconstruction; primary metabolic gene
+        clusters; secondary-metabolite biosynthetic gene clusters \\
+    Study-specific analysis
+      & Custom statistical scripts; association networks; supervised
+        classification; figures, result tables, and analytical reports \\
+    Data and resource access
+      & Public sequencing metadata and reference-protein retrieval;
+        local reference resources and online annotation queries \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Study-specific analyses across plant, human, and environmental microbiomes}
+\label{sec:case-studies}
+
+We independently reanalysed three published microbiome datasets to assess
+analytical scope on plant, human, and environmental samples.  These case
+studies were designed as capability-oriented reanalyses, rather than exact
+computational reproductions of the source studies: software versions,
+reference databases, and selected statistical procedures differed.  We
+therefore assessed completion of the requested end-to-end path, validity of
+the resulting artifacts, and recovery of prespecified biological signals.
+
+The three cases comprised 230 sequencing-library inputs from 194 distinct
+biological samples when the 36 matched tomato shotgun libraries were counted
+as a subset of the 60 tomato specimens.  They cover 16S amplicon analysis and
+matched shotgun profiling, reference-based taxonomic and functional analysis
+with supervised classification, and assembly-based MAG construction with
+taxonomic assignment and focal genome annotation
+(Supplementary Table~\ref{tab:cases-overview}).
+
+\subsubsection{A tomato rhizosphere bacterial-wilt resistance study}
+\label{sec:case-tomato}
+
+We first asked whether community patterns associated with pathogen
+inoculation and host resistance could be recovered through complementary
+amplicon and shotgun analyses.  This case connected community-level diversity
+and genus-level comparisons to species profiling of matched libraries.
+We analysed 16S V3--V4 data from 60 rhizosphere samples representing four
+tomato cultivars, five sampling points, and three biological replicates per
+combination.  The cultivars comprised two susceptible lines (A57 and HG70), a
+resistant parent (HG64), and a resistant F1 hybrid (HF12).  The 16S route
+produced an ASV table, taxonomic assignments, a rooted phylogeny, alpha- and
+beta-diversity outputs, and genus-level differential-abundance results
+\parencite{yin2022tomato}.
+
+After rarefaction to 56,726 reads per sample, Shannon diversity declined after
+\textit{Ralstonia} inoculation in all cultivars, with a larger decrease in the
+susceptible lines (\cref{fig:tomato-diversity}a).  For example, mean Shannon
+diversity at T2 was 5.11 in A57 and 6.82 in HG70, compared with 6.32 in HG64
+and 8.69 in HF12.  Weighted-UniFrac PCoA separated samples principally by
+inoculation along PC1 (57.2\% of variance) and secondarily by resistance
+phenotype along PC2 (12.8\%; \cref{fig:tomato-diversity}b).  Inoculated
+resistant samples were closer to the uninoculated centroid than inoculated
+susceptible samples.  Genus-level profiles showed concomitant expansion of
+\textit{Ralstonia}, most prominently in A57 and HG70
+(\cref{fig:tomato-diversity}c).
+
+Genus-level MaAsLin~3 comparisons identified overlapping nominally enriched
+genera in HG64 and HF12 at each time point
+(\cref{fig:tomato-enrichment}).  However, no shared genus remained at
+Benjamini--Hochberg $q<0.05$ across the two resistant cultivars; the robust
+signal in this dataset was therefore the inoculation-associated diversity and
+composition shift rather than a conserved FDR-significant marker set.
+
+Matched shotgun profiling provided a focused reference-database sensitivity
+analysis for two species highlighted by the source study.  MetaPhlAn3 detected
+\textit{Pseudomonas putida}, which was significantly enriched in resistant
+cultivars, but did not resolve \textit{Sphingopyxis unclassified}.  MetaPhlAn2
+detected both prespecified taxa and found significant between-phenotype
+differences for both.  Together, the amplicon and shotgun analyses recovered community shifts
+and selected taxon-level associations, while distinguishing nominal signals
+from FDR-supported findings and database-dependent detection.  This case
+illustrates why a study-level analysis must retain the statistical and
+reference context of its results when relating complementary assays to the
+same biological question.
+% SUPPLEMENTARY PLACEHOLDER: case1-metaphlan-version-sensitivity
+% SUPPLEMENTARY PLACEHOLDER: case1-16s-statistics
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig1_diversity.png}
+  \caption{Tomato rhizosphere diversity and community composition.  (a)
+    Shannon diversity across cultivars, sampling time points, and inoculation
+    conditions.  (b) Weighted-UniFrac PCoA, coloured by resistance phenotype
+    and shaped by inoculation treatment.  (c) Genus-level composition across
+    individual samples.  Each cultivar-time-point combination contained three
+    biological replicates.}
+  \label{fig:tomato-diversity}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_genus_enrichment.png}
+  \caption{Differentially enriched genera in the resistant tomato parent HG64
+    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
+    susceptible cultivars at each sampling point.  Shared enrichment denotes a
+    positive coefficient and nominal $P<0.05$ in both contrasts.}
+  \label{fig:tomato-enrichment}
+\end{figure}
+
+% Keep the two tomato figures with Case 1 rather than allowing them to
+% migrate into the following case study.
+\FloatBarrier
+
+\subsubsection{A colorectal cancer faecal metagenomic biomarker study}
+\label{sec:case-crc}
+
+We next examined whether a disease-focused analysis could connect
+species associations, functional differences, and within-cohort prediction.
+This required extending the outputs of reference-based profiling into
+statistical testing and supervised modeling within the same study.
+We applied this analysis to the C1 cohort from Yu
+\textit{et al.}, comprising 74 colorectal-cancer (CRC) cases and 54 controls
+\parencite{yu2017crc}.
+MetaPhlAn3 generated species profiles, and HUMAnN3 generated gene-family and
+KEGG Orthology (KO) abundance tables for downstream testing and classification.
+Species-level Bray--Curtis distances differed by disease status
+(PERMANOVA $P=0.002$, $F=2.32$) and cancer stage ($P=0.009$, $F=1.65$), while
+sex, age, and BMI were not significant in the corresponding tests
+(\cref{fig:crc}).
+
+Wilcoxon tests with Benjamini--Hochberg correction identified ten species with
+$q<0.05$.  Five taxa emphasized in the source study were recovered in the
+same direction: CRC-enriched \textit{Parvimonas micra},
+\textit{Peptostreptococcus stomatis}, \textit{Fusobacterium nucleatum}, and
+\textit{Solobacterium moorei}, and control-enriched \textit{Eubacterium
+ventriosum}.  The functional route produced 841,261 gene families and 4,407
+KOs, of which 38,124 and 22, respectively, differed at $q<0.05$.
+
+Fifteen-feature mRMR panels were used to train L2-regularized logistic
+regression models under nested fivefold cross-validation.  The pooled AUROC
+was 0.864 for the gene-family panel and 0.714 for the KO panel.  Feature selection and model fitting were confined to the training data
+within nested cross-validation.  This case demonstrates composition of
+profiling and downstream modeling around a disease question; the predictive
+results describe within-cohort discrimination and require external validation
+before diagnostic interpretation.  The selected panels also differ from the
+source study's 20-gene marker panel.
+% SUPPLEMENTARY PLACEHOLDER: case3-species-and-function-tests
+% SUPPLEMENTARY PLACEHOLDER: case3-classifier-folds
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-3-Fig_composite.png}
+  \caption{Reference-based analysis of CRC faecal metagenomes.  Species-level
+    beta diversity, disease-associated taxa, co-occurrence of the
+    differentially abundant species, functional features, and nested
+    cross-validation of gene-family and KO classifiers are shown.}
+  \label{fig:crc}
+\end{figure}
+
+\FloatBarrier
+
+\subsubsection{A polyethylene-enrichment genome-resolved metagenomic study}
+\label{sec:case-mag}
+
+The third case required linking community composition to the genomic
+potential of organisms represented by MAGs from enrichment cultures.  We analysed six
+shotgun metagenomes from soil inocula enriched on low-molecular-weight
+polyethylene (LMWPE), C30, or C40.  Assembly and binning generated MAGs for
+subsequent taxonomic assignment, abundance estimation, and targeted functional
+annotation.
+The agent completed MAG construction, quality filtering, dereplication, taxonomic
+profiling, abundance estimation, and eggNOG-based annotation of focal genomes.
+The dataset and its biological targets were reported by Sandholm \textit{et
+al.}\ \parencite{sandholm2025polyethylene}.
+Across the six enrichments, MAG construction and quality filtering yielded
+151 high- or medium-quality MAGs (101 high quality and 50 medium quality);
+dereplication at 95\% ANI retained
+73 representatives (42 high quality and 31 medium quality).
+
+Taxonomic assignment using GTDB release R232 enabled genus- and species-level
+comparisons of the MAG abundance profiles.  These profiles differed by
+inoculum and substrate.
+\textit{Acinetobacter} dominated S1 LMWPE and S1 C30 (64\% and 67\%), whereas
+\textit{Aquipseudomonas} dominated S1 C40 and S2 LMWPE (64\% and 57\%).
+Representative focal MAGs carried genes assigned to alkane oxidation,
+2-ketone or oxidized-derivative degradation, and $\beta$-oxidation modules.
+The analysis recovered the principal taxonomic patterns and gene repertoires
+of interest in the source study, despite differences in GTDB release and
+annotation system.
+
+This case extends the analytical scope from community profiles to
+organism-resolved hypotheses about metabolic potential.  Each enrichment was
+represented by one metagenome, limiting interpretation to descriptive
+comparisons.  The functional values are predicted CDS counts in representative
+MAGs; expression measurements or experimental validation would be needed to
+establish activity and substrate degradation.
+% SUPPLEMENTARY PLACEHOLDER: case4-mag-catalogue
+% SUPPLEMENTARY PLACEHOLDER: case4-functional-annotations
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-4-Fig_composite.png}
+  \caption{Assembly-based analysis of enrichment metagenomes.  (a) Numbers of
+    high- and medium-quality MAGs before and after 95\% ANI dereplication.
+    (b) Genus-level MAG composition.  (c) Species among the five most abundant
+    MAGs in at least one sample.  (d) eggNOG-annotated gene counts in focal
+    MAGs for alkane oxidation, 2-ketone or oxidized-derivative degradation,
+    and $\beta$-oxidation.}
+  \label{fig:mag}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Robustness across models and prompt granularity}
+\label{sec:robustness}
+
+Robustness will be evaluated on frozen Case~1 inputs with the complete system
+under three models, three prompt granularities, and three independent sessions
+per cell (27 sessions).  The primary outcome is artifact-level completion of
+the common scientific goals: data characterization, 16S alpha and beta
+diversity, taxonomic and differential-abundance analysis, and shotgun
+taxonomic and differential-abundance analysis.  Method-specific adherence is
+scored only for the detailed prompt.  Shannon agreement, distance-matrix
+Mantel tests, and Procrustes comparisons of ordinations provide secondary
+repeatability measures.
+% RESULTS PENDING: robustness-session-results
+% RESULTS PENDING: robustness-output-concordance
 
 \begin{table}[htbp]
   \centering
-  \caption{Capabilities of bioinformatics agents relevant to end-to-end
+  \caption{Planned reporting table for robustness across models and prompt
+    granularity.  Each cell summarizes three independent sessions.  Values
+    will be inserted after the 27-session experiment is complete.}
+  \label{tab:robustness-results}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\linewidth}{@{}llccccc@{}}
+    \toprule
+    Model & Prompt
+      & \shortstack{Completed\\sessions}
+      & \shortstack{Artifact score\\mean / 5}
+      & \shortstack{Shannon\\agreement $r$}
+      & \shortstack{Mantel\\agreement $r$}
+      & \shortstack{Procrustes\\disparity} \\
+    \midrule
+    Model A & Detailed & pending & pending & pending & pending & pending \\
+            & Medium   & pending & pending & pending & pending & pending \\
+            & Simple   & pending & pending & pending & pending & pending \\
+    \addlinespace
+    Model B & Detailed & pending & pending & pending & pending & pending \\
+            & Medium   & pending & pending & pending & pending & pending \\
+            & Simple   & pending & pending & pending & pending & pending \\
+    \addlinespace
+    Model C & Detailed & pending & pending & pending & pending & pending \\
+            & Medium   & pending & pending & pending & pending & pending \\
+            & Simple   & pending & pending & pending & pending & pending \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} Completed sessions are reported as $n/3$.  The artifact
+    score sums five prespecified analysis domains, each scored 0, 0.5, or 1.
+    Agreement statistics summarize pairwise comparisons among repeats within
+    a model--prompt cell.  Mantel results are reported separately by distance
+    metric in the Supplementary Information; the main-table value summarizes
+    metrics shared by all three sessions.  Lower Procrustes disparity denotes
+    closer agreement.
+  \end{minipage}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Evaluating component contributions and asynchronous guidance}
+\label{sec:ablation}
+
+\subsubsection{Component contributions to end-to-end analysis}
+
+End-to-end component ablation will compare the complete system with
+conditions lacking shipped skills, coding and long-execution guidance, or the
+session-runtime extension.  Each condition uses the same detailed Case~1 prompt,
+frozen inputs, one model, and three independent sessions without mid-run user
+feedback.  The primary outcomes are end-to-end task success, artifact
+completion across nine requested outputs, adherence to the eight prespecified
+methods, and total token use.  Task completion is additionally resolved by
+output type to identify which parts of the requested analysis are omitted
+under each ablation.  Raw token use will be interpreted together with
+completion because a stalled session can consume fewer tokens by performing
+less analysis.
+% RESULTS PENDING: ablation-session-results
+
+\begin{table}[htbp]
+  \centering
+  \caption{Planned reporting table for end-to-end component ablation.  Each
+    condition contains three independent sessions using the same model,
+    detailed prompt, and frozen inputs.}
+  \label{tab:end-to-end-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{1.3pt}
+  \renewcommand{\arraystretch}{1.18}
+  \textit{A. Core ablation outcomes}\\[0.3em]
+  \begin{tabularx}{\linewidth}{@{}l*{3}{>{\centering\arraybackslash}X}@{}}
+    \toprule
+    Condition
+      & \shortstack{Task completion\\rate (\%)}
+      & \shortstack{Method adherence\\rate (\%)}
+      & \shortstack{Median total\\tokens} \\
+    \midrule
+    Full & pending & pending & pending \\
+    $-$Runtime extension & pending & pending & pending \\
+    $-$Skills & pending & pending & pending \\
+    $-$Exec guidance & pending & pending & pending \\
+    \bottomrule
+  \end{tabularx}
+
+  \vspace{0.8em}
+  \textit{B. Completion of individual requested tasks}\\[0.3em]
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}p{0.14\linewidth}}@{}}
+    \toprule
+    Task & Full & \shortstack{$-$Runtime\\extension} & $-$Skills & $-$Exec guidance \\
+    \midrule
+    16S $\alpha$ diversity & pending & pending & pending & pending \\
+    16S $\beta$ diversity & pending & pending & pending & pending \\
+    16S taxonomic table & pending & pending & pending & pending \\
+    16S differential abundance & pending & pending & pending & pending \\
+    MetaPhlAn table & pending & pending & pending & pending \\
+    Shotgun differential abundance & pending & pending & pending & pending \\
+    Figures & pending & pending & pending & pending \\
+    Scripts & pending & pending & pending & pending \\
+    Report & pending & pending & pending & pending \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} Full denotes the complete system; $-$Runtime extension uses the
+    standard session runtime, $-$Skills removes the microbiome domain skills,
+    and $-$Exec guidance removes the coding and long-execution instructions.
+    Each task-specific cell in panel B reports the number of sessions that
+    produced a valid result for that task ($n/3$).  Task completion rate is
+    the percentage of the nine task items completed, averaged across the three
+    sessions in a condition.  Method adherence rate is the percentage of the
+    eight methods named
+    in the detailed prompt: sequencing-depth normalization, Shannon diversity,
+    weighted UniFrac, unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA,
+    PERMANOVA, and PERMDISP that were used as requested, averaged across the
+    three sessions.  Median total tokens use the same accounting source in all
+    conditions; individual-session and pre-failure token counts are reported
+    in the Supplementary Information.
+  \end{minipage}
+\end{table}
+
+\subsubsection{Runtime ablation for analysis continuity}
+
+We tested asynchronous guidance with a real, minutes-scale Case~1 QIIME~2
+taxonomy-classification task.  After the command was confirmed running, the
+user instructed the agent to replace a pooled resistant-versus-susceptible
+comparison with separate T1, T2C, and T2 comparisons and to add a
+significant-genera heatmap.  No subsequent ``continue'' message was sent.
+
+With the extended runtime, the agent yielded while the command continued,
+updated the pending plan during execution, and resumed automatically after
+command completion in all three sessions (\cref{tab:hitl-ablation}).  With
+the standard runtime in the tested configuration, neither plan revision during
+active computation nor automatic session resumption after tool exit was
+observed in any of the three sessions.
+These observations support plan revision and automatic continuation for the
+tested command and runtime configuration.  The two endpoints assess session
+interaction; they do not separately establish that every requested change was
+correctly reflected in the final analytical outputs.
+% TODO: score final-output adherence to the revised plan from archived runs.
+% SUPPLEMENTARY PLACEHOLDER: hitl-intervention-logs
+
+\begin{table}[htbp]
+  \centering
+  \caption{Runtime-extension ablation assessing asynchronous human guidance
+    during active computation.  Each runtime was evaluated in three independent
+    sessions.}
+  \label{tab:hitl-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\linewidth}{@{}l*{2}{>{\centering\arraybackslash}X}@{}}
+    \toprule
+    System
+      & \shortstack{Plan updated\\during execution}
+      & \shortstack{Automatic continuation\\after tool exit} \\
+    \midrule
+    Extended runtime & (3/3) & (3/3) \\
+    Standard runtime & (0/3) & (0/3) \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} The two conditions differ only in the session-runtime
+    extension described in \cref{sec:asynchronous-execution}.
+    Plan updated during execution requires the agent
+    to yield while the tool continues in the background and to incorporate the
+    user's message into the pending plan before tool completion.  Automatic
+    continuation requires tool exit to reactivate the session without another user
+    message.  Results are reported as successful sessions out of three.
+  \end{minipage}
+\end{table}
+
+\FloatBarrier
+
+%% ====================================================================
+\section{Discussion}
+\label{sec:discussion}
+%% ====================================================================
+
+MicroBioAgent connects biological objectives to established microbiome
+methods through an analysis process that researchers can inspect and revise.
+The three reanalyses illustrate complementary uses of this approach: relating
+amplicon and shotgun profiles to resistance phenotypes, extending disease
+profiles into functional and predictive analyses, and linking taxonomically
+assigned MAGs to metabolic potential.  Their common contribution is the composition
+of existing methods around a study question.  The underlying algorithms and
+reference resources remain responsible for the primary biological estimates.
+
+Organizing domain knowledge at the level of individual procedures provides a
+practical basis for this composition.  Method requirements and expected
+products remain explicit while their arrangement can vary between studies.
+The case studies also show why interpretation must retain the context of
+these choices.  A nominal association may not survive multiple-testing
+correction, a taxon may be represented differently across reference databases,
+and a predicted gene repertoire does not establish metabolic activity.
+Maintaining commands, parameters, and outputs within the analysis context
+supports review of such distinctions, although their correct interpretation
+still requires scientific judgment.
+
+The current evidence establishes feasibility across the selected cases.
+The planned robustness and component-ablation experiments have not yet
+established aggregate completion rates, model dependence, or the contribution
+of each component to analytical performance.  Comparisons with a general
+agent given the same software and resources would further quantify the value
+of the integrated system.  Agreement between repeated analyses should be
+assessed alongside method correctness and independently checked results,
+since consistent outputs can still be incorrect.  User studies are also
+needed to determine whether the conversational interface reduces training,
+manual intervention, or time spent organizing an analysis.
+
+Human confirmation of the initial plan and expert review of analytical choices
+remain part of the operating model.  Procedure-specific output checks do not
+guarantee statistical validity or prevent unsupported interpretations.  Local
+execution retains the compute, software-maintenance, and reference-database
+requirements of the underlying tools.  Workflow managers remain well suited
+to repeated execution of a specified analysis at scale; MicroBioAgent focuses
+on defining and revising study-specific analyses through interaction.
+
+Continuity during prolonged computation supports this operating model.
+The targeted runtime experiment demonstrated plan revision during an active
+command and automatic continuation after tool completion in the tested
+configuration.  These observations establish a limited execution capability;
+reliability across longer jobs and more complex revisions, and the fidelity
+of final outputs to revised instructions, require further evaluation.
+
+MicroBioAgent organizes established microbiome methods into study-specific
+analyses guided by biological questions.  The three published-data reanalyses
+demonstrate paths through amplicon profiling, reference-based metagenomics,
+and MAG construction with taxonomic and functional characterization.
+By connecting modular domain procedures, local computational resources, and
+intermediate results within a common analysis context, the system provides a
+basis for question-driven analysis across microbiome workflows.
+
+%% ====================================================================
+\section{Methods}
+\label{sec:methods}
+%% ====================================================================
+
+\subsection{MicroBioAgent system overview}
+\label{sec:system-overview}
+
+MicroBioAgent is an agent-based system for study-specific microbiome
+analysis, implemented on the OpenClaw runtime.  It maintains a persistent
+analysis context across a conversation, linking the user's research objective
+and input data with the selected methods, intermediate products, and pending
+decisions.  Before computation begins, the agent states an inspectable plan.
+It then selects modular analytical procedures according to the study objective,
+available data, and verified intermediate results rather than requiring the
+entire study to conform to a predefined workflow (\cref{fig:architecture}).
+
+The system separates analytical knowledge from execution guidance.  Domain
+procedures describe when a microbiome method is applicable, the inputs and
+resources it requires, the outputs it should produce, and the checks relevant
+to those outputs.  Agent-facing execution instructions govern how procedures
+are run and how long-running commands release and later resume the
+conversation.  A failed procedure is reported together with any downstream
+work that depends on it; unavailable results are not replaced by model-generated
+values.
+
+\subsection{Skill-guided analysis and configured local execution}
+\label{sec:skills-execution}
+
+MicroBioAgent combines a tool-use specification with step-level microbiome
+procedures.  The tool-use instructions (\texttt{TOOLS.md}) direct the agent to
+the relevant domain procedure and associate it with a configured software
+environment and, where required, a reference resource.  The domain procedures
+encode method-specific requirements without prescribing a single sequence for
+an entire study.  Consequently, a statistical model or targeted annotation can
+be added to an existing profile when the scientific question requires it,
+without defining a separate end-to-end template.
+
+Bioinformatics commands are executed in user-provided host or container
+environments.  Software environments and reference paths are configured before
+analysis; if a required environment or database is unavailable, the agent
+reports the missing dependency rather than inferring an unverified path or
+silently substituting a resource.  Compute-intensive processing of raw reads
+therefore occurs in the user-controlled environment and does not require their
+submission to an external microbiome analysis service.  Optional online
+annotation procedures may transmit the query information required by the
+corresponding public service.
+
+After an analytical operation finishes, the agent inspects its exit status and
+expected artifacts before using those products in subsequent work.  The depth
+of this inspection is procedure-specific; it is an agent-guided check of
+expected outputs rather than a universal validation engine.  The implemented
+analytical scope is summarized in \cref{tab:skills}.  Supervised modeling in
+the colorectal-cancer case was composed from the resulting abundance tables
+and general statistical software rather than exposed as a fixed classifier
+workflow.
+
+
+
+\subsection{Long-running analysis execution and continuation}
+\label{sec:asynchronous-execution}
+
+A separate execution-guidance layer (\texttt{CODING.md}) instructs the agent
+to complete and inspect one principal analytical operation before advancing to
+dependent work.  When a command remains active after an initial observation
+period, the command continues while the conversational turn is yielded.  The
+agent does not use conversational polling as a substitute for command
+completion.
+
+Two events can subsequently reactivate the analysis.  A user message allows
+the agent to revise pending work while the command continues; if the command
+is still active after that revision, the conversation is yielded again.  A
+separate completion event reactivates the session when the command exits, at
+which point the outputs are inspected and work continues under the current
+plan.
+
+We implemented this continuation mechanism through a version-pinned extension
+to the OpenClaw session runtime.  It builds on existing facilities for
+background execution and yielding a session.  The extension adjusts completion-event delivery,
+resumption of the associated session, and runtime tool guidance for yielding
+control during active computation.  It also handles completion events that
+arrive while a conversational turn is still active.  The execution instructions
+specify how the agent uses these facilities; domain procedures guide the
+analytical work performed after resumption.  Asynchronous guidance therefore
+depends on the interaction of runtime behavior and agent instructions.
+For reproducibility, the extension is distributed as a version-pinned OpenClaw
+patch pack with the complete instruction text and application instructions.
+The target runtime version and commit are recorded in the accompanying
+manifest.
+
+\subsection{Scope of the related-system comparison}
+\label{sec:related-scope}
+
+\Cref{tab:agent-capabilities} summarizes reported functional scope in related
+bioinformatics agents
+\parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
+johri2026m3a,xin2024bia,lobentanzer2025biochatter,
+bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.
+The comparison concerns documented capabilities, not comparative accuracy or
+performance under a shared evaluation.  Unconfirmed capabilities are marked
+as unestablished rather than absent.
+% TODO: provide release-specific evidence for each cell in the supplementary
+% comparison before submission.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Reported capabilities of bioinformatics agents relevant to end-to-end
     microbiome analysis.  The three microbiome columns specifically
     concern analysis beginning with sequencing reads.}
   \label{tab:agent-capabilities}
@@ -153,23 +837,23 @@ it can be confirmed from the cited publication or public implementation.
       & On-premises analysis \\
     \midrule
     BIA
-      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     BioChatter
-      & $\times$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & \textemdash & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     AutoBA
-      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     \shortstack[l]{Biomni\\(open-source)}
-      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     BioAgents
-      & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+      & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
     M3A
-      & $\checkmark$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     BioMedAgent
-      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
     BioMaster
-      & $\checkmark$ & $\times$ & $\times$ & $\checkmark$ & $\times$ & $\checkmark$ \\
+      & $\checkmark$ & \textemdash & \textemdash & $\checkmark$ & \textemdash & $\checkmark$ \\
     MetaClaw
-      & $\checkmark$ & $\times$ & $\checkmark$ & $\checkmark$ & $\times$ & $\checkmark$(partial) \\
+      & $\checkmark$ & \textemdash & $\checkmark$ & $\checkmark$ & \textemdash & $\checkmark$(partial) \\
     MicroBioAgent
       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
     \bottomrule
@@ -178,397 +862,265 @@ it can be confirmed from the cited publication or public implementation.
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} $\checkmark$, supported;
-    $\times$, not supported.  Biomni denotes the open-source release.
+    \textit{Notes:} $\checkmark$, reported support;
+    \textemdash, support not established from the reviewed sources, which
+    does not demonstrate inability.  Biomni denotes the open-source release.
+    This scope comparison is not a performance benchmark.
   \end{minipage}
 \end{table}
 
-What is needed for this setting is not another fixed microbiome pipeline,
-but an accessible and adaptive execution layer that standardizes
-individual analytical steps while organizing fragmented tools and
-outputs into a study-level workflow guided by the research objective,
-available data, and verified intermediate results.  Such a layer should
-allow a researcher to begin with a biological question rather than a
-hand-written workflow definition; resolve the required software and
-reference resources; execute and inspect each step; and revise pending
-analyses as new results or priorities arise.  Keeping sequencing-data
-computation in a user-controlled environment reduces the need to transfer
-raw reads to an external analysis service.  Maintaining interaction while
-long-running commands continue is equally important: automation should
-reduce the computational and operational burden without removing the
-researcher's ability to redirect the analysis or exercise biological
-judgement.
+\subsection{Case study design}
+\label{sec:case-design}
 
-Here we present MicroBioAgent, which implements this operating model
-through four linked contributions.  First, it provides step-level domain
-skills spanning upstream and downstream 16S amplicon, reference-based
-shotgun, and assembly-based MAG analysis, together with taxonomic
-classification, gene and pathway annotation, metabolic reconstruction,
-and resistance, virulence, and biosynthetic gene-cluster prediction.
-Second, the
-agent selects and connects these standardized steps into a
-study-specific plan, checks the products of each step, and can revise the
-remaining sequence instead of submitting every study to a predefined
-end-to-end directed acyclic graph (DAG).  Third, it resolves user-configured runtimes and reference
-resources and executes sequencing-data analysis locally, allowing raw
-reads to remain in the user's computational environment.  Fourth, it
-supports asynchronous human guidance during extended computation: a
-long-running command continues in the background while the agent yields
-its turn, the user may revise the analysis in the same session, and a
-completion event resumes execution under the updated plan.  We demonstrate
-the resulting analytical scope in three case studies spanning plant
-rhizosphere amplicon and shotgun profiling, colorectal-cancer taxonomic
-and functional analysis with classification, and genome-resolved MAG
-recovery with metabolic characterization.  By translating a biological
-objective into an inspectable, locally controlled, and revisable
-end-to-end process, MicroBioAgent lowers the computational and operational
-barrier to study-specific microbiome analysis while retaining human
-scientific oversight.
+We selected three published datasets to exercise complementary analytical
+capabilities on plant, human, and environmental microbiomes
+(Supplementary Table~\ref{tab:cases-overview}).  The cases were designed as capability-oriented
+reanalyses rather than exact computational reproductions.  Software releases,
+reference databases, and selected statistical procedures could therefore
+differ from the source publications.  Before examining the reanalysis output,
+we identified the biological comparisons and taxa or functions emphasized by
+each source study.  Evaluation considered whether the requested analysis was
+completed, whether its artifacts were usable, and whether those prespecified
+signals were recovered; numerical identity with the source publication was
+not required.
+
+\subsubsection{Case 1 --- Tomato rhizosphere 16S and metagenomic analysis}
+\label{sec:methods-tomato}
+
+The tomato dataset comprised 60 V3--V4 16S samples arranged as four cultivars,
+five sampling conditions, and three biological replicates
+\parencite{yin2022tomato}.  A57 and HG70 were treated as susceptible cultivars,
+whereas HG64 and HF12 were treated as resistant.  The sampling conditions were
+T1 (day 0), T2C and T2 (day 5, uninoculated and inoculated), and T3C and T3
+(day 10, uninoculated and inoculated).  Thirty-six matched shotgun libraries
+covered T1, T2C, and T2.
+
+Amplicon sequence variants were obtained by DADA2 denoising and assigned
+taxonomy using the configured QIIME~2 classifier.  Alpha diversity was
+calculated from an ASV table rarefied to 56,726 reads per sample.  Shannon
+values were summarized by cultivar, time point, and inoculation status; pooled
+resistant and susceptible groups were compared within each time point using
+two-sided Mann--Whitney tests.  Community dissimilarity was evaluated using
+weighted and unweighted UniFrac and Bray--Curtis distances.  Weighted-UniFrac
+principal-coordinate analysis was used for visualization, and group effects
+were assessed by PERMANOVA with PERMDISP used to evaluate homogeneity of
+multivariate dispersion.
+
+Genus-level differential abundance was evaluated separately at each sampling
+condition.  MaAsLin~3 models used total-sum scaling followed by logarithmic
+transformation and contrasted each resistant cultivar with the pooled
+susceptible cultivars.  A genus was classified as shared nominal enrichment
+when its coefficient was positive and $P<0.05$ in both the HG64 and HF12
+contrasts.  Benjamini--Hochberg-adjusted results were retained to distinguish
+nominal intersections from false-discovery-rate-supported associations.
+
+Matched shotgun libraries were profiled at species level.  MetaPhlAn3 was the
+primary reference-based analysis, and MetaPhlAn2 was used as a database-version
+sensitivity analysis for the two taxa emphasized by the source study,
+\textit{Pseudomonas putida} and \textit{Sphingopyxis unclassified}.  Detection
+and between-phenotype abundance results were reported separately for the two
+database generations rather than selecting one profile as the definitive
+answer.
+% TODO: insert archived MetaPhlAn database builds, statistical test, effect
+% sizes, adjusted P values, and detected-sample counts.
+
+\subsubsection{Case 2 --- Colorectal cancer faecal metagenomic analysis}
+\label{sec:methods-crc}
+
+The colorectal-cancer analysis used the C1 cohort reported by Yu \textit{et
+al.}, comprising 74 CRC cases and 54 controls \parencite{yu2017crc}.  Among the
+cases, 36 were stage I--II and 38 were stage III--IV.  Species relative
+abundances were obtained with MetaPhlAn3, and HUMAnN3 was used to quantify gene
+families and KEGG Orthology groups.
+
+Species-level Bray--Curtis dissimilarities were analysed by principal
+coordinates analysis.  PERMANOVA tested disease status, cancer stage,
+sex, age, and body-mass index.  Species, gene families, and KO groups were
+compared between CRC and control samples using two-sided Wilcoxon rank-sum
+tests with Benjamini--Hochberg correction.  For the differentially abundant
+species, pairwise Spearman correlations were corrected for multiple testing;
+the displayed co-occurrence network retained positive associations with
+$\rho\geq0.4$ and adjusted $P<0.05$.
+
+Predictive analyses were performed separately on gene-family and KO abundance
+tables.  Fifteen features were selected using minimum-redundancy
+maximum-relevance and entered into L2-regularized logistic regression.  Model
+performance was assessed by nested fivefold cross-validation, with feature
+selection and model fitting confined to the corresponding training data.
+Pooled areas under the receiver-operating-characteristic curve were calculated
+from out-of-fold predictions.  These analyses assessed execution of a
+taxonomic--functional--predictive study design within this cohort and were not
+treated as external clinical validation.
+
+\subsubsection{Case 3 --- Polyethylene-enrichment genome-resolved metagenomic analysis}
+\label{sec:methods-mag}
+
+The genome-resolved analysis used six shotgun metagenomes from two soil
+inocula enriched on low-molecular-weight polyethylene, C30, or C40
+\parencite{sandholm2025polyethylene}.  MAGs were constructed through assembly
+and binning in the configured genome-resolved analysis environment.  MAGs with
+completeness
+$\geq90\%$ and contamination $<5\%$ were classified as high quality; those
+with completeness $\geq50\%$ and contamination $<10\%$ were classified as
+medium quality.  MAGs were dereplicated at 95\% average nucleotide identity,
+and taxonomy was assigned using GTDB release R232.
+
+Reads were mapped to the dereplicated MAG set, and CoverM-derived relative
+abundances were summarized at genus and species levels.  Because each
+inoculum--substrate combination was represented by one metagenome, these
+profiles were interpreted descriptively and MAGs were not treated as
+independent biological replicates.
+
+One representative MAG was selected for each focal taxon and annotated with
+eggNOG.  Predicted coding sequences were counted against rules representing
+alkane terminal oxidation, degradation of 2-ketone or other oxidized
+derivatives, and the KEGG M00087 $\beta$-oxidation module.  Counts therefore
+represent predicted genomic coding potential, not expression measurements or
+direct evidence of substrate degradation.  The complete gene-to-module rules
+are reserved for the Supplementary Methods.
+
+\subsection{Robustness and ablation experiments}
+\label{sec:reliability-experiments}
+
+\subsubsection{Robustness across models and prompt granularity}
+
+Robustness will be evaluated with frozen Case~1 inputs in a
+$3\times3\times3$ design comprising three language models, three prompt
+granularities, and three independent sessions per cell (27 sessions).  The
+complete system, computational environment, skills, and staged data will be held
+fixed.  Detailed prompts specify the metrics, statistical tests, and figure
+types; medium prompts specify the same analytical goals but leave method
+selection to the agent; simple prompts state only the dataset and biological
+question.  Each replicate will begin in a new conversation, and methodological
+coaching will not be provided after the plan is confirmed.
+
+The 16S inputs comprise a post-DADA2 ASV table, representative sequences,
+rooted tree, denoising statistics, and metadata.  Shotgun inputs comprise the
+36 matched libraries after KneadData processing and random subsampling to
+20\% of reads with a fixed seed of 42.  Previously generated diversity,
+MetaPhlAn, statistical, and figure outputs are excluded.
+
+Completion will be scored from usable artifacts for data characterization, 16S
+alpha diversity, 16S beta diversity, 16S taxonomy and differential abundance,
+and shotgun taxonomy and differential abundance.  Each domain will receive 0,
+0.5, or 1.  Method adherence will be scored separately for detailed prompts.
+Agreement among the three repeats of a cell will be assessed using pairwise
+correlation of Shannon values, Mantel correlation of shared distance metrics,
+and Procrustes comparison of ordinations.  With three repeats per cell, these
+comparisons will be treated as an initial repeatability screen.
+
+\subsubsection{Component-ablation design}
+
+The component ablation will use the detailed robustness prompt, the same frozen
+inputs, and one fixed model.  Four conditions will be evaluated in three
+independent sessions each: the complete system; the standard session runtime
+without the extension; removal of the microbiome domain procedures; and removal
+of the coding and long-execution guidance.  No feedback will be introduced while a session is
+running.  All other workspace instructions, software resources, and reference
+resources will be held constant wherever they are not the component under test.
+
+Task completion will be scored using nine binary items: 16S alpha diversity, 16S
+beta diversity, a 16S taxonomic table, 16S differential abundance, a
+MetaPhlAn table, shotgun differential abundance, figures, analysis scripts,
+and an analysis report.  An item will be counted only when the corresponding
+artifact exists and is usable.  Method adherence will be scored against eight
+requirements in the detailed prompt: sequencing-depth normalization, Shannon
+diversity, weighted UniFrac, unweighted UniFrac, Bray--Curtis,
+weighted-UniFrac PCoA, PERMANOVA, and PERMDISP.  Task and method rates will be
+calculated per session and averaged within condition.  Total token use will be
+obtained from the same accounting source for every session and interpreted
+together with completion because an early failure can consume fewer tokens by
+performing less work.
+
+\subsubsection{Runtime-extension experiment}
+
+Asynchronous intervention was evaluated with a Case~1 QIIME~2
+taxonomy-classification command selected in a pilot to run for several minutes
+without artificial delay.  The extended runtime and the standard runtime
+at the same OpenClaw version were each evaluated in three new sessions.
+The two conditions differed only in the session-runtime extension; all other
+configuration and workspace instructions were held fixed.  While classification
+was confirmed to be running, the same user instruction requested replacement of a pooled
+resistant-versus-susceptible comparison with separate T1, T2C, and T2
+comparisons and addition of a significant-genera heatmap.  No subsequent user
+message was sent.
+
+A plan-update success required the message to be processed and the pending
+plan to be revised before the classification command exited.  Success for
+automatic continuation required command exit to reactivate the same session within five
+minutes without another user message.  A run in which classification ended
+before the intervention was delivered did not test in-run feedback and was
+repeated with its exclusion reason retained.
 
 %% ====================================================================
-\section{Results}
-\label{sec:results}
+\section*{Data availability}
 %% ====================================================================
 
-\subsection{MicroBioAgent covers three analysis families}
-\label{sec:landscape}
+Raw sequencing data are available from the public repositories associated
+with the three source studies; accession identifiers and sample-level mapping
+will be listed in the Supplementary Information.  Processed abundance tables,
+metadata, numerical data underlying the figures, MAG annotations, and
+session-level robustness and ablation scores will be deposited with the
+article archive.  Raw sequencing files and large reference databases will not
+be redistributed; their sources and releases will be documented.
+% TODO: add repository/archive DOI and complete accession table.
 
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Landscape figure: 16S / reference-based shotgun / assembly-based
-    shotgun as three backbones; shipped skills on each backbone;
-    Cases~1--3 as pins.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig1-landscape.pdf}
-  \vspace{2.2em}}}
-  \caption{The analysis landscape covered by MicroBioAgent.
-    Case~1 sits on 16S and bridges to shotgun taxonomy; Case~2 sits on
-    reference-based function; Case~3 sits on MAG recovery and
-    metabolism.}
-  \label{fig:landscape}
-\end{figure}
+%% ====================================================================
+\section*{Code availability}
+%% ====================================================================
 
-The lead result is coverage, not a $p$-value.
-\Cref{fig:landscape} places the skill map and the three cases on one
-figure: MicroBioAgent can traverse a 16S path, a
-reference-based shotgun path, and an assembly-based MAG path
-(\cref{tab:skills,fig:architecture}).
-Cases~1--3 were chosen to pin one primary family each
-(\cref{tab:cases-overview}).
-The next three subsections are existence proofs of that span.
+MicroBioAgent source code, domain procedures, agent instructions, analysis
+prompts, environment specifications, and the session-runtime extension
+(distributed as a version-pinned OpenClaw patch pack) are
+available in the \href{https://github.com/Zeming-LI-Andy/openclaw-microbiome}{project repository}.
+Scripts used to generate the reported statistical results and figures will be
+included in the accompanying archive.
+% TODO: add release tag, license, and immutable archive DOI before submission.
+
+\printbibliography
+
+%% ====================================================================
+\clearpage
+\section*{Supplementary Information}
+\phantomsection
+\addcontentsline{toc}{section}{Supplementary Information}
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theHtable}{supp.\arabic{table}}
+\renewcommand{\theHfigure}{supp.\arabic{figure}}
+%% ====================================================================
+
+% Add supplementary tables and figures here; numbering is independent of
+% the main text. Cite them as Supplementary Table/Figure~\ref{...}.
 
 \begin{table}[htbp]
   \centering
-  \caption{Case studies as coverage of the analysis landscape.
-    Sample sizes, accessions, and wall times: see \texttt{papers/cases.md}
-    (filled from the server; not invented here).}
+  \caption{Published datasets, sequencing-library counts, analysis tasks,
+    and evaluation targets for the three MicroBioAgent case studies.}
   \label{tab:cases-overview}
-  \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
     \toprule
-    Case & Primary family & Extra claim \\
+    Case & Sequencing libraries & Analysis route & Primary evaluation target \\
     \midrule
-    1 Tomato rhizosphere, bacterial-wilt resistance
-      & 16S end-to-end
-      & Same study also runs MetaPhlAn \\
-    2 CRC case--control
-      & Reference-based shotgun
-      & HUMAnN function + classifier \\
-    3 MAG recovery
-      & Assembly-based / de~novo
-      & Composition + metabolic potential \\
+    Tomato rhizosphere
+      & 60 16S; 36 matched shotgun
+      & 16S diversity, taxonomy, differential abundance; MetaPhlAn profiling
+      & Recovery of inoculation- and resistance-associated community signals \\
+    CRC faecal metagenomes
+      & 128 shotgun
+      & MetaPhlAn3, HUMAnN3, differential analysis, nested-CV classification
+      & Taxonomic and functional case--control analysis from reads \\
+    Enrichment metagenomes
+      & 6 shotgun
+      & MAG construction, dereplication, taxonomic assignment, abundance, eggNOG annotation
+      & Genome-resolved taxonomic and functional characterization \\
     \bottomrule
   \end{tabularx}
 \end{table}
-
-\subsection{Case 1: tomato rhizosphere 16S and MetaPhlAn}
-\label{sec:case-tomato}
-
-% 16S full pipeline + MetaPhlAn. Heritability / Ralstonia resistance.
-This case demonstrates the amplicon family end-to-end and, on the same
-study, reference-based taxonomic profiling with MetaPhlAn.
-The scientific setting is the tomato rhizosphere in relation to
-resistance to bacterial wilt (\textit{Ralstonia}) and the heritability
-of community structure.
-% TODO: dataset, n, accessions, skill sequence, wall time from cases.md
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~1 panels: 16S diversity/taxonomy; MetaPhlAn composition;
-    genotype or resistance association.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig3-tomato.pdf}
-  \vspace{2.2em}}}
-  \caption{Tomato rhizosphere case.
-    16S pipeline products and MetaPhlAn profiles; association with
-    resistance or host genotype as implemented in the job.}
-  \label{fig:tomato}
-\end{figure}
-
-\subsection{Case 2: CRC case--control composition, function, and classification}
-\label{sec:case-crc}
-
-This case is the deep reference-based shotgun path: species profiles,
-community function, and a study-specific classifier trained on those
-tables.
-% TODO: n case/control, HUMAnN features, classifier and CV from the job.
-We will not claim a new CRC biomarker; we claim that MicroBioAgent can
-produce a complete case--control functional and predictive analysis.
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~2 panels: MetaPhlAn composition; HUMAnN pathways;
-    classifier performance.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig4-crc.pdf}
-  \vspace{2.2em}}}
-  \caption{CRC case--control case.
-    Composition, functional profiles, and classifier metrics from the
-    completed job.}
-  \label{fig:crc}
-\end{figure}
-
-\subsection{Case 3: MAG recovery, composition, and metabolic potential}
-\label{sec:case-mag}
-
-This case is the assembly-based arm: MAG recovery (Aviary assemble /
-recover / annotate / cluster as actually run), community composition
-from MAG abundances or a complementary profiler, and metabolic
-potential from the annotation or reconstruction tools used in that job.
-% TODO: which of gapseq, EggNOG, Bakta, gutSMASH, antiSMASH were run.
-This family is the strongest test of long-running exec: assemble and
-recover do not finish inside a default chat timeout.
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{0.88\linewidth}{\centering\vspace{2.2em}
-    Case~3 panels: MAG quality and taxonomy; composition;
-    metabolic overview.\\[0.4em]
-    \small\textit{Replace with} \texttt{figures/fig5-mag.pdf}
-  \vspace{2.2em}}}
-  \caption{MAG case.
-    Recovery quality, composition, and metabolic potential as produced
-    by the job.}
-  \label{fig:mag}
-\end{figure}
-
-\subsection{Robustness}
-\label{sec:robustness}
-
-% TODO: paraphrase / repeat / resume table from the server.
-Repeated or perturbed runs will be scored on task completion and on
-artifact-level checks, not on fluent explanation
-(\cref{sec:eval-reliability}).
-
-\subsection{Ablation}
-\label{sec:ablation}
-
-% TODO: Table of component removed vs completion and interventions.
-The intended reading is that shipped skills, job isolation, and exec
-wake are necessary for full-pipeline coverage; the language model
-alone is not.
-
-%% ====================================================================
-\section{Discussion}
-\label{sec:discussion}
-%% ====================================================================
-
-``Full pipeline'' in this paper means that MicroBioAgent can \emph{select
-and finish} a path through each analysis family, not that every
-optional skill runs in every study.
-Human confirmation of the plan is part of the execution model.
-The compute and reference-database burden remains that of the
-underlying tools.
-Workflow managers remain preferable when the same DAG must be replayed
-identically at scale; MicroBioAgent is aimed at heterogeneous,
-study-specific paths that cross families.
-% TODO: residual risk of invented paths; what supervision still requires.
-
-\subsection{Conclusion}
-\label{sec:conclusion}
-
-MicroBioAgent can span 16S amplicon analysis, reference-based shotgun
-profiling, and assembly-based MAG recovery without collapsing those
-families into one rigid workflow.
-The three case studies are the empirical span of that claim;
-robustness and ablation tests are what would show that the span comes
-from the system, not from a single lucky prompt.
-
-%% ====================================================================
-\section{Methods}
-\label{sec:methods}
-%% ====================================================================
-
-\subsection{Design principles}
-\label{sec:principles}
-
-MicroBioAgent is implemented as an OpenClaw plugin.
-It does not compile 16S, MetaPhlAn, and Aviary into one hard-coded DAG.
-Each shipped skill is a step procedure; the agent reads the skill,
-runs one step, checks artifacts, then continues
-(\cref{fig:architecture,fig:workflow}).
-Design constraints that matter for full-pipeline work:
-
-\begin{itemize}
-  \item \textbf{One conversation, one job.}
-    The tool \texttt{mgx\_create\_job} creates or reuses a
-    \texttt{job\_id} bound to the OpenClaw session key.
-  \item \textbf{Plan, then execute.}
-    Heavy compute starts only after a plan is stated (and, in normal
-    use, confirmed).
-    Failed steps are marked skipped, together with their dependents;
-    results are not invented.
-  \item \textbf{Host-owned runtimes and reference libraries.}
-    Conda environments and database paths come from registries, not
-    from paths hallucinated by the model.
-  \item \textbf{Long-running execution.}
-    Multi-hour CLIs use timed-yield \texttt{exec} and process-exit
-    notification, which requires a pinned OpenClaw exec-wake patch.
-\end{itemize}
-
-\subsection{Session job}
-\label{sec:job}
-
-All inputs and outputs for a conversation live under
-\texttt{jobsRoot/\textless job\_id\textgreater/}:
-\texttt{stage/} for reads and metadata,
-\texttt{analysis/\textless step\textgreater/} for one skill's products,
-and \texttt{reproducibility/} for logs.
-Rewinding the chat does not mint a new job.
-
-\subsection{Skill coverage of the analysis landscape}
-\label{sec:skills}
-
-\Cref{tab:skills} is the coverage claim in tabular form.
-The 16S family follows a QIIME~2 path from import through diversity
-(and optional PICRUSt2).
-The reference-based shotgun family runs host depletion, taxonomic
-profiling, functional profiling, and targeted annotation.
-The assembly-based family recovers and annotates MAGs and can
-reconstruct metabolic potential.
-Shared skills cover public-data lookup, association statistics, and
-REST annotation.
-
-Supervised classification, used in the CRC case, is not a dedicated
-skill.
-It is an agent-composed step on MetaPhlAn and/or HUMAnN tables in the
-shared statistics runtime.
-We treat that as a feature of a skill system (study-specific modeling
-on top of standard profiles), not as a missing pipeline stage.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Shipped skills grouped by analysis family.
-    This table is the operational meaning of ``full pipeline'' in this
-    paper: MicroBioAgent can select a path through a family, not that
-    every optional skill runs in every study.}
-  \label{tab:skills}
-  {\small
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
-    \toprule
-    Family & Stages & Skills \\
-    \midrule
-    16S / amplicon
-      & Import, DADA2 ASVs, QC, taxonomy, phylogeny, diversity, export / function
-      & \texttt{16s-import}, \texttt{16s-denoise-dada2},
-        \texttt{16s-feature-summarize}, \texttt{16s-taxonomy},
-        \texttt{16s-phylogeny}, \texttt{16s-diversity},
-        \texttt{16s-export}, \texttt{16s-picrust2} \\
-    Shotgun, reference-based
-      & QC / host depletion, species, pathways / gene families, gene catalog, annotation
-      & \texttt{shotgun-kneaddata}, \texttt{shotgun-metaphlan},
-        \texttt{shotgun-humann}, \texttt{shotgun-gene-catalog},
-        \texttt{shotgun-eggnog}, \texttt{shotgun-vfdb},
-        \texttt{shotgun-rgi} \\
-    Shotgun, assembly-based
-      & Assemble, recover, annotate, cluster MAGs; genome and metabolism
-      & \texttt{shotgun-aviary}, \texttt{shotgun-bakta},
-        \texttt{shotgun-gapseq}, \texttt{shotgun-gutsmash},
-        \texttt{shotgun-antismash} \\
-    Shared
-      & Public data, statistics, REST annotation
-      & \texttt{sra-search}, \texttt{ncbi-assembly-proteins},
-        \texttt{stats-diversity},
-        \texttt{stats-differential-abundance},
-        \texttt{stats-enrichment}, \texttt{annotation-*} \\
-    \bottomrule
-  \end{tabularx}}
-\end{table}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{microbioagent-architecture-image2-v7.png}
-  \caption{MicroBioAgent system architecture. An OpenClaw-based agent
-    workflow loads workspace instructions, binds the conversation to an
-    analysis job, and dynamically selects procedures and reference resources
-    required by the study. Upstream and downstream computation for 16S
-    amplicon, reference-based metagenomic, and assembly-based metagenomic
-    analysis runs on user-controlled local infrastructure. The system returns
-    figures, tables, reports, and biological interpretations while retaining
-    intermediate files, generated code, parameters, logs, and version records.
-    User messages and command-completion events provide separate paths for
-    resuming a long-running analysis in the same session.}
-  \label{fig:architecture}
-\end{figure}
-
-\subsection{Execution and deployment}
-\label{sec:exec}
-
-Analysis commands run as \texttt{conda run -n \textless env\textgreater}
-with absolute paths confined to the session job.
-Reference databases are declared in a user file
-(\texttt{microbiome-refs.yaml}) and synced to an agent-facing
-\texttt{references.yaml} that contains \texttt{path} values only.
-A derived Docker image can bundle a patched OpenClaw gateway with the
-conda stack; database trees remain host-owned mounts.
-Gateway settings that matter in practice are a long heartbeat after
-background exec, process-exit notification (including empty success),
-and disabling skill authoring that would shadow the shipped skill tree.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{microbioagent-workflow.png}
-  \caption{Unified agent workflow for end-to-end reproduction of
-    metagenomic studies. After binding the request to a session job and
-    confirming a plan, the agent selects steps from the 16S amplicon,
-    read-based shotgun, or assembly/MAG route. Each selected step executes
-    locally and its outputs are checked before the next step. During a
-    long-running command, a user message may revise pending work; a separate
-    command-completion event resumes output verification. The loop produces
-    study outputs and a per-job execution record.}
-  \label{fig:workflow}
-\end{figure}
-
-\subsection{Evaluation design}
-\label{sec:eval}
-
-Cases~1--3 are naturalistic analysis requests chosen to pin one primary
-family each (\cref{tab:cases-overview,fig:landscape}).
-For each case we report the dataset, the skill sequence actually run,
-human confirmations or interventions, wall-clock time, and the
-scientific artifacts used in the corresponding results figure.
-Biological interpretation is kept to the minimum needed to show that
-the artifacts are usable.
-
-\subsection{Robustness and ablation protocols}
-\label{sec:eval-reliability}
-
-Robustness experiments repeat the same analysis goal under controlled
-perturbations (prompt paraphrase, repeated trials, session resume after
-a long exec).
-Ablation experiments remove one system component at a time---shipped
-skills, plan-then-execute, session-job isolation, exec wake, or
-registries---and score completion, human interventions, and whether
-required artifacts exist.
-Protocols will be frozen before scoring; metrics will not be defined
-after looking at outcomes.
-
-\subsection{Availability}
-\label{sec:availability}
-
-MicroBioAgent---skills, conda recipes, and the pinned OpenClaw
-exec-wake patch---lives in the openclaw-microbiome repository.
-% TODO: URL, license, archived case jobs and prompts as data allow.
-
-\printbibliography
 
 \end{document}

@@ -1,6 +1,6 @@
 # Case study 1 — robustness
 
-3 models × 3 prompt granularities × 5 runs. One new OpenClaw conversation per replicate; paste one of `prompt_*.md`.
+3 models × 3 prompt granularities × 3 runs. One new OpenClaw conversation per replicate; paste one of `prompt_*.md`.
 
 ## `stage/`
 

@@ -19,7 +19,7 @@ Ablation is **orthogonal** to robustness. It is leave-one-out against a full-sys
 
 ## Design
 
-**Matrix:** 1 model × 4 workspace/runtime conditions × 5 independent runs.
+**Matrix:** 1 model × 4 workspace/runtime conditions × 3 independent runs.
 
 | Condition | What is removed | What stays |
 |-----------|-----------------|------------|
@@ -71,13 +71,42 @@ Registries (`runtimes.yaml`, `references.yaml`) are **not** ablated. Keep the pl
 3. `no_skills` only: plugin skills not loaded.
 4. New conversation. Copy `robustness/stage/` into the job `stage/`. Paste the **detailed** robustness prompt.
 5. Confirm the plan if asked; do not hint at yield, conda env names, or which skill to open. Do not manually resume a hung `no_patch` run — that erases the patch effect.
-6. Archive condition, `job_id`, transcript, and `analysis/`. Repeat five times per condition.
+6. Archive condition, `job_id`, transcript, and `analysis/`. Repeat three times per condition.
 
 ---
 
 ## Scoring
 
-Use the **same completion rubric** as robustness (section-level artifacts). Add **process** metrics that map to the removed component; otherwise three different failures collapse into one “did not finish” number.
+Score three core outcomes: **task completion**, **method adherence**, and
+**total token use**.
+
+Task completion contains nine binary items. A task passes only when its
+required output exists and is usable:
+
+1. 16S alpha-diversity results;
+2. 16S beta-diversity results;
+3. 16S taxonomic table;
+4. 16S differential-abundance results;
+5. MetaPhlAn table;
+6. shotgun differential-abundance results;
+7. figures;
+8. analysis scripts;
+9. analysis report.
+
+For every condition, report both the number of sessions completing each item
+(`n/3`) and the mean percentage of the nine items completed across sessions.
+This task-level breakdown shows which work is omitted rather than collapsing
+all failures into one end-to-end result.
+
+Method adherence is scored against eight methods explicitly requested in the
+detailed prompt: sequencing-depth normalization, Shannon diversity, weighted
+UniFrac, unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA, PERMANOVA,
+and PERMDISP. Report the mean percentage used as requested across the three
+sessions in each condition.
+
+The condition-specific process checks below are diagnostic evidence and belong
+in the Supplementary Information rather than the three-column core outcome
+summary.
 
 | Condition | Extra process checks |
 |-----------|----------------------|
@@ -88,4 +117,33 @@ Use the **same completion rubric** as robustness (section-level artifacts). Add 
 
 Human interventions are counted. Manual “please continue” on `no_patch` is a failure of that condition, not a completed task.
 
-Expected failure modes (hypotheses to test, not results): `no_patch` dies on long MetaPhlAn / diversity jobs; `no_skills` uses the wrong tool or env; `no_coding` ignores job layout or blocks on exec timeout. *n* = 5 is enough if those effects are large; still report the control (`full/`) on the same model and prompt.
+### Token use and efficiency
+
+Record token use for every session from the same OpenClaw/API accounting
+source.  Keep the following fields separate when the provider exposes them:
+
+- uncached input tokens;
+- cached input tokens;
+- output tokens;
+- reasoning tokens;
+- total model calls.
+
+Report raw total tokens together with task completion.  A stalled or prematurely
+terminated condition can consume fewer tokens only because it completed less
+work, so raw token use must not be interpreted as efficiency on its own.  Also
+report:
+
+1. tokens per completed task item;
+2. tokens for successful sessions only, when a condition has successful runs;
+3. tokens consumed before stall or terminal failure;
+4. model calls and tool calls per completed task item.
+
+Use one model and the same model configuration across all ablation conditions;
+do not convert tokens to monetary cost unless the applicable price and cache
+treatment are fixed and reported.  Token use is a primary efficiency outcome
+for this end-to-end component ablation.  It is not the primary outcome of the
+separate targeted in-flight-feedback experiment, whose endpoints are process
+preservation, feedback incorporation, automatic resumption, and revised-plan
+fidelity.
+
+Expected failure modes (hypotheses to test, not results): `no_patch` dies on long MetaPhlAn / diversity jobs; `no_skills` uses the wrong tool or env; `no_coding` ignores job layout or blocks on exec timeout. Report all three runs for every condition and retain the full-system control on the same model and prompt.
