@@ -1,0 +1,84 @@
+model	level	replicate_a	replicate_b	value	task	metric	Model	Prompt
+glm-flash	detailed	1	2	0.3854504346523849	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Detailed
+glm-flash	detailed	1	3	0.3860894072556005	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Detailed
+glm-flash	detailed	2	3	0.0102973124083214	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Detailed
+glm-flash	medium	1	2	0.0112374894838255	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Medium
+glm-flash	medium	1	3	0.0119993825129536	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Medium
+glm-flash	medium	2	3	0.0138405929812867	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Medium
+glm-flash	simple	1	2	0.0080954185429611	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Simple
+glm-flash	simple	1	3	0.0126997958268646	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Simple
+glm-flash	simple	2	3	0.0130877430094846	16s_alpha	Mean |Δ Shannon|	GLM-Flash	Simple
+deepseek-flash	detailed	1	2	0.0124801281084948	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	1	3	0.0132328480246068	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	2	3	0.0126880865986134	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Detailed
+deepseek-flash	medium	1	2	0.0135827735695142	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Medium
+deepseek-flash	medium	1	3	0.0101231312216248	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Medium
+deepseek-flash	medium	2	3	0.0144537461316981	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Medium
+deepseek-flash	simple	1	2	0.013407172077024	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Simple
+deepseek-flash	simple	1	3	0.0813123329274693	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Simple
+deepseek-flash	simple	2	3	0.0736131403697253	16s_alpha	Mean |Δ Shannon|	DeepSeek-Flash	Simple
+deepseek-pro	detailed	1	2	0.0125042099447281	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	1	3	0.0144076501039022	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	2	3	0.010657034116015	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Detailed
+deepseek-pro	medium	1	2	0.0085728845491921	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Medium
+deepseek-pro	medium	1	3	0.0126179860564265	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Medium
+deepseek-pro	medium	2	3	0.0140974077255719	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Medium
+deepseek-pro	simple	1	2	0.0118978359720885	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Simple
+deepseek-pro	simple	1	3	0.012086032524218	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Simple
+deepseek-pro	simple	2	3	0.0100089482384562	16s_alpha	Mean |Δ Shannon|	DeepSeek-Pro	Simple
+glm-flash	detailed	1	2	0.3078091198310227	16s_beta	Procrustes disparity	GLM-Flash	Detailed
+glm-flash	detailed	1	3	0.2968437487434862	16s_beta	Procrustes disparity	GLM-Flash	Detailed
+glm-flash	detailed	2	3	0.0062262334743475	16s_beta	Procrustes disparity	GLM-Flash	Detailed
+glm-flash	medium	1	2	0.0001330842729125	16s_beta	Procrustes disparity	GLM-Flash	Medium
+glm-flash	medium	1	3	0.0001059748725042	16s_beta	Procrustes disparity	GLM-Flash	Medium
+glm-flash	medium	2	3	0.0001368183700618	16s_beta	Procrustes disparity	GLM-Flash	Medium
+glm-flash	simple	1	2	0.0001568803174401	16s_beta	Procrustes disparity	GLM-Flash	Simple
+glm-flash	simple	1	3	0.0001015832081069	16s_beta	Procrustes disparity	GLM-Flash	Simple
+glm-flash	simple	2	3	0.0001700854862825	16s_beta	Procrustes disparity	GLM-Flash	Simple
+deepseek-flash	detailed	1	2	0.0001423064008247	16s_beta	Procrustes disparity	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	1	3	0.0001292375152396	16s_beta	Procrustes disparity	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	2	3	0.0001318595940791	16s_beta	Procrustes disparity	DeepSeek-Flash	Detailed
+deepseek-flash	medium	1	2	0.0001823045997526	16s_beta	Procrustes disparity	DeepSeek-Flash	Medium
+deepseek-flash	medium	1	3	0.0001631119847566	16s_beta	Procrustes disparity	DeepSeek-Flash	Medium
+deepseek-flash	medium	2	3	0.0003754602133399	16s_beta	Procrustes disparity	DeepSeek-Flash	Medium
+deepseek-flash	simple	1	2	0.0001894357877085	16s_beta	Procrustes disparity	DeepSeek-Flash	Simple
+deepseek-flash	simple	1	3	0.0003462375388192	16s_beta	Procrustes disparity	DeepSeek-Flash	Simple
+deepseek-flash	simple	2	3	0.0004377250946206	16s_beta	Procrustes disparity	DeepSeek-Flash	Simple
+deepseek-pro	detailed	1	2	0.0001087557459976	16s_beta	Procrustes disparity	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	1	3	0.0001594173924354	16s_beta	Procrustes disparity	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	2	3	9.15011141423011e-05	16s_beta	Procrustes disparity	DeepSeek-Pro	Detailed
+deepseek-pro	medium	1	2	0.0001039546392737	16s_beta	Procrustes disparity	DeepSeek-Pro	Medium
+deepseek-pro	medium	1	3	0.0001344924539615	16s_beta	Procrustes disparity	DeepSeek-Pro	Medium
+deepseek-pro	medium	2	3	0.0001408660187266	16s_beta	Procrustes disparity	DeepSeek-Pro	Medium
+deepseek-pro	simple	1	2	0.000102652213442	16s_beta	Procrustes disparity	DeepSeek-Pro	Simple
+deepseek-pro	simple	1	3	0.0001369539536635	16s_beta	Procrustes disparity	DeepSeek-Pro	Simple
+deepseek-pro	simple	2	3	0.0001068717261704	16s_beta	Procrustes disparity	DeepSeek-Pro	Simple
+glm-flash	detailed	2	3	0.8691314547734244	16s_da	Effect-size Spearman r	GLM-Flash	Detailed
+glm-flash	medium	1	2	0.6783314323228373	16s_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	medium	1	3	0.976204649034467	16s_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	medium	2	3	0.6872764535634948	16s_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	simple	1	2	0.5968837209586915	16s_da	Effect-size Spearman r	GLM-Flash	Simple
+glm-flash	simple	1	3	0.8797782928425885	16s_da	Effect-size Spearman r	GLM-Flash	Simple
+glm-flash	simple	2	3	0.6439033887519626	16s_da	Effect-size Spearman r	GLM-Flash	Simple
+deepseek-flash	detailed	1	2	0.6481762222694061	16s_da	Effect-size Spearman r	DeepSeek-Flash	Detailed
+deepseek-flash	medium	1	2	0.6610275691160604	16s_da	Effect-size Spearman r	DeepSeek-Flash	Medium
+deepseek-flash	medium	1	3	0.895794514867034	16s_da	Effect-size Spearman r	DeepSeek-Flash	Medium
+deepseek-flash	medium	2	3	0.713830897882436	16s_da	Effect-size Spearman r	DeepSeek-Flash	Medium
+deepseek-flash	simple	2	3	0.9209486166007904	16s_da	Effect-size Spearman r	DeepSeek-Flash	Simple
+deepseek-pro	detailed	1	2	0.3456410256410256	16s_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	1	3	0.7714961042632099	16s_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	2	3	0.4875388762181215	16s_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
+deepseek-pro	simple	1	2	0.8859733092185169	16s_da	Effect-size Spearman r	DeepSeek-Pro	Simple
+deepseek-pro	simple	1	3	0.0074182459296832	16s_da	Effect-size Spearman r	DeepSeek-Pro	Simple
+deepseek-pro	simple	2	3	-0.0024445627365335	16s_da	Effect-size Spearman r	DeepSeek-Pro	Simple
+glm-flash	medium	1	2	0.6454545454545455	shotgun_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	medium	1	3	0.9571428571428572	shotgun_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	medium	2	3	0.5818181818181819	shotgun_da	Effect-size Spearman r	GLM-Flash	Medium
+glm-flash	simple	1	2	0.5727272727272729	shotgun_da	Effect-size Spearman r	GLM-Flash	Simple
+deepseek-flash	detailed	1	2	0.7971972501322051	shotgun_da	Effect-size Spearman r	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	1	3	0.7539079461571863	shotgun_da	Effect-size Spearman r	DeepSeek-Flash	Detailed
+deepseek-flash	detailed	2	3	0.6021392107608784	shotgun_da	Effect-size Spearman r	DeepSeek-Flash	Detailed
+deepseek-flash	medium	2	3	0.4728800611153552	shotgun_da	Effect-size Spearman r	DeepSeek-Flash	Medium
+deepseek-pro	detailed	1	2	0.3374358974358974	shotgun_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	1	3	0.8294963571769796	shotgun_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
+deepseek-pro	detailed	2	3	0.1952136752136752	shotgun_da	Effect-size Spearman r	DeepSeek-Pro	Detailed
