@@ -232,28 +232,28 @@ and local execution, while allowing users to guide ongoing analyses.
     Task category & Supported analyses \\
     \midrule
     Amplicon characterization
-      & Read import and quality summaries; denoising and ASV inference;
-        taxonomy; phylogeny; predicted functional profiles \\
+      & Read import and quality summaries, denoising and ASV inference,
+        taxonomy, phylogeny, predicted functional profiles \\
     Shotgun profiling
-      & Read quality control and host depletion; species abundances;
-        gene-family and pathway profiles; nonredundant gene catalogues \\
+      & Read quality control and host depletion, species abundances,
+        gene-family and pathway profiles, nonredundant gene catalogues \\
     MAG characterization
-      & Assembly and binning; quality assessment; dereplication;
-        taxonomic assignment; abundance estimation; genome annotation \\
+      & Assembly and binning, quality assessment.  Dereplication,
+        taxonomic assignment, abundance estimation, genome annotation \\
     Community comparisons
-      & Alpha and beta diversity; ordination; group comparisons;
-        differential abundance; covariate association testing \\
+      & Alpha and beta diversity, ordination, group comparisons,
+        differential abundance, covariate association testing \\
     Functional interpretation
-      & Gene and protein annotation; orthology, pathway, and ontology mapping;
-        functional enrichment; resistance and virulence gene annotation \\
+      & Gene and protein annotation, orthology, pathway, and ontology mapping,
+        functional enrichment, resistance and virulence gene annotation \\
     Metabolic characterization
-      & Metabolic pathway and model reconstruction; primary metabolic gene
-        clusters; secondary-metabolite biosynthetic gene clusters \\
+      & Metabolic pathway and model reconstruction, primary metabolic gene
+        clusters, secondary-metabolite biosynthetic gene clusters \\
     Study-specific analysis
-      & Custom statistical scripts; association networks; supervised
-        classification; figures, result tables, and analytical reports \\
+      & Custom statistical scripts, association networks, supervised
+        classification, figures, result tables, and analytical reports \\
     Data and resource access
-      & Public sequencing metadata and reference-protein retrieval;
+      & Public sequencing metadata and reference-protein retrieval,
         local reference resources and online annotation queries \\
     \bottomrule
   \end{tabularx}
@@ -262,67 +262,79 @@ and local execution, while allowing users to guide ongoing analyses.
 \subsection{Study-specific analyses across plant, human, and environmental microbiomes}
 \label{sec:case-studies}
 
-We independently reanalysed three published microbiome datasets to assess
-analytical scope on plant, human, and environmental samples.  These case
-studies were designed as capability-oriented reanalyses, rather than exact
-computational reproductions of the source studies: software versions,
-reference databases, and selected statistical procedures differed.  We
-therefore assessed completion of the requested end-to-end path, validity of
-the resulting artifacts, and recovery of prespecified biological signals.
+We evaluated MicroBioAgent on three published datasets comprising 230
+sequencing libraries from plant, human, and environmental microbiomes
+(Supplementary Table~\ref{tab:cases-overview}).  These case studies assessed
+the system's ability to complete the requested analyses and recover biological
+patterns reported in the source studies.  Because software versions, reference
+databases, and some statistical procedures differed, exact computational
+reproduction was not the evaluation objective.  Instead, we assessed completion
+of the requested analyses, validity of the resulting outputs, and recovery of
+prespecified biological signals.
 
-The three cases comprised 230 sequencing-library inputs from 194 distinct
-biological samples when the 36 matched tomato shotgun libraries were counted
-as a subset of the 60 tomato specimens.  They cover 16S amplicon analysis and
-matched shotgun profiling, reference-based taxonomic and functional analysis
-with supervised classification, and assembly-based MAG construction with
-taxonomic assignment and focal genome annotation
-(Supplementary Table~\ref{tab:cases-overview}).
+The three cases were selected to test MicroBioAgent on distinct combinations
+of data types and analytical tasks.  The tomato rhizosphere case combined 60
+16S amplicon libraries with 36 matched shotgun libraries to examine differences
+in microbial diversity and taxonomic composition associated with pathogen
+inoculation and cultivar resistance.  The colorectal cancer case used 128
+faecal shotgun metagenomes from 74 patients and 54 controls to compare species
+and functional abundances and train classifiers based on gene-family and KEGG
+Orthology profiles.  The third case used six shotgun metagenomes from
+soil-derived enrichment cultures grown on low-molecular-weight polyethylene or
+alkane substrates to generate MAGs through assembly and binning, dereplicate
+them, characterize their taxonomic composition, and annotate
+degradation-associated genes in focal genomes.
 
 \subsubsection{A tomato rhizosphere bacterial-wilt resistance study}
 \label{sec:case-tomato}
 
-We first asked whether community patterns associated with pathogen
-inoculation and host resistance could be recovered through complementary
-amplicon and shotgun analyses.  This case connected community-level diversity
-and genus-level comparisons to species profiling of matched libraries.
-We analysed 16S V3--V4 data from 60 rhizosphere samples representing four
-tomato cultivars, five sampling points, and three biological replicates per
-combination.  The cultivars comprised two susceptible lines (A57 and HG70), a
-resistant parent (HG64), and a resistant F1 hybrid (HF12).  The 16S route
-produced an ASV table, taxonomic assignments, a rooted phylogeny, alpha- and
-beta-diversity outputs, and genus-level differential-abundance results
-\parencite{yin2022tomato}.
+We applied MicroBioAgent to a published study of tomato rhizosphere
+microbiomes associated with resistance to bacterial wilt
+\parencite{yin2022tomato}.  The input comprised 60 16S V3--V4 amplicon
+libraries and 36 matched shotgun libraries from two susceptible cultivars
+(A57 and HG70), a resistant parent (HG64), and a resistant F1 hybrid (HF12).
+The amplicon data covered five sampling conditions with three biological
+replicates per cultivar: before inoculation (T1), and inoculated and
+uninoculated plants at day 5 (T2 and T2C) and day 10 (T3 and T3C).
+The matched shotgun libraries covered T1, T2C, and T2.
+Starting from sequencing reads, MicroBioAgent performed quality control,
+DADA2 denoising and taxonomic classification against the SILVA database for
+the amplicon data, and quality control, host-read removal and MetaPhlAn3
+taxonomic profiling for the shotgun data.  The resulting abundance tables
+were used for downstream ecological and statistical analyses.
 
-After rarefaction to 56,726 reads per sample, Shannon diversity declined after
-\textit{Ralstonia} inoculation in all cultivars, with a larger decrease in the
-susceptible lines (\cref{fig:tomato-diversity}a).  For example, mean Shannon
-diversity at T2 was 5.11 in A57 and 6.82 in HG70, compared with 6.32 in HG64
-and 8.69 in HF12.  Weighted-UniFrac PCoA separated samples principally by
-inoculation along PC1 (57.2\% of variance) and secondarily by resistance
-phenotype along PC2 (12.8\%; \cref{fig:tomato-diversity}b).  Inoculated
-resistant samples were closer to the uninoculated centroid than inoculated
-susceptible samples.  Genus-level profiles showed concomitant expansion of
-\textit{Ralstonia}, most prominently in A57 and HG70
-(\cref{fig:tomato-diversity}c).
+For the 16S amplicon data, MicroBioAgent examined how pathogen inoculation
+and cultivar resistance were reflected in microbial diversity and community
+composition.  Following \textit{Ralstonia} inoculation, Shannon diversity
+declined in susceptible cultivars and remained higher in resistant cultivars
+at both day 5 ($P=0.002$) and day 10 ($P=0.004$,
+\cref{fig:tomato-diversity}a).  Community composition also differed between inoculated and uninoculated
+samples, which separated along the first weighted-UniFrac PCoA axis
+(56.3\% of variance).  Resistant and susceptible samples showed a less
+pronounced separation along the second axis (12.2\%), with overlap between
+the two groups (\cref{fig:tomato-diversity}b).  Genus-level profiles linked these community
+changes to an expansion of \textit{Ralstonia}, most pronounced in the
+susceptible cultivars A57 and HG70 (\cref{fig:tomato-diversity}c).
+These patterns were consistent with the inoculation-associated community
+changes and higher post-inoculation diversity in resistant cultivars
+reported in the source study.
 
-Genus-level MaAsLin~3 comparisons identified overlapping nominally enriched
-genera in HG64 and HF12 at each time point
-(\cref{fig:tomato-enrichment}).  However, no shared genus remained at
-Benjamini--Hochberg $q<0.05$ across the two resistant cultivars; the robust
-signal in this dataset was therefore the inoculation-associated diversity and
-composition shift rather than a conserved FDR-significant marker set.
-
-Matched shotgun profiling provided a focused reference-database sensitivity
-analysis for two species highlighted by the source study.  MetaPhlAn3 detected
-\textit{Pseudomonas putida}, which was significantly enriched in resistant
-cultivars, but did not resolve \textit{Sphingopyxis unclassified}.  MetaPhlAn2
-detected both prespecified taxa and found significant between-phenotype
-differences for both.  Together, the amplicon and shotgun analyses recovered community shifts
-and selected taxon-level associations, while distinguishing nominal signals
-from FDR-supported findings and database-dependent detection.  This case
-illustrates why a study-level analysis must retain the statistical and
-reference context of its results when relating complementary assays to the
-same biological question.
+To examine the taxa underlying these resistance-associated differences,
+MicroBioAgent compared each resistant cultivar with the pooled susceptible
+cultivars using MaAsLin~3.  In the 16S profiles, 6--15 genera were enriched
+in both HG64 and HF12 within each sampling condition ($P<0.05$ and positive
+coefficients, Supplementary Figure~\ref{fig:tomato-enrichment}), but the shared taxa varied
+across conditions.  The matched shotgun data provided species-level
+comparisons of the markers highlighted in the source study.  MetaPhlAn3
+profiles showed enrichment of the \textit{Pseudomonas putida} group in both
+the resistant parent HG64 ($P=0.013$) and the resistant hybrid HF12
+($P=0.009$) at T1.  The other reported marker,
+\textit{Sphingopyxis unclassified}, was not identified in the MetaPhlAn3
+profiles.  Following investigator review, MicroBioAgent repeated the shotgun
+profiling using MetaPhlAn2, the version used in the original study, and
+identified both \textit{Pseudomonas putida} and \textit{Sphingopyxis unclassified}
+as enriched in resistant cultivars, recovering both reported taxonomic
+associations.
 % SUPPLEMENTARY PLACEHOLDER: case1-metaphlan-version-sensitivity
 % SUPPLEMENTARY PLACEHOLDER: case1-16s-statistics
 
@@ -338,55 +350,56 @@ same biological question.
   \label{fig:tomato-diversity}
 \end{figure}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_genus_enrichment.png}
-  \caption{Differentially enriched genera in the resistant tomato parent HG64
-    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
-    susceptible cultivars at each sampling point.  Shared enrichment denotes a
-    positive coefficient and nominal $P<0.05$ in both contrasts.}
-  \label{fig:tomato-enrichment}
-\end{figure}
 
-% Keep the two tomato figures with Case 1 rather than allowing them to
-% migrate into the following case study.
+
+% Keep the tomato diversity figure with Case 1.
 \FloatBarrier
 
 \subsubsection{A colorectal cancer faecal metagenomic biomarker study}
 \label{sec:case-crc}
 
-We next examined whether a disease-focused analysis could connect
-species associations, functional differences, and within-cohort prediction.
-This required extending the outputs of reference-based profiling into
-statistical testing and supervised modeling within the same study.
-We applied this analysis to the C1 cohort from Yu
-\textit{et al.}, comprising 74 colorectal-cancer (CRC) cases and 54 controls
-\parencite{yu2017crc}.
-MetaPhlAn3 generated species profiles, and HUMAnN3 generated gene-family and
-KEGG Orthology (KO) abundance tables for downstream testing and classification.
-Species-level Bray--Curtis distances differed by disease status
-(PERMANOVA $P=0.002$, $F=2.32$) and cancer stage ($P=0.009$, $F=1.65$), while
-sex, age, and BMI were not significant in the corresponding tests
+The colorectal cancer (CRC) case examined disease-associated changes in
+microbial composition and the predictive value of microbial functional
+profiles.  The dataset comprised 128 faecal metagenomes from the Hong Kong
+C1 cohort reported by Yu \textit{et al.}, including 74 patients with CRC
+and 54 controls \parencite{yu2017crc}.  MicroBioAgent performed species
+profiles with MetaPhlAn3 and gene-family and KEGG Orthology (KO) abundance
+profiles with HUMAnN3 for downstream association analysis and classification
 (\cref{fig:crc}).
 
-Wilcoxon tests with Benjamini--Hochberg correction identified ten species with
-$q<0.05$.  Five taxa emphasized in the source study were recovered in the
-same direction: CRC-enriched \textit{Parvimonas micra},
-\textit{Peptostreptococcus stomatis}, \textit{Fusobacterium nucleatum}, and
-\textit{Solobacterium moorei}, and control-enriched \textit{Eubacterium
-ventriosum}.  The functional route produced 841,261 gene families and 4,407
-KOs, of which 38,124 and 22, respectively, differed at $q<0.05$.
+PCoA based on Bray--Curtis dissimilarities calculated from MetaPhlAn3
+species-level relative abundance profiles showed no clear separation
+among controls, early-stage CRC cases ($n=36$) and late-stage CRC cases
+($n=38$).  PERMANOVA nevertheless detected differences in community
+composition associated with CRC status ($F=2.32$, $P=0.002$) and disease
+stage ($F=1.65$, $P=0.009$).  Separate tests for sex, age and BMI were
+not significant.
+To identify the species associated with these community differences,
+MicroBioAgent compared species abundances between cases and controls,
+identifying eight CRC-enriched and two control-enriched taxa after
+Benjamini--Hochberg correction ($q<0.05$).  Four CRC-enriched species,
+\textit{Parvimonas micra}, \textit{Peptostreptococcus stomatis},
+\textit{Fusobacterium nucleatum} and \textit{Solobacterium moorei}, together
+with control-enriched \textit{Eubacterium ventriosum}, showed the same
+directions of association as reported in the original study.  Among these
+ten differentially abundant species, Spearman co-occurrence analysis
+identified 16 positive correlations ($|\rho|\geq0.4$, BH-adjusted $q<0.05$).
+\textit{Parvimonas micra} had the most connections, including positive correlations
+with \textit{Fusobacterium nucleatum} ($\rho=0.49$) and \textit{Solobacterium moorei}
+($\rho=0.53$).
 
-Fifteen-feature mRMR panels were used to train L2-regularized logistic
-regression models under nested fivefold cross-validation.  The pooled AUROC
-was 0.864 for the gene-family panel and 0.714 for the KO panel.  Feature selection and model fitting were confined to the training data
-within nested cross-validation.  This case demonstrates composition of
-profiling and downstream modeling around a disease question; the predictive
-results describe within-cohort discrimination and require external validation
-before diagnostic interpretation.  The selected panels also differ from the
-source study's 20-gene marker panel.
+To assess whether microbial functional profiles could distinguish CRC
+cases from controls, a panel of 15 gene families and a separate panel
+of 15 KOs were selected from differentially abundant features using mRMR.
+Each panel was used to train a logistic-regression classifier evaluated
+by nested fivefold cross-validation within the C1 cohort.  The gene-family
+panel achieved a pooled AUROC of 0.902, compared with 0.632 for the KO
+panel, indicating stronger discrimination using gene-family features
+in this cohort.
 % SUPPLEMENTARY PLACEHOLDER: case3-species-and-function-tests
 % SUPPLEMENTARY PLACEHOLDER: case3-classifier-folds
+% Outer-fold AUROC ranges: gene-family 0.86--0.96, KO 0.59--0.72.
+% Include these values and per-fold results in the supplementary classifier table.
 
 \begin{figure}[htbp]
   \centering
@@ -403,38 +416,49 @@ source study's 20-gene marker panel.
 \subsubsection{A polyethylene-enrichment genome-resolved metagenomic study}
 \label{sec:case-mag}
 
-The third case required linking community composition to the genomic
-potential of organisms represented by MAGs from enrichment cultures.  We analysed six
-shotgun metagenomes from soil inocula enriched on low-molecular-weight
-polyethylene (LMWPE), C30, or C40.  Assembly and binning generated MAGs for
-subsequent taxonomic assignment, abundance estimation, and targeted functional
-annotation.
-The agent completed MAG construction, quality filtering, dereplication, taxonomic
-profiling, abundance estimation, and eggNOG-based annotation of focal genomes.
-The dataset and its biological targets were reported by Sandholm \textit{et
-al.}\ \parencite{sandholm2025polyethylene}.
-Across the six enrichments, MAG construction and quality filtering yielded
-151 high- or medium-quality MAGs (101 high quality and 50 medium quality);
-dereplication at 95\% ANI retained
-73 representatives (42 high quality and 31 medium quality).
+We next evaluated whether MicroBioAgent could identify the predominant
+microorganisms in soil-derived enrichment cultures and characterize their
+genetic potential for degrading alkanes and their oxidized derivatives.
+The dataset comprised six shotgun metagenomes from two soil inocula
+(S1 and S2), each enriched on low-molecular-weight polyethylene (LMWPE),
+C30 or C40 \parencite{sandholm2025polyethylene}.  MicroBioAgent assembled
+and binned these metagenomes to generate MAGs for taxonomic and functional
+characterization.  Assembly and quality filtering
+yielded 153 high- or medium-quality MAGs (100 high quality and 53 medium
+quality).  Dereplication at 95\% average nucleotide identity retained
+75 representatives (50 high quality and 25 medium quality,
+\cref{fig:mag}a).
 
-Taxonomic assignment using GTDB release R232 enabled genus- and species-level
-comparisons of the MAG abundance profiles.  These profiles differed by
-inoculum and substrate.
-\textit{Acinetobacter} dominated S1 LMWPE and S1 C30 (64\% and 67\%), whereas
-\textit{Aquipseudomonas} dominated S1 C40 and S2 LMWPE (64\% and 57\%).
-Representative focal MAGs carried genes assigned to alkane oxidation,
-2-ketone or oxidized-derivative degradation, and $\beta$-oxidation modules.
-The analysis recovered the principal taxonomic patterns and gene repertoires
-of interest in the source study, despite differences in GTDB release and
-annotation system.
+MicroBioAgent used the MAG abundance profiles to examine which organisms
+predominated under each enrichment condition.  \textit{Acinetobacter
+guillouiae} dominated S1 LMWPE and S1 C30, accounting for 64\% and 67\%
+of the reported CoverM abundance, respectively.  S1 C40 instead contained
+two dominant \textit{Aquipseudomonas} species, sp002980155 (42\%) and
+sp036884845 (23\%, \cref{fig:mag}b,c).  The S2 enrichments showed a
+different composition: \textit{Aquipseudomonas} sp003050835 was most
+abundant in S2 LMWPE (42\%), whereas \textit{Mesorhizobium} and
+\textit{Aquipseudomonas} species were prominent in S2 C30 and S2 C40.
+These descriptive differences varied with both inoculum and substrate,
+with each condition represented by a single metagenome.  GTDB R232 assigned
+the former \textit{Pseudomonas} MAGs to \textit{Aquipseudomonas}, allowing
+the focal taxa to be related to those discussed in the source study despite
+the change in nomenclature.
 
-This case extends the analytical scope from community profiles to
-organism-resolved hypotheses about metabolic potential.  Each enrichment was
-represented by one metagenome, limiting interpretation to descriptive
-comparisons.  The functional values are predicted CDS counts in representative
-MAGs; expression measurements or experimental validation would be needed to
-establish activity and substrate degradation.
+To examine the degradation-associated functions carried by these organisms,
+MicroBioAgent annotated representative MAGs from ten focal taxa with eggNOG.
+Eight contained genes assigned to all three categories examined: alkane
+terminal oxidation, degradation of 2-ketones or oxidized derivatives, and
+$\beta$-oxidation (\cref{fig:mag}d).  The dominant
+\textit{Acinetobacter guillouiae} representative contained 4, 10 and 7
+annotated genes in these categories, respectively.  An
+\textit{Aquipseudomonas} sp. representative had the highest counts for
+alkane terminal oxidation (11) and 2-ketone or oxidized-derivative degradation
+(19).  The distribution was not uniform across the focal genomes: two lacked
+annotated alkane-terminal-oxidation genes, and one of these also lacked
+annotated M00087 $\beta$-oxidation genes.  These annotations support the
+presence of genetic potential for processing alkanes and their oxidized
+derivatives, the substrates central to the source study.  The gene counts do
+not establish pathway activity or degradation of the polyethylene polymer.
 % SUPPLEMENTARY PLACEHOLDER: case4-mag-catalogue
 % SUPPLEMENTARY PLACEHOLDER: case4-functional-annotations
 
@@ -506,7 +530,7 @@ repeatability measures.
     score sums five prespecified analysis domains, each scored 0, 0.5, or 1.
     Agreement statistics summarize pairwise comparisons among repeats within
     a model--prompt cell.  Mantel results are reported separately by distance
-    metric in the Supplementary Information; the main-table value summarizes
+    metric in the Supplementary Information, the main-table value summarizes
     metrics shared by all three sessions.  Lower Procrustes disparity denotes
     closer agreement.
   \end{minipage}
@@ -577,7 +601,7 @@ less analysis.
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} Full denotes the complete system; $-$Runtime extension uses the
+    \textit{Notes:} Full denotes the complete system, $-$Runtime extension uses the
     standard session runtime, $-$Skills removes the microbiome domain skills,
     and $-$Exec guidance removes the coding and long-execution instructions.
     Each task-specific cell in panel B reports the number of sessions that
@@ -589,7 +613,7 @@ less analysis.
     weighted UniFrac, unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA,
     PERMANOVA, and PERMDISP that were used as requested, averaged across the
     three sessions.  Median total tokens use the same accounting source in all
-    conditions; individual-session and pre-failure token counts are reported
+    conditions.  Individual-session and pre-failure token counts are reported
     in the Supplementary Information.
   \end{minipage}
 \end{table}
@@ -610,7 +634,7 @@ active computation nor automatic session resumption after tool exit was
 observed in any of the three sessions.
 These observations support plan revision and automatic continuation for the
 tested command and runtime configuration.  The two endpoints assess session
-interaction; they do not separately establish that every requested change was
+interaction.  They do not separately establish that every requested change was
 correctly reflected in the final analytical outputs.
 % TODO: score final-output adherence to the revised plan from archived runs.
 % SUPPLEMENTARY PLACEHOLDER: hitl-intervention-logs
@@ -691,13 +715,13 @@ remain part of the operating model.  Procedure-specific output checks do not
 guarantee statistical validity or prevent unsupported interpretations.  Local
 execution retains the compute, software-maintenance, and reference-database
 requirements of the underlying tools.  Workflow managers remain well suited
-to repeated execution of a specified analysis at scale; MicroBioAgent focuses
+to repeated execution of a specified analysis at scale.  MicroBioAgent focuses
 on defining and revising study-specific analyses through interaction.
 
 Continuity during prolonged computation supports this operating model.
 The targeted runtime experiment demonstrated plan revision during an active
 command and automatic continuation after tool completion in the tested
-configuration.  These observations establish a limited execution capability;
+configuration.  These observations establish a limited execution capability.
 reliability across longer jobs and more complex revisions, and the fidelity
 of final outputs to revised instructions, require further evaluation.
 
@@ -732,7 +756,7 @@ resources it requires, the outputs it should produce, and the checks relevant
 to those outputs.  Agent-facing execution instructions govern how procedures
 are run and how long-running commands release and later resume the
 conversation.  A failed procedure is reported together with any downstream
-work that depends on it; unavailable results are not replaced by model-generated
+work that depends on it, unavailable results are not replaced by model-generated
 values.
 
 \subsection{Skill-guided analysis and configured local execution}
@@ -749,7 +773,7 @@ without defining a separate end-to-end template.
 
 Bioinformatics commands are executed in user-provided host or container
 environments.  Software environments and reference paths are configured before
-analysis; if a required environment or database is unavailable, the agent
+analysis.  If a required environment or database is unavailable, the agent
 reports the missing dependency rather than inferring an unverified path or
 silently substituting a resource.  Compute-intensive processing of raw reads
 therefore occurs in the user-controlled environment and does not require their
@@ -759,7 +783,7 @@ corresponding public service.
 
 After an analytical operation finishes, the agent inspects its exit status and
 expected artifacts before using those products in subsequent work.  The depth
-of this inspection is procedure-specific; it is an agent-guided check of
+of this inspection is procedure-specific.  It is an agent-guided check of
 expected outputs rather than a universal validation engine.  The implemented
 analytical scope is summarized in \cref{tab:skills}.  Supervised modeling in
 the colorectal-cancer case was composed from the resulting abundance tables
@@ -779,7 +803,7 @@ agent does not use conversational polling as a substitute for command
 completion.
 
 Two events can subsequently reactivate the analysis.  A user message allows
-the agent to revise pending work while the command continues; if the command
+the agent to revise pending work while the command continues.  If the command
 is still active after that revision, the conversation is yielded again.  A
 separate completion event reactivates the session when the command exits, at
 which point the outputs are inspected and work continues under the current
@@ -791,7 +815,7 @@ background execution and yielding a session.  The extension adjusts completion-e
 resumption of the associated session, and runtime tool guidance for yielding
 control during active computation.  It also handles completion events that
 arrive while a conversational turn is still active.  The execution instructions
-specify how the agent uses these facilities; domain procedures guide the
+specify how the agent uses these facilities.  Domain procedures guide the
 analytical work performed after resumption.  Asynchronous guidance therefore
 depends on the interaction of runtime behavior and agent instructions.
 For reproducibility, the extension is distributed as a version-pinned OpenClaw
@@ -862,7 +886,7 @@ as unestablished rather than absent.
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} $\checkmark$, reported support;
+    \textit{Notes:} $\checkmark$, reported support,
     \textemdash, support not established from the reviewed sources, which
     does not demonstrate inability.  Biomni denotes the open-source release.
     This scope comparison is not a performance benchmark.
@@ -881,7 +905,7 @@ differ from the source publications.  Before examining the reanalysis output,
 we identified the biological comparisons and taxa or functions emphasized by
 each source study.  Evaluation considered whether the requested analysis was
 completed, whether its artifacts were usable, and whether those prespecified
-signals were recovered; numerical identity with the source publication was
+signals were recovered.  Numerical identity with the source publication was
 not required.
 
 \subsubsection{Case 1 --- Tomato rhizosphere 16S and metagenomic analysis}
@@ -898,7 +922,7 @@ covered T1, T2C, and T2.
 Amplicon sequence variants were obtained by DADA2 denoising and assigned
 taxonomy using the configured QIIME~2 classifier.  Alpha diversity was
 calculated from an ASV table rarefied to 56,726 reads per sample.  Shannon
-values were summarized by cultivar, time point, and inoculation status; pooled
+values were summarized by cultivar, time point, and inoculation status.  Pooled
 resistant and susceptible groups were compared within each time point using
 two-sided Mann--Whitney tests.  Community dissimilarity was evaluated using
 weighted and unweighted UniFrac and Bray--Curtis distances.  Weighted-UniFrac
@@ -938,7 +962,7 @@ coordinates analysis.  PERMANOVA tested disease status, cancer stage,
 sex, age, and body-mass index.  Species, gene families, and KO groups were
 compared between CRC and control samples using two-sided Wilcoxon rank-sum
 tests with Benjamini--Hochberg correction.  For the differentially abundant
-species, pairwise Spearman correlations were corrected for multiple testing;
+species, pairwise Spearman correlations were corrected for multiple testing.
 the displayed co-occurrence network retained positive associations with
 $\rho\geq0.4$ and adjusted $P<0.05$.
 
@@ -960,7 +984,7 @@ inocula enriched on low-molecular-weight polyethylene, C30, or C40
 \parencite{sandholm2025polyethylene}.  MAGs were constructed through assembly
 and binning in the configured genome-resolved analysis environment.  MAGs with
 completeness
-$\geq90\%$ and contamination $<5\%$ were classified as high quality; those
+$\geq90\%$ and contamination $<5\%$ were classified as high quality.  Those
 with completeness $\geq50\%$ and contamination $<10\%$ were classified as
 medium quality.  MAGs were dereplicated at 95\% average nucleotide identity,
 and taxonomy was assigned using GTDB release R232.
@@ -989,8 +1013,8 @@ $3\times3\times3$ design comprising three language models, three prompt
 granularities, and three independent sessions per cell (27 sessions).  The
 complete system, computational environment, skills, and staged data will be held
 fixed.  Detailed prompts specify the metrics, statistical tests, and figure
-types; medium prompts specify the same analytical goals but leave method
-selection to the agent; simple prompts state only the dataset and biological
+types, medium prompts specify the same analytical goals but leave method
+selection to the agent, simple prompts state only the dataset and biological
 question.  Each replicate will begin in a new conversation, and methodological
 coaching will not be provided after the plan is confirmed.
 
@@ -1013,8 +1037,8 @@ comparisons will be treated as an initial repeatability screen.
 
 The component ablation will use the detailed robustness prompt, the same frozen
 inputs, and one fixed model.  Four conditions will be evaluated in three
-independent sessions each: the complete system; the standard session runtime
-without the extension; removal of the microbiome domain procedures; and removal
+independent sessions each: the complete system, the standard session runtime
+without the extension, removal of the microbiome domain procedures, and removal
 of the coding and long-execution guidance.  No feedback will be introduced while a session is
 running.  All other workspace instructions, software resources, and reference
 resources will be held constant wherever they are not the component under test.
@@ -1038,7 +1062,7 @@ Asynchronous intervention was evaluated with a Case~1 QIIME~2
 taxonomy-classification command selected in a pilot to run for several minutes
 without artificial delay.  The extended runtime and the standard runtime
 at the same OpenClaw version were each evaluated in three new sessions.
-The two conditions differed only in the session-runtime extension; all other
+The two conditions differed only in the session-runtime extension.  All other
 configuration and workspace instructions were held fixed.  While classification
 was confirmed to be running, the same user instruction requested replacement of a pooled
 resistant-versus-susceptible comparison with separate T1, T2C, and T2
@@ -1057,12 +1081,12 @@ repeated with its exclusion reason retained.
 %% ====================================================================
 
 Raw sequencing data are available from the public repositories associated
-with the three source studies; accession identifiers and sample-level mapping
+with the three source studies.  Accession identifiers and sample-level mapping
 will be listed in the Supplementary Information.  Processed abundance tables,
 metadata, numerical data underlying the figures, MAG annotations, and
 session-level robustness and ablation scores will be deposited with the
 article archive.  Raw sequencing files and large reference databases will not
-be redistributed; their sources and releases will be documented.
+be redistributed.  Their sources and releases will be documented.
 % TODO: add repository/archive DOI and complete accession table.
 
 %% ====================================================================
@@ -1122,5 +1146,15 @@ included in the accompanying archive.
     \bottomrule
   \end{tabularx}
 \end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
+  \caption{Differentially enriched genera in the resistant tomato parent HG64
+    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
+    susceptible cultivars at each sampling point.  Shared enrichment denotes a
+    positive coefficient and nominal $P<0.05$ in both contrasts.}
+  \label{fig:tomato-enrichment}
+\end{figure}
 
 \end{document}
