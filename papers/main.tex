@@ -290,18 +290,22 @@ degradation-associated genes in focal genomes.
 
 We applied MicroBioAgent to a published study of tomato rhizosphere
 microbiomes associated with resistance to bacterial wilt
-\parencite{yin2022tomato}.  The input comprised 60 16S V3--V4 amplicon
+\parencite{yin2022tomato}.  This case evaluated its ability to connect
+amplicon and shotgun analyses to examine resistance-associated community
+changes and identify the species markers reported in that study.
+The input comprised 60 16S V3--V4 amplicon
 libraries and 36 matched shotgun libraries from two susceptible cultivars
 (A57 and HG70), a resistant parent (HG64), and a resistant F1 hybrid (HF12).
 The amplicon data covered five sampling conditions with three biological
-replicates per cultivar: before inoculation (T1), and inoculated and
+replicates per cultivar, including before inoculation (T1), and inoculated and
 uninoculated plants at day 5 (T2 and T2C) and day 10 (T3 and T3C).
 The matched shotgun libraries covered T1, T2C, and T2.
 Starting from sequencing reads, MicroBioAgent performed quality control,
 DADA2 denoising and taxonomic classification against the SILVA database for
 the amplicon data, and quality control, host-read removal and MetaPhlAn3
-taxonomic profiling for the shotgun data.  The resulting abundance tables
-were used for downstream ecological and statistical analyses.
+taxonomic profiling for the shotgun data.  The resulting profiles supported
+community-level comparisons using 16S data and species-level marker analysis
+using shotgun data.
 
 For the 16S amplicon data, MicroBioAgent examined how pathogen inoculation
 and cultivar resistance were reflected in microbial diversity and community
@@ -321,10 +325,10 @@ reported in the source study.
 
 To examine the taxa underlying these resistance-associated differences,
 MicroBioAgent compared each resistant cultivar with the pooled susceptible
-cultivars using MaAsLin~3.  In the 16S profiles, 6--15 genera were enriched
-in both HG64 and HF12 within each sampling condition ($P<0.05$ and positive
-coefficients, Supplementary Figure~\ref{fig:tomato-enrichment}), but the shared taxa varied
-across conditions.  The matched shotgun data provided species-level
+cultivars using MaAsLin~3.  In the 16S profiles, the number of genera
+enriched in both HG64 and HF12 ranged from 6 to 15 across sampling
+conditions, with different genera contributing to these shared enrichments
+(Supplementary Figure~\ref{fig:tomato-enrichment}).  The matched shotgun data provided species-level
 comparisons of the markers highlighted in the source study.  MetaPhlAn3
 profiles showed enrichment of the \textit{Pseudomonas putida} group in both
 the resistant parent HG64 ($P=0.013$) and the resistant hybrid HF12
@@ -358,14 +362,18 @@ associations.
 \subsubsection{A colorectal cancer faecal metagenomic biomarker study}
 \label{sec:case-crc}
 
-The colorectal cancer (CRC) case examined disease-associated changes in
-microbial composition and the predictive value of microbial functional
-profiles.  The dataset comprised 128 faecal metagenomes from the Hong Kong
+The colorectal cancer (CRC) case evaluated whether MicroBioAgent could
+connect taxonomic and functional profiling to disease-associated species
+analysis, co-occurrence networks and predictive modelling.
+The dataset comprised 128 faecal metagenomes from the Hong Kong
 C1 cohort reported by Yu \textit{et al.}, including 74 patients with CRC
-and 54 controls \parencite{yu2017crc}.  MicroBioAgent performed species
-profiles with MetaPhlAn3 and gene-family and KEGG Orthology (KO) abundance
-profiles with HUMAnN3 for downstream association analysis and classification
-(\cref{fig:crc}).
+and 54 controls \parencite{yu2017crc}.  MicroBioAgent performed species-level
+profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KEGG
+Orthology (KO) abundances with HUMAnN3 for downstream association analysis
+and classification (\cref{fig:crc}).  Reported species associations and
+co-occurrence patterns provided biological reference points, while
+cross-validation assessed the predictive performance of the functional
+features.
 
 PCoA based on Bray--Curtis dissimilarities calculated from MetaPhlAn3
 species-level relative abundance profiles showed no clear separation
@@ -374,28 +382,37 @@ among controls, early-stage CRC cases ($n=36$) and late-stage CRC cases
 composition associated with CRC status ($F=2.32$, $P=0.002$) and disease
 stage ($F=1.65$, $P=0.009$).  Separate tests for sex, age and BMI were
 not significant.
-To identify the species associated with these community differences,
-MicroBioAgent compared species abundances between cases and controls,
-identifying eight CRC-enriched and two control-enriched taxa after
-Benjamini--Hochberg correction ($q<0.05$).  Four CRC-enriched species,
-\textit{Parvimonas micra}, \textit{Peptostreptococcus stomatis},
-\textit{Fusobacterium nucleatum} and \textit{Solobacterium moorei}, together
-with control-enriched \textit{Eubacterium ventriosum}, showed the same
-directions of association as reported in the original study.  Among these
-ten differentially abundant species, Spearman co-occurrence analysis
-identified 16 positive correlations ($|\rho|\geq0.4$, BH-adjusted $q<0.05$).
-\textit{Parvimonas micra} had the most connections, including positive correlations
-with \textit{Fusobacterium nucleatum} ($\rho=0.49$) and \textit{Solobacterium moorei}
-($\rho=0.53$).
 
-To assess whether microbial functional profiles could distinguish CRC
-cases from controls, a panel of 15 gene families and a separate panel
-of 15 KOs were selected from differentially abundant features using mRMR.
-Each panel was used to train a logistic-regression classifier evaluated
-by nested fivefold cross-validation within the C1 cohort.  The gene-family
-panel achieved a pooled AUROC of 0.902, compared with 0.632 for the KO
-panel, indicating stronger discrimination using gene-family features
-in this cohort.
+Comparisons of species abundances between cases and controls identified
+eight CRC-enriched and two control-enriched taxa after Benjamini--Hochberg
+correction ($q<0.05$).  Four CRC-enriched species,
+\textit{Parvimonas micra}, \textit{Peptostreptococcus stomatis},
+\textit{Fusobacterium nucleatum} and \textit{Solobacterium moorei}, showed
+the same direction of association as in the original study.  Enrichment
+of \textit{Eubacterium ventriosum} in controls also agreed with the
+reported association.  To examine whether these disease-associated species
+also varied together across samples, Spearman co-occurrence analysis was
+performed on the ten differentially abundant species.  The network contained
+16 positive correlations ($|\rho|\geq0.4$, BH-adjusted $q<0.05$), with
+\textit{Parvimonas micra} connected to six other species.
+Its positive correlations with \textit{Fusobacterium nucleatum}
+($\rho=0.49$) and \textit{Solobacterium moorei} ($\rho=0.53$) were
+consistent with the co-occurrence relationships emphasized in the original
+study \parencite{yu2017crc}.
+
+The analysis then extended from identifying disease-associated taxa to
+testing whether functional differences could distinguish CRC cases from
+controls.  MicroBioAgent selected differentially abundant features and
+trained separate gene-family and KO classifiers to compare the predictive
+performance of these two functional representations.  Within each training fold,
+mRMR selection yielded 15 gene-family features or 15 KO features for
+logistic-regression modelling.  Performance was evaluated by nested
+fivefold cross-validation within the C1 cohort.  The gene-family
+classifier achieved a pooled out-of-fold AUROC of 0.902, compared with
+0.632 for the KO classifier, indicating stronger discrimination using
+gene-family features.  At thresholds selected using Youden's index,
+the gene-family classifier achieved a sensitivity of 0.82 and specificity
+of 0.89, compared with 0.41 and 0.87 for the KO classifier.
 % SUPPLEMENTARY PLACEHOLDER: case3-species-and-function-tests
 % SUPPLEMENTARY PLACEHOLDER: case3-classifier-folds
 % Outer-fold AUROC ranges: gene-family 0.86--0.96, KO 0.59--0.72.
@@ -416,61 +433,70 @@ in this cohort.
 \subsubsection{A polyethylene-enrichment genome-resolved metagenomic study}
 \label{sec:case-mag}
 
-We next evaluated whether MicroBioAgent could identify the predominant
-microorganisms in soil-derived enrichment cultures and characterize their
-genetic potential for degrading alkanes and their oxidized derivatives.
-The dataset comprised six shotgun metagenomes from two soil inocula
-(S1 and S2), each enriched on low-molecular-weight polyethylene (LMWPE),
-C30 or C40 \parencite{sandholm2025polyethylene}.  MicroBioAgent assembled
-and binned these metagenomes to generate MAGs for taxonomic and functional
-characterization.  Assembly and quality filtering
-yielded 153 high- or medium-quality MAGs (100 high quality and 53 medium
-quality).  Dereplication at 95\% average nucleotide identity retained
-75 representatives (50 high quality and 25 medium quality,
-\cref{fig:mag}a).
+We next evaluated whether MicroBioAgent could reconstruct genomes from
+enrichment metagenomes and use them to identify microorganisms and annotate
+genes associated with alkane and oxidized-derivative metabolism.
+The dataset comprised six Oxford Nanopore long-read metagenomes from two
+soil inocula (S1 and S2), each enriched on low-molecular-weight polyethylene
+(LMWPE), triacontane (C30) or tetracontane (C40)
+\parencite{sandholm2025polyethylene}.  Assembly and binning generated
+372 bins, of which 153 passed completeness and contamination filtering
+(100 high-quality and 53 medium-quality MAGs).
+Dereplication at 95\% average nucleotide identity retained 75 representative
+genomes (50 high quality and 25 medium quality, \cref{fig:mag}a).
+These genomes were classified using GTDB-Tk with GTDB release R232,
+and their abundances across the enrichment cultures were estimated by
+read mapping with CoverM to identify the predominant microorganisms in
+each enrichment culture.
 
-MicroBioAgent used the MAG abundance profiles to examine which organisms
-predominated under each enrichment condition.  \textit{Acinetobacter
-guillouiae} dominated S1 LMWPE and S1 C30, accounting for 64\% and 67\%
-of the reported CoverM abundance, respectively.  S1 C40 instead contained
-two dominant \textit{Aquipseudomonas} species, sp002980155 (42\%) and
-sp036884845 (23\%, \cref{fig:mag}b,c).  The S2 enrichments showed a
-different composition: \textit{Aquipseudomonas} sp003050835 was most
-abundant in S2 LMWPE (42\%), whereas \textit{Mesorhizobium} and
-\textit{Aquipseudomonas} species were prominent in S2 C30 and S2 C40.
-These descriptive differences varied with both inoculum and substrate,
-with each condition represented by a single metagenome.  GTDB R232 assigned
-the former \textit{Pseudomonas} MAGs to \textit{Aquipseudomonas}, allowing
-the focal taxa to be related to those discussed in the source study despite
-the change in nomenclature.
+MAG abundance profiles showed different dominant taxa across the enrichment
+cultures.  \textit{Acinetobacter guillouiae} dominated S1 LMWPE and S1 C30,
+accounting for 64\% and 67\% of the reported abundance, respectively.
+S1 C40 was instead dominated by \textit{Aquipseudomonas}, which accounted
+for 66\% at the genus level (\cref{fig:mag}b,c).  The S2 cultures showed
+a different composition.  \textit{Aquipseudomonas} sp003050835 was most
+abundant in S2 LMWPE (42\%), while \textit{Mesorhizobium\_M} sp900116595
+and \textit{Aquipseudomonas moorei} were the most abundant species in
+S2 C30 (16\% each).  In S2 C40, \textit{Mesorhizobium\_M} sp900116595
+and \textit{Aquipseudomonas fluorescens\_BJ} predominated at 27\% and
+25\%, respectively.  Taxonomic annotation identified the ten taxonomic groups of particular
+interest in the original study
+(Supplementary Table~\ref{tab:mag-taxonomy}).  The groups reported as
+\textit{Pseudomonas} in the original study were classified as
+\textit{Aquipseudomonas} in the present analysis due to differences
+in the reference taxonomy.
 
-To examine the degradation-associated functions carried by these organisms,
-MicroBioAgent annotated representative MAGs from ten focal taxa with eggNOG.
-Eight contained genes assigned to all three categories examined: alkane
-terminal oxidation, degradation of 2-ketones or oxidized derivatives, and
-$\beta$-oxidation (\cref{fig:mag}d).  The dominant
-\textit{Acinetobacter guillouiae} representative contained 4, 10 and 7
-annotated genes in these categories, respectively.  An
-\textit{Aquipseudomonas} sp. representative had the highest counts for
-alkane terminal oxidation (11) and 2-ketone or oxidized-derivative degradation
-(19).  The distribution was not uniform across the focal genomes: two lacked
-annotated alkane-terminal-oxidation genes, and one of these also lacked
-annotated M00087 $\beta$-oxidation genes.  These annotations support the
-presence of genetic potential for processing alkanes and their oxidized
-derivatives, the substrates central to the source study.  The gene counts do
-not establish pathway activity or degradation of the polyethylene polymer.
+To examine the metabolic potential of the ten taxonomic groups emphasized
+in the original study, functional annotation was performed on one
+representative MAG from each group.
+The annotations identified genes associated with the three metabolic
+processes examined in the original study (\cref{fig:mag}d).
+Genes associated with alkane terminal oxidation
+were annotated in eight MAGs, while those associated with 2-ketone or
+oxidized-derivative metabolism were detected in all ten.  Nine MAGs
+contained genes assigned to the $\beta$-oxidation module M00087.
+Eight MAGs contained annotations spanning all three categories,
+indicating that the corresponding genetic potential was distributed
+across multiple taxa of interest.
 % SUPPLEMENTARY PLACEHOLDER: case4-mag-catalogue
 % SUPPLEMENTARY PLACEHOLDER: case4-functional-annotations
+% SUPPLEMENTARY PLACEHOLDER: case4-mag-taxonomy (Table~\ref{tab:mag-taxonomy})
+% Populate with MAG identifiers and current GTDB assignments from the annotation
+% export. Confirm whether it covers all 153 quality-filtered MAGs or only the
+% 75 dereplicated representatives before specifying the table's MAG count.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\linewidth]{Case-study-4-Fig_composite.png}
   \caption{Assembly-based analysis of enrichment metagenomes.  (a) Numbers of
-    high- and medium-quality MAGs before and after 95\% ANI dereplication.
+    high- and medium-quality MAGs, grouped by completeness and contamination
+    thresholds defined in Methods, before and after 95\% ANI dereplication.
     (b) Genus-level MAG composition.  (c) Species among the five most abundant
-    MAGs in at least one sample.  (d) eggNOG-annotated gene counts in focal
-    MAGs for alkane oxidation, 2-ketone or oxidized-derivative degradation,
-    and $\beta$-oxidation.}
+    MAGs in at least one sample.  (d) Numbers of genes annotated using
+    eggNOG-mapper in one representative MAG per target taxon for alkane
+    terminal oxidation, 2-ketone or oxidized-derivative metabolism, and
+    $\beta$-oxidation (M00087).  Counts represent annotated genes rather
+    than distinct functional types or transcript abundance.}
   \label{fig:mag}
 \end{figure}
 
@@ -955,7 +981,8 @@ The colorectal-cancer analysis used the C1 cohort reported by Yu \textit{et
 al.}, comprising 74 CRC cases and 54 controls \parencite{yu2017crc}.  Among the
 cases, 36 were stage I--II and 38 were stage III--IV.  Species relative
 abundances were obtained with MetaPhlAn3, and HUMAnN3 was used to quantify gene
-families and KEGG Orthology groups.
+families in UniRef90.  KO abundances were obtained by summing the reads
+per kilobase values of UniRef90 gene families mapped to each KO.
 
 Species-level Bray--Curtis dissimilarities were analysed by principal
 coordinates analysis.  PERMANOVA tested disease status, cancer stage,
@@ -963,45 +990,61 @@ sex, age, and body-mass index.  Species, gene families, and KO groups were
 compared between CRC and control samples using two-sided Wilcoxon rank-sum
 tests with Benjamini--Hochberg correction.  For the differentially abundant
 species, pairwise Spearman correlations were corrected for multiple testing.
-the displayed co-occurrence network retained positive associations with
-$\rho\geq0.4$ and adjusted $P<0.05$.
+The displayed co-occurrence network retained associations with
+$|\rho|\geq0.4$ and adjusted $q<0.05$.
 
 Predictive analyses were performed separately on gene-family and KO abundance
-tables.  Fifteen features were selected using minimum-redundancy
-maximum-relevance and entered into L2-regularized logistic regression.  Model
-performance was assessed by nested fivefold cross-validation, with feature
-selection and model fitting confined to the corresponding training data.
-Pooled areas under the receiver-operating-characteristic curve were calculated
-from out-of-fold predictions.  These analyses assessed execution of a
-taxonomic--functional--predictive study design within this cohort and were not
-treated as external clinical validation.
+tables.  Within each training fold, significantly differentially abundant
+features were ranked by Wilcoxon significance, and the top 150 formed the
+candidate pool.  Pairwise Spearman-correlation filtering removed redundant
+features at $|\rho|>0.8$, retaining at most 30 candidates.  Spearman-based
+minimum-redundancy maximum-relevance (mRMR) selection then retained 15
+features for each feature type.  Feature abundances were standardized before
+fitting L2-regularized logistic-regression classifiers with balanced class
+weights.
+
+Performance was assessed by nested fivefold cross-validation.  Feature
+selection and tuning of the inverse regularization strength $C$ were
+performed in the inner loop, using $C\in\{0.01,0.03,0.1,0.3,1.0\}$.
+Preprocessing, feature selection and model fitting were confined to the
+corresponding training data.  ROC curves and pooled AUROCs were calculated
+from the outer-fold out-of-fold predicted probabilities.  Sensitivity and
+specificity were reported at thresholds selected using Youden's index.
+% TODO: specify the significance threshold used for functional-feature screening
+% and the prediction set used to select the Youden thresholds.
 
 \subsubsection{Case 3 --- Polyethylene-enrichment genome-resolved metagenomic analysis}
 \label{sec:methods-mag}
 
-The genome-resolved analysis used six shotgun metagenomes from two soil
-inocula enriched on low-molecular-weight polyethylene, C30, or C40
-\parencite{sandholm2025polyethylene}.  MAGs were constructed through assembly
-and binning in the configured genome-resolved analysis environment.  MAGs with
-completeness
-$\geq90\%$ and contamination $<5\%$ were classified as high quality.  Those
-with completeness $\geq50\%$ and contamination $<10\%$ were classified as
-medium quality.  MAGs were dereplicated at 95\% average nucleotide identity,
-and taxonomy was assigned using GTDB release R232.
+The genome-resolved analysis used six single-end Oxford Nanopore long-read
+metagenomes from two soil inocula enriched on low-molecular-weight
+polyethylene, triacontane (C30) or tetracontane (C40)
+\parencite{sandholm2025polyethylene}.  Assembly was performed with myloasm
+through Aviary.  Binning used Aviary recover with MetaBAT2, Rosella, SemiBin
+and VAMB, followed by bin refinement with DASTool and quality assessment
+with CheckM2.  For the quality groups reported here, MAGs with completeness
+$\geq90\%$ and contamination $\leq5\%$ were designated high quality.
+Remaining MAGs with completeness $\geq50\%$ and contamination $\leq10\%$
+were designated medium quality.  Dereplication used skani with average
+nucleotide identity $\geq95\%$ and aligned fraction $\geq30\%$.
+Taxonomy was assigned using GTDB-Tk with GTDB release R232.
 
-Reads were mapped to the dereplicated MAG set, and CoverM-derived relative
-abundances were summarized at genus and species levels.  Because each
-inoculum--substrate combination was represented by one metagenome, these
-profiles were interpreted descriptively and MAGs were not treated as
-independent biological replicates.
+Reads were cross-mapped to genomes using CoverM, with abundance quantified
+as reads per kilobase per million mapped reads (RPKM).  The resulting MAG
+abundance profiles were summarized at genus and species levels.  Each
+inoculum--substrate combination was represented by one metagenome, and MAGs
+were not treated as independent biological replicates.
 
-One representative MAG was selected for each focal taxon and annotated with
-eggNOG.  Predicted coding sequences were counted against rules representing
-alkane terminal oxidation, degradation of 2-ketone or other oxidized
-derivatives, and the KEGG M00087 $\beta$-oxidation module.  Counts therefore
-represent predicted genomic coding potential, not expression measurements or
-direct evidence of substrate degradation.  The complete gene-to-module rules
-are reserved for the Supplementary Methods.
+One representative MAG was selected for each of ten target taxa chosen
+from the source study.  Genes were predicted using Prodigal and functionally
+annotated using eggNOG-mapper v2.1.13.  Annotated genes were counted under
+three functional categories comprising alkane terminal oxidation,
+2-ketone or oxidized-derivative metabolism, and the KEGG M00087
+$\beta$-oxidation module.  These counts describe genomic coding potential.
+The complete gene-to-category rules and gene-level annotations are reserved
+for the Supplementary Information, together with a table documenting the
+source-study targets, representative MAG identifiers, full taxonomic
+assignments and the evidence supporting their correspondence.
 
 \subsection{Robustness and ablation experiments}
 \label{sec:reliability-experiments}
@@ -1145,6 +1188,23 @@ included in the accompanying archive.
       & Genome-resolved taxonomic and functional characterization \\
     \bottomrule
   \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{MAG identifiers and taxonomic assignments for the enrichment
+    metagenomes.  Taxonomic assignments follow GTDB release R232.}
+  \label{tab:mag-taxonomy}
+  \small
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    MAG identifier & Taxonomic assignment \\
+    \midrule
+    \multicolumn{2}{c}{\textit{Annotation records to be supplied.}} \\
+    \bottomrule
+  \end{tabularx}
+  % TODO: insert the annotation export and specify whether the table contains
+  % 153 quality-filtered MAGs or 75 dereplicated representatives.
 \end{table}
 
 \begin{figure}[htbp]
