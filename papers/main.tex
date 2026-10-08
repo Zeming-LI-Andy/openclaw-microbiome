@@ -65,84 +65,90 @@ end-to-end workflow template.
 \label{sec:intro}
 %% ====================================================================
 
-Microbiome studies seek to explain how microbial communities vary with
-host phenotype, environmental conditions, and functional potential.
-The analytical route depends on the question and the available data:
-16S rRNA gene amplicons characterize community diversity and taxonomy,
-reference-based shotgun profiling estimates species and functional
-composition, and assembly-based analysis constructs metagenome-assembled
-genomes (MAGs) for taxonomic and functional characterization
-\parencite{knight2018bestpractices}.  A study may combine these routes
-or extend an analysis after an intermediate finding motivates a new
-comparison.  Researchers must therefore connect biological objectives to
-method selection, compatible inputs, reference resources, and statistical
-interpretation.  This work requires both domain knowledge and computational
-proficiency, creating barriers for researchers without specialist
-bioinformatics training \parencite{tong2020genepiper,liu2021practical}.
+Advances in sequencing have expanded opportunities to investigate microbial
+communities in human, plant, and environmental systems.  Analyses of 16S
+rRNA gene amplicons and shotgun metagenomes can characterize community
+composition, reveal functional potential, and recover microbial genomes
+\parencite{knight2018bestpractices}.  Turning these data into biological
+insights, however, requires researchers to connect sequence processing with
+taxonomic and functional annotation and downstream statistical analysis.
+Selecting suitable methods and reference databases, configuring software,
+writing analysis code, and interpreting the results require both computational
+skills and biological knowledge.  These demands create substantial barriers
+for researchers without specialist bioinformatics training, limiting their
+ability to conduct and extend microbiome analyses independently
+\parencite{tong2020genepiper,liu2021practical}.
 
-Workflow managers such as Snakemake and Nextflow provide a foundation for
-building reproducible and scalable analysis pipelines
-\parencite{koster2012snakemake,ditommaso2017nextflow}.  They organize
-computational dependencies and coordinate execution of a specified workflow.
-Applying a pipeline to a biological study still requires researchers to
-select an appropriate analysis path, configure methods and resources, and
-interpret the resulting outputs.  Extending a study to another assay or
-adding a comparison prompted by an intermediate finding may require changes
-to that path.  Translating a research question into the workflow, and revising
-it as the analysis develops, therefore remains a substantial part of the
-researcher's task.
+Existing analysis platforms and workflow tools address parts of this burden.
+Workflow managers such as Snakemake and Nextflow organize computational
+dependencies and support reproducible, scalable execution
+\parencite{koster2012snakemake,ditommaso2017nextflow}.  Once an analysis has
+been specified, these systems can coordinate its computational steps.
+Researchers must still determine which analyses address their question,
+configure the required resources, and interpret the outputs.  Adding a new
+comparison or following up an intermediate finding can also require changes
+to the workflow or additional code.  Reducing this burden therefore requires
+support for planning and revising analyses as well as executing them.
 
-Large language model agents offer a means of connecting natural-language
-objectives to computational actions.  AutoBA demonstrated planning, code
-generation, execution, and repair for multi-omics analyses, while Biomni
-combined planning and tool use across biomedical tasks
-\parencite{zhou2024autoba,huang2025biomni}.  Other systems have explored
-broader bioinformatics execution and human supervision of multi-step analyses
+Large language model agents offer a way to connect these decisions with
+computational execution through natural-language interaction.  AutoBA
+combined analysis planning, code generation, execution, and automated repair
+for multi-omics tasks, while Biomni integrated tools and resources for a broad
+range of biomedical analyses \parencite{zhou2024autoba,huang2025biomni}.
+BioMedAgent, BioMaster, and M3A have further explored automated bioinformatics
+and human supervision of multi-step analyses
 \parencite{bu2026biomedagent,su2026biomaster,johri2026m3a}.
-These developments suggest that agents can help compose the analytical path
-as well as execute its operations.  In microbiome research, this approach
-requires domain knowledge that connects method selection to assay type,
-software and database requirements, expected outputs, and downstream
-interpretation.  A central design question is how to organize that knowledge
-so that an agent can assemble study-specific analyses across complementary
-microbiome workflows.
+For microbiome researchers, the practical need is to carry a study objective
+through an entire analysis, from processing sequencing reads to comparing
+communities or examining the functions of individual organisms.  Meeting
+this need requires the agent to select appropriate methods for the input
+data and connect their outputs to subsequent analyses without requiring
+users to write commands or assemble the workflow themselves.
 
-Here we present MicroBioAgent, a domain agent that translates microbiome
-research questions into inspectable, study-specific analyses executed in
-user-controlled computational environments.  It represents analytical methods
-as modular domain procedures spanning 16S amplicon profiling, reference-based
-shotgun analysis, and assembly-based MAG construction.  The agent selects
-procedures suited to the research question and executes them using configured
-software and reference databases.  Before execution, it develops an analysis
-plan for the study.  During execution, it examines intermediate results to
-determine whether the remaining steps need to be revised.  MicroBioAgent also
-supports asynchronous human-in-the-loop interaction: users can provide feedback
-while a long-running operation continues, allowing the agent to revise pending
-analyses and resume execution automatically after the operation completes.
+MetaClaw is an AI agent designed specifically for microbiome analysis.
+It connects predefined upstream workflows on FlowHub with customizable
+downstream analyses through a YAML pipeline registry
+\parencite{zhang2026metaclaw}.  This architecture brings upstream processing
+and downstream interpretation into one agent-guided analysis, while retaining
+registered workflows and an external platform for upstream metagenomic
+processing.  During execution, MetaClaw manages long-running tasks in the 
+background and monitors their progress through repeated status checks within 
+the active conversation. For researchers who need to combine methods beyond 
+registered workflows or process sequencing data on their own infrastructure, 
+flexible composition and local execution of both upstream and downstream analyses 
+remain important requirements. Flexibility during execution also depends on whether 
+users can revise pending analyses while a computation is running. Keeping the 
+conversation occupied with status checks limits this interaction, motivating an 
+execution mechanism that allows background computation and user feedback to proceed 
+independently.
 
-MetaClaw is another AI agent designed for microbiome analysis.  It combines
-predefined, deterministic upstream workflows on FlowHub with customizable
-downstream analyses in an OpenClaw skill container.  A single YAML pipeline
-registry links the two layers \parencite{zhang2026metaclaw}.
-MicroBioAgent composes upstream processing and downstream analyses from
-modular skills without requiring a predefined end-to-end workflow template.
-Both stages can run in a user-controlled computational environment, allowing
-researchers to retain control over their sequencing data without uploading raw
-reads to an external analysis platform.  We reanalysed three published datasets
-comprising 230 sequencing libraries from plant, human, and environmental
-microbiomes to evaluate whether MicroBioAgent could complete diverse analytical
-tasks and recover biological patterns reported in the original studies despite
-differences in methods and reference databases.  To assess robustness, we
-designed 27 independent sessions spanning three language models, three levels
-of prompt detail, and three repeats per combination.  We also designed
-component ablations to examine how domain skills, execution guidance, and the
-runtime extension contribute to task completion, method adherence, and token
-consumption.  A separate runtime comparison tested whether user feedback could
-update the plan during an ongoing analysis and whether execution resumed
-automatically after tool completion.  Together, this work aims to enable
-researchers without specialist bioinformatics training to carry out end-to-end
-microbiome analysis while preserving flexibility in method selection and user
-control during execution.
+Here we present MicroBioAgent, an AI-agent framework that translates research
+objectives into locally executable microbiome analyses.  It combines
+individual analytical skills for 16S amplicon analysis, reference-based
+metagenomics, and assembly-based metagenomics with downstream statistical
+analysis and functional annotation, without requiring a predefined end-to-end
+workflow template.  An analysis plan is established before execution and
+revised in response to intermediate findings or user feedback.  Configurable
+software environments and reference resources support local upstream and
+downstream execution without uploading raw sequencing reads to an external
+analysis platform.  During long-running computations, the task continues in
+the background while the conversation remains available for user feedback.
+The agent can update pending analyses and automatically continue execution
+after the background task finishes.  We evaluated its analytical capabilities
+through reanalyses of three published datasets comprising 230 sequencing
+libraries, examining completion of the requested analyses and recovery of
+reported biological patterns despite differences in methods and databases.
+We also designed robustness experiments across three language models, three
+levels of prompt detail, and three repeats per combination (27 sessions),
+together with component ablations assessing task completion, method adherence,
+and token consumption.  Within the ablation experiments, a comparison with
+and without the runtime patch specifically examined whether users could
+revise pending analyses while a background task was running and whether the
+agent automatically resumed analysis after the task finished.
+MicroBioAgent aims to make microbiome analysis more accessible to researchers 
+without specialist bioinformatics training by reducing manual coding, tool 
+integration, and supervision of long-running computation while preserving 
+flexibility in method selection and user control.
 
 %% ====================================================================
 \section{Results}
@@ -764,90 +770,123 @@ basis for question-driven analysis across microbiome workflows.
 \label{sec:methods}
 %% ====================================================================
 
-\subsection{MicroBioAgent system overview}
+\subsection{Details on implementing MicroBioAgent}
 \label{sec:system-overview}
 
-MicroBioAgent is an agent-based system for study-specific microbiome
-analysis, implemented on the OpenClaw runtime.  It maintains a persistent
-analysis context across a conversation, linking the user's research objective
-and input data with the selected methods, intermediate products, and pending
-decisions.  Before computation begins, the agent states an inspectable plan.
-It then selects modular analytical procedures according to the study objective,
-available data, and verified intermediate results rather than requiring the
-entire study to conform to a predefined workflow (\cref{fig:architecture}).
+MicroBioAgent was implemented on OpenClaw to plan and execute microbiome
+analyses from natural-language requests (\cref{fig:architecture}).  Users can
+interact with MicroBioAgent through OpenClaw's web interface, a command-line
+client, or supported messaging applications such as WhatsApp, Slack and
+Telegram.  These interfaces communicate with the OpenClaw gateway, a backend
+service that manages conversations, language-model calls and tool execution.
+The agent combines instructions for conducting an analysis with method-specific
+guidance and configured computational resources to carry out upstream and
+downstream tasks on a user-controlled workstation or server.
 
-The system separates analytical knowledge from execution guidance.  Domain
-procedures describe when a microbiome method is applicable, the inputs and
-resources it requires, the outputs it should produce, and the checks relevant
-to those outputs.  Agent-facing execution instructions govern how procedures
-are run and how long-running commands release and later resume the
-conversation.  A failed procedure is reported together with any downstream
-work that depends on it, unavailable results are not replaced by model-generated
-values.
+The behaviour of MicroBioAgent is guided by Markdown instruction files in the
+agent workspace.  \texttt{AGENTS.md} defines how analytical tasks are planned
+and tracked, \texttt{TOOLS.md} describes how tools and reference resources are
+accessed, and \texttt{CODING.md} specifies how analysis code and long-running
+commands are executed.  These instructions operate alongside method-specific
+skills, each documented in a \texttt{SKILL.md} file describing the method's
+applicability, input requirements and execution procedures.  The agent uses
+this guidance to compose a study-specific plan.  The \texttt{runtimes.yaml}
+configuration identifies available tools and their software environments,
+while \texttt{references.yaml} specifies reference resources and their local
+paths.  Users can extend the system by adding or revising skills and
+registering additional installed tools and prepared databases.
 
-\subsection{Skill-guided analysis and configured local execution}
+Execution instructions and a runtime patch allow long-running analytical
+tasks to continue in the background while users provide feedback through the
+conversation.  This feedback can revise the remaining analysis plan without
+waiting for the running task to finish.  When a background task completes,
+the system automatically reactivates the agent to inspect the outputs and
+continue the remaining steps.
+
+\subsubsection{Analytical skills and configured execution}
 \label{sec:skills-execution}
 
-MicroBioAgent combines a tool-use specification with step-level microbiome
-procedures.  The tool-use instructions (\texttt{TOOLS.md}) direct the agent to
-the relevant domain procedure and associate it with a configured software
-environment and, where required, a reference resource.  The domain procedures
-encode method-specific requirements without prescribing a single sequence for
-an entire study.  Consequently, a statistical model or targeted annotation can
-be added to an existing profile when the scientific question requires it,
-without defining a separate end-to-end template.
+The skills cover 16S amplicon processing, reference-based metagenomic profiling
+and assembly-based genome reconstruction, together with downstream statistical
+analysis, functional annotation and visualization (\cref{tab:skills}).
+Method-specific instructions describe the required inputs, software and
+reference resources, relevant parameters and expected outputs.  Where
+provided, reference scripts serve as starting points that the agent can adapt
+to the study data.  Additional statistical analyses can be implemented using
+configured libraries, as in the gene-family and KO classification analyses
+in the colorectal-cancer case.
 
-Bioinformatics commands are executed in user-provided host or container
-environments.  Software environments and reference paths are configured before
-analysis.  If a required environment or database is unavailable, the agent
-reports the missing dependency rather than inferring an unverified path or
-silently substituting a resource.  Compute-intensive processing of raw reads
-therefore occurs in the user-controlled environment and does not require their
-submission to an external microbiome analysis service.  Optional online
-annotation procedures may transmit the query information required by the
-corresponding public service.
+The tool-use instructions in \texttt{TOOLS.md} direct the agent to resolve
+software environments through \texttt{runtimes.yaml} and reference paths
+through \texttt{references.yaml}.  Commands and analysis scripts are executed
+through OpenClaw's \texttt{exec} tool in the designated host or container
+environment.  Conda environments provide the software required for the
+corresponding tasks.  If a required environment or database is unavailable,
+the agent reports the missing resource instead of inferring its location.
+Installation of additional software or large reference databases during an
+analysis requires an explicit user request.  Upstream processing and downstream
+analysis can run in the user-controlled environment, while optional online
+annotation procedures transmit the queries required by the corresponding
+public services.
 
-After an analytical operation finishes, the agent inspects its exit status and
-expected artifacts before using those products in subsequent work.  The depth
-of this inspection is procedure-specific.  It is an agent-guided check of
-expected outputs rather than a universal validation engine.  The implemented
-analytical scope is summarized in \cref{tab:skills}.  Supervised modeling in
-the colorectal-cancer case was composed from the resulting abundance tables
-and general statistical software rather than exposed as a fixed classifier
-workflow.
+The execution instructions in \texttt{CODING.md} require the agent to run
+and inspect individual analytical operations before proceeding to dependent
+work.  Inspection includes the exit status, logs and expected output files,
+with method-specific checks defined by the relevant skill.  When a stage
+fails, valid intermediate products can be retained and the failed stage
+rerun.  Products affected by changed parameters or invalid upstream results
+must be regenerated before they are used in subsequent analyses.
 
+\subsubsection{Analysis planning and execution}
+\label{sec:analysis-planning}
 
+At the start of a conversation, MicroBioAgent calls \texttt{mgx\_create\_job}
+to create or reuse the analysis workspace associated with that conversation.
+Input data, generated code and intermediate results are stored in this
+workspace and remain accessible throughout the conversation.  With the
+workspace established, MicroBioAgent formulates an analysis plan based on
+the research objective, input data and requested outputs, following the
+instructions in \texttt{AGENTS.md}.
 
-\subsection{Long-running analysis execution and continuation}
+Once execution is authorized, MicroBioAgent consults the relevant
+\texttt{SKILL.md} document for each analytical step and constructs the
+corresponding commands or analysis code.  These commands and scripts are
+executed through the \texttt{exec} tool, which returns the execution status
+and captured output to the conversation.  Guided by \texttt{CODING.md},
+MicroBioAgent checks the generated files before using them in subsequent
+analyses.  Intermediate findings and user feedback inform revisions to the
+remaining tasks.
+
+\subsubsection{Human-in-the-loop interaction and automatic continuation}
 \label{sec:asynchronous-execution}
 
-A separate execution-guidance layer (\texttt{CODING.md}) instructs the agent
-to complete and inspect one principal analytical operation before advancing to
-dependent work.  When a command remains active after an initial observation
-period, the command continues while the conversational turn is yielded.  The
-agent does not use conversational polling as a substitute for command
-completion.
+The long-task instructions in \texttt{CODING.md} coordinate background
+execution with conversational interaction.  The agent initially observes an
+\texttt{exec} command for 30 seconds.  If the tool reports that the command
+is still running and supplies a process-session identifier, the agent calls
+\texttt{sessions\_yield} to end the conversational turn.  The command remains
+under runtime management and continues in the background.  Commands that
+finish or fail during the observation period are handled directly.
 
-Two events can subsequently reactivate the analysis.  A user message allows
-the agent to revise pending work while the command continues.  If the command
-is still active after that revision, the conversation is yielded again.  A
-separate completion event reactivates the session when the command exits, at
-which point the outputs are inspected and work continues under the current
-plan.
+Two events can reactivate the session.  A user message allows the agent to
+address feedback and revise pending analytical tasks while the background
+command continues.  If the command is still active after the message has
+been addressed, the agent yields the conversation again.  When the command
+exits, a completion event triggers inspection of its outputs and continuation
+of the remaining tasks, taking account of any changes requested during
+execution.  The instructions favour completion-triggered continuation over
+repeated conversational polling.
 
-We implemented this continuation mechanism through a version-pinned extension
-to the OpenClaw session runtime.  It builds on existing facilities for
-background execution and yielding a session.  The extension adjusts completion-event delivery,
-resumption of the associated session, and runtime tool guidance for yielding
-control during active computation.  It also handles completion events that
-arrive while a conversational turn is still active.  The execution instructions
-specify how the agent uses these facilities.  Domain procedures guide the
-analytical work performed after resumption.  Asynchronous guidance therefore
-depends on the interaction of runtime behavior and agent instructions.
-For reproducibility, the extension is distributed as a version-pinned OpenClaw
-patch pack with the complete instruction text and application instructions.
-The target runtime version and commit are recorded in the accompanying
-manifest.
+We implemented a version-pinned patch to the OpenClaw session runtime to
+support this behaviour.  Building on existing background-execution and
+session-yielding facilities, the patch modifies completion-event delivery,
+reactivation of the associated session and model-facing tool guidance.
+It also handles completion events that arrive during an active conversational
+turn.  The runtime changes provide the event-delivery and continuation
+mechanisms, while the execution instructions guide the agent's use of those
+mechanisms.  The patch pack is distributed with application instructions and
+a manifest recording the target OpenClaw version and commit.  Complete agent
+instructions and analytical skills are included in the source repository.
 
 \subsection{Scope of the related-system comparison}
 \label{sec:related-scope}
