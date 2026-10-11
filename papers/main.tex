@@ -720,6 +720,21 @@ assigned MAGs to metabolic potential.  Their common contribution is the composit
 of existing methods around a study question.  The underlying algorithms and
 reference resources remain responsible for the primary biological estimates.
 
+The reported capabilities of related agents provide context for these
+results (Supplementary Table~\ref{tab:agent-capabilities}). Biomni combines
+resource retrieval with code-based execution to compose analyses across
+biomedical domains \parencite{huang2025biomni}. MicroBioAgent focuses on connecting microbiome methods across upstream
+and downstream tasks through explicit method guidance and configured
+software and reference databases. MetaClaw also integrates these stages, using
+registered FlowHub workflows for upstream processing and customizable skills
+for downstream analysis \parencite{zhang2026metaclaw}. MicroBioAgent instead
+organizes both stages around individual analytical skills and executes them
+on the user's workstation or server. This design allows method choices to
+be revised at individual stages and accommodates studies that require
+upstream processing on user-controlled infrastructure. Both systems support
+extension through skills and resource configuration, but differ in how
+upstream methods are organized and where they execute.
+
 Organizing domain knowledge at the level of individual procedures provides a
 practical basis for this composition.  Method requirements and expected
 products remain explicit while their arrangement can vary between studies.
@@ -750,12 +765,18 @@ requirements of the underlying tools.  Workflow managers remain well suited
 to repeated execution of a specified analysis at scale.  MicroBioAgent focuses
 on defining and revising study-specific analyses through interaction.
 
-Continuity during prolonged computation supports this operating model.
-The targeted runtime experiment demonstrated plan revision during an active
-command and automatic continuation after tool completion in the tested
-configuration.  These observations establish a limited execution capability.
-reliability across longer jobs and more complex revisions, and the fidelity
-of final outputs to revised instructions, require further evaluation.
+Interaction during computation is a separate consideration from the range
+of analyses an agent supports. For MicroBioAgent, ending the conversational
+turn while a command continues in the background allows users to revise
+pending work without stopping that computation. Command-completion events
+then reactivate the conversation without another user message. The targeted
+comparison with unmodified OpenClaw supported both behaviours in the tested
+configuration (\cref{tab:hitl-ablation}). This experiment isolates the role
+of the execution changes within MicroBioAgent, while comparisons under
+matched conditions would be needed to assess the same behaviours across
+other agents. Reliability across longer jobs and more complex revisions,
+and the fidelity of final outputs to revised instructions, require further
+evaluation.
 
 MicroBioAgent organizes established microbiome methods into study-specific
 analyses guided by biological questions.  The three published-data reanalyses
@@ -774,316 +795,204 @@ basis for question-driven analysis across microbiome workflows.
 \label{sec:system-overview}
 
 MicroBioAgent was implemented on OpenClaw to plan and execute microbiome
-analyses from natural-language requests (\cref{fig:architecture}).  Users can
-interact with MicroBioAgent through OpenClaw's web interface, a command-line
-client, or supported messaging applications such as WhatsApp, Slack and
-Telegram.  These interfaces communicate with the OpenClaw gateway, a backend
-service that manages conversations, language-model calls and tool execution.
-The agent combines instructions for conducting an analysis with method-specific
-guidance and configured computational resources to carry out upstream and
-downstream tasks on a user-controlled workstation or server.
+analyses from natural-language requests (\cref{fig:architecture}).  Users
+communicate with the system through a web interface, a command-line client,
+or supported messaging applications such as WhatsApp, Slack and Telegram.
+These interfaces send user requests to the OpenClaw gateway, which maintains
+the conversation and passes the messages to the language model.  When the
+model requests a tool operation, the gateway invokes the corresponding tool.
+For computational analyses, bioinformatics commands and statistical scripts
+run on the user's workstation or server, using software installed directly
+on the host or within a docker container.  Execution status and captured output
+return to the conversation, allowing the model to determine subsequent actions.
 
-The behaviour of MicroBioAgent is guided by Markdown instruction files in the
-agent workspace.  \texttt{AGENTS.md} defines how analytical tasks are planned
-and tracked, \texttt{TOOLS.md} describes how tools and reference resources are
-accessed, and \texttt{CODING.md} specifies how analysis code and long-running
-commands are executed.  These instructions operate alongside method-specific
-skills, each documented in a \texttt{SKILL.md} file describing the method's
-applicability, input requirements and execution procedures.  The agent uses
-this guidance to compose a study-specific plan.  The \texttt{runtimes.yaml}
-configuration identifies available tools and their software environments,
-while \texttt{references.yaml} specifies reference resources and their local
-paths.  Users can extend the system by adding or revising skills and
-registering additional installed tools and prepared databases.
-
-Execution instructions and a runtime patch allow long-running analytical
-tasks to continue in the background while users provide feedback through the
-conversation.  This feedback can revise the remaining analysis plan without
-waiting for the running task to finish.  When a background task completes,
-the system automatically reactivates the agent to inspect the outputs and
-continue the remaining steps.
+The behaviour of MicroBioAgent is guided by Markdown instruction files in
+its agent workspace.  \texttt{AGENTS.md} governs task planning and progress
+tracking, while \texttt{TOOLS.md} describes access to software and reference
+resources.  \texttt{CODING.md} guides code execution and output inspection.
+Method-specific skills provide analytical guidance, and separate tool and
+database configurations identify the resources used to execute each step.
+Supporting user interaction during long-running steps also requires
+coordination between command execution and the conversation.  We therefore
+introduced a patch to the OpenClaw runtime that modifies tool-execution
+guidance and command-completion handling.  The patch and workspace
+instructions allow computational tasks to continue in the background while
+the agent responds to user feedback.  When a background task finishes, the
+agent is automatically reactivated to inspect its outputs and continue the
+remaining analysis.
 
 \subsubsection{Analytical skills and configured execution}
 \label{sec:skills-execution}
 
-The skills cover 16S amplicon processing, reference-based metagenomic profiling
-and assembly-based genome reconstruction, together with downstream statistical
-analysis, functional annotation and visualization (\cref{tab:skills}).
-Method-specific instructions describe the required inputs, software and
-reference resources, relevant parameters and expected outputs.  Where
-provided, reference scripts serve as starting points that the agent can adapt
-to the study data.  Additional statistical analyses can be implemented using
-configured libraries, as in the gene-family and KO classification analyses
-in the colorectal-cancer case.
+Analytical methods are organized into skills covering 16S amplicon processing, 
+reference-based metagenomic profiling, assembly-based genome reconstruction, 
+and downstream statistical analysis, annotation and visualization (\cref{tab}). 
+Each skill contains a \texttt{SKILL.md} document describing its purpose, required 
+inputs, software dependencies, reference resources, analytical procedures and 
+expected outputs. Some skills also include reference scripts that can be adapted 
+to the study data. These skills are registered through the plugin manifest, 
+which defines their names, locations and metadata, and are made available through 
+OpenClaw's skill mechanism. For each analytical step, MicroBioAgent selects a 
+relevant skill and reads its \texttt{SKILL.md} through the file-reading tool, 
+bringing the method-specific guidance into the model's context. This stepwise 
+reading is guided by \texttt{AGENTS.md}, which specifies that the relevant skill 
+should be consulted before execution.
 
-The tool-use instructions in \texttt{TOOLS.md} direct the agent to resolve
-software environments through \texttt{runtimes.yaml} and reference paths
-through \texttt{references.yaml}.  Commands and analysis scripts are executed
-through OpenClaw's \texttt{exec} tool in the designated host or container
-environment.  Conda environments provide the software required for the
-corresponding tasks.  If a required environment or database is unavailable,
-the agent reports the missing resource instead of inferring its location.
-Installation of additional software or large reference databases during an
-analysis requires an explicit user request.  Upstream processing and downstream
-analysis can run in the user-controlled environment, while optional online
-annotation procedures transmit the queries required by the corresponding
-public services.
-
-The execution instructions in \texttt{CODING.md} require the agent to run
-and inspect individual analytical operations before proceeding to dependent
-work.  Inspection includes the exit status, logs and expected output files,
-with method-specific checks defined by the relevant skill.  When a stage
-fails, valid intermediate products can be retained and the failed stage
-rerun.  Products affected by changed parameters or invalid upstream results
-must be regenerated before they are used in subsequent analyses.
+Software environments and reference database locations are recorded in two 
+configuration files. The \texttt{runtimes.yaml} file identifies the Conda environment 
+containing each tool or library, whereas \texttt{references.yaml} specifies the 
+locations of the reference databases. The reference configuration is generated from 
+user-supplied settings when the OpenClaw gateway starts, with database paths adjusted 
+for its running environment. Following the resource-access guidance in \texttt{TOOLS.md}, 
+the agent would read these configurations to select the required software environment and 
+locate the reference databases. Together, modular skills and separate resource configurations 
+allow users to extend the available analytical methods. A new method can be introduced 
+through an additional skill that uses existing software environments and reference databases 
+or specifies additional resources in the corresponding configuration files.
 
 \subsubsection{Analysis planning and execution}
 \label{sec:analysis-planning}
 
-At the start of a conversation, MicroBioAgent calls \texttt{mgx\_create\_job}
-to create or reuse the analysis workspace associated with that conversation.
-Input data, generated code and intermediate results are stored in this
-workspace and remain accessible throughout the conversation.  With the
-workspace established, MicroBioAgent formulates an analysis plan based on
-the research objective, input data and requested outputs, following the
-instructions in \texttt{AGENTS.md}.
-
-Once execution is authorized, MicroBioAgent consults the relevant
-\texttt{SKILL.md} document for each analytical step and constructs the
-corresponding commands or analysis code.  These commands and scripts are
-executed through the \texttt{exec} tool, which returns the execution status
-and captured output to the conversation.  Guided by \texttt{CODING.md},
-MicroBioAgent checks the generated files before using them in subsequent
-analyses.  Intermediate findings and user feedback inform revisions to the
-remaining tasks.
+MicroBioAgent uses \texttt{mgx\_create\_job} to create or reuse an analysis
+directory for each conversation.  The tool records the association between
+the conversation identifier and the directory on disk, allowing successive
+steps to share the same locations for inputs, outputs, scripts and logs.
+With the analysis directory established, MicroBioAgent develops a plan based
+on the research objective, input data and requested outputs.  The plan
+defines the analytical steps, their order and completion criteria, and is
+maintained within the conversation. Method-specific skills provide
+methodological guidance for the planned analyses, while \texttt{CODING.md}
+guides script development and command execution through \texttt{exec}.
+The execution guidance standardizes agent script authoring rules to ensure 
+operational errors are promptly captured and handled, while enabling the 
+agent to execute independent tasks in parallel and balance concurrency and 
+thread counts against available CPU and memory resources.  It also specifies 
+how execution status, logs and generated files are checked after a command 
+launched through \texttt{exec} finishes. These checks determine whether 
+execution succeeded and whether the expected output files were produced.  
+If either condition is not met, the agent reviews the logs and outputs 
+to identify the problem and determine which parts of the analysis need to 
+be rerun.
 
 \subsubsection{Human-in-the-loop interaction and automatic continuation}
 \label{sec:asynchronous-execution}
 
-The long-task instructions in \texttt{CODING.md} coordinate background
-execution with conversational interaction.  The agent initially observes an
-\texttt{exec} command for 30 seconds.  If the tool reports that the command
-is still running and supplies a process-session identifier, the agent calls
-\texttt{sessions\_yield} to end the conversational turn.  The command remains
-under runtime management and continues in the background.  Commands that
-finish or fail during the observation period are handled directly.
+MicroBioAgent allows users to interact with the agent while computational
+tasks run asynchronously in the background. Guided by \texttt{CODING.md}
+and tool instructions, the agent executes commands via \texttt{exec} with
+a 30-second initial wait period and no overall execution time limit.
+Commands exceeding this threshold continue running in the background,
+prompting the agent to invoke \texttt{sessions\_yield} to yield its turn.
+MicroBioAgent handles these background processes and logs their outputs
+without requiring the agent to poll for status updates. This decoupling
+keeps the conversation responsive, enabling users to discuss or revise
+pending analyses without interrupting running computations. Both user
+messages and command-completion notifications can trigger the agent within
+the same thread, supporting seamless continuous interaction and automatic
+task continuation upon completion.
 
-Two events can reactivate the session.  A user message allows the agent to
-address feedback and revise pending analytical tasks while the background
-command continues.  If the command is still active after the message has
-been addressed, the agent yields the conversation again.  When the command
-exits, a completion event triggers inspection of its outputs and continuation
-of the remaining tasks, taking account of any changes requested during
-execution.  The instructions favour completion-triggered continuation over
-repeated conversational polling.
-
-We implemented a version-pinned patch to the OpenClaw session runtime to
-support this behaviour.  Building on existing background-execution and
-session-yielding facilities, the patch modifies completion-event delivery,
-reactivation of the associated session and model-facing tool guidance.
-It also handles completion events that arrive during an active conversational
-turn.  The runtime changes provide the event-delivery and continuation
-mechanisms, while the execution instructions guide the agent's use of those
-mechanisms.  The patch pack is distributed with application instructions and
-a manifest recording the target OpenClaw version and commit.  Complete agent
-instructions and analytical skills are included in the source repository.
-
-\subsection{Scope of the related-system comparison}
-\label{sec:related-scope}
-
-\Cref{tab:agent-capabilities} summarizes reported functional scope in related
-bioinformatics agents
-\parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
-johri2026m3a,xin2024bia,lobentanzer2025biochatter,
-bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.
-The comparison concerns documented capabilities, not comparative accuracy or
-performance under a shared evaluation.  Unconfirmed capabilities are marked
-as unestablished rather than absent.
-% TODO: provide release-specific evidence for each cell in the supplementary
-% comparison before submission.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Reported capabilities of bioinformatics agents relevant to end-to-end
-    microbiome analysis.  The three microbiome columns specifically
-    concern analysis beginning with sequencing reads.}
-  \label{tab:agent-capabilities}
-  \scriptsize
-  \setlength{\tabcolsep}{2.5pt}
-  \renewcommand{\arraystretch}{1.25}
-  \begin{tabularx}{\linewidth}{@{}l*{6}{>{\centering\arraybackslash}X}@{}}
-    \toprule
-      & \multicolumn{2}{c}{Agent operation}
-      & \multicolumn{3}{c}{Microbiome analysis from reads}
-      & Deployment \\
-    \cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(l){7-7}
-    Agent
-      & Autonomous workflow execution
-      & Human-in-the-loop
-      & 16S amplicon
-      & Reference-based shotgun
-      & Assembly / MAG
-      & On-premises analysis \\
-    \midrule
-    BIA
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    BioChatter
-      & \textemdash & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    AutoBA
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    \shortstack[l]{Biomni\\(open-source)}
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    BioAgents
-      & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
-    M3A
-      & $\checkmark$ & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    BioMedAgent
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
-    BioMaster
-      & $\checkmark$ & \textemdash & \textemdash & $\checkmark$ & \textemdash & $\checkmark$ \\
-    MetaClaw
-      & $\checkmark$ & \textemdash & $\checkmark$ & $\checkmark$ & \textemdash & $\checkmark$(partial) \\
-    MicroBioAgent
-      & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
-    \bottomrule
-  \end{tabularx}
-  \vspace{0.35em}
-
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} $\checkmark$, reported support,
-    \textemdash, support not established from the reviewed sources, which
-    does not demonstrate inability.  Biomni denotes the open-source release.
-    This scope comparison is not a performance benchmark.
-  \end{minipage}
-\end{table}
+To enable automatic continuation after background execution, we developed
+a patch for OpenClaw (v2026.7.2) that extends its event handling and
+conversation activation mechanisms. Each background command is associated
+with its originating conversation ID, ensuring completion events are
+dispatched to the corresponding conversation. For an idle conversation,
+the patch immediately triggers a new agent loop upon command completion
+without waiting for scheduled polling or user input. If an event arrives
+during an active agent run, it is queued and schedules a subsequent
+activation. This queuing mechanism prevents command results from being
+dropped when the agent is busy, ensuring they are reliably processed in
+the next turn. The injected event message contains the command result
+along with guidance instructions to prompt further analysis. Together
+with updated tool instructions that guide the agent to yield its turn,
+these changes allow background computation to run alongside active
+conversation and support automatic continuation upon task completion.
 
 \subsection{Case study design}
 \label{sec:case-design}
 
-We selected three published datasets to exercise complementary analytical
-capabilities on plant, human, and environmental microbiomes
-(Supplementary Table~\ref{tab:cases-overview}).  The cases were designed as capability-oriented
-reanalyses rather than exact computational reproductions.  Software releases,
-reference databases, and selected statistical procedures could therefore
-differ from the source publications.  Before examining the reanalysis output,
-we identified the biological comparisons and taxa or functions emphasized by
-each source study.  Evaluation considered whether the requested analysis was
-completed, whether its artifacts were usable, and whether those prespecified
-signals were recovered.  Numerical identity with the source publication was
-not required.
+Three published datasets spanning plant, human, and environmental microbiomes 
+were selected to evaluate the multi-modal analytical capabilities of 
+MicroBioAgent (Supplementary Table~\ref{tab}). These cases spanned 16S rRNA 
+amplicon and shotgun metagenomic profiling, disease-associated taxonomic and 
+functional analyses, and genome-resolved metagenomics. The case studies were 
+designed to assess whether the agent could autonomously execute study-specific 
+workflows and recapitulate the primary biological findings reported in the original 
+publications, while permitting analytical tools and reference databases to naturally 
+deviate from the source studies.
+
+The agent's capabilities were evaluated across all three cases using DeepSeek-V4-Pro 
+accessed via the Volcano Engine API. The agent was provided with input data, sample 
+metadata, and natural-language research objectives. When specific analytical metrics 
+or domain-standard software were explicitly requested in the prompt, the agent 
+incorporated them accordingly; all unspecified tools, parameters, and analytical 
+strategies were determined autonomously using its available skills and configured 
+environment. The specific workflows and evaluation tasks for each case are detailed 
+below.
 
 \subsubsection{Case 1 --- Tomato rhizosphere 16S and metagenomic analysis}
 \label{sec:methods-tomato}
 
-The tomato dataset comprised 60 V3--V4 16S samples arranged as four cultivars,
-five sampling conditions, and three biological replicates
-\parencite{yin2022tomato}.  A57 and HG70 were treated as susceptible cultivars,
-whereas HG64 and HF12 were treated as resistant.  The sampling conditions were
-T1 (day 0), T2C and T2 (day 5, uninoculated and inoculated), and T3C and T3
-(day 10, uninoculated and inoculated).  Thirty-six matched shotgun libraries
-covered T1, T2C, and T2.
-
-Amplicon sequence variants were obtained by DADA2 denoising and assigned
-taxonomy using the configured QIIME~2 classifier.  Alpha diversity was
-calculated from an ASV table rarefied to 56,726 reads per sample.  Shannon
-values were summarized by cultivar, time point, and inoculation status.  Pooled
-resistant and susceptible groups were compared within each time point using
-two-sided Mann--Whitney tests.  Community dissimilarity was evaluated using
-weighted and unweighted UniFrac and Bray--Curtis distances.  Weighted-UniFrac
-principal-coordinate analysis was used for visualization, and group effects
-were assessed by PERMANOVA with PERMDISP used to evaluate homogeneity of
-multivariate dispersion.
-
-Genus-level differential abundance was evaluated separately at each sampling
-condition.  MaAsLin~3 models used total-sum scaling followed by logarithmic
-transformation and contrasted each resistant cultivar with the pooled
-susceptible cultivars.  A genus was classified as shared nominal enrichment
-when its coefficient was positive and $P<0.05$ in both the HG64 and HF12
-contrasts.  Benjamini--Hochberg-adjusted results were retained to distinguish
-nominal intersections from false-discovery-rate-supported associations.
-
-Matched shotgun libraries were profiled at species level.  MetaPhlAn3 was the
-primary reference-based analysis, and MetaPhlAn2 was used as a database-version
-sensitivity analysis for the two taxa emphasized by the source study,
-\textit{Pseudomonas putida} and \textit{Sphingopyxis unclassified}.  Detection
-and between-phenotype abundance results were reported separately for the two
-database generations rather than selecting one profile as the definitive
-answer.
-% TODO: insert archived MetaPhlAn database builds, statistical test, effect
-% sizes, adjusted P values, and detected-sample counts.
+This case evaluated MicroBioAgent's ability to analyze paired amplicon and
+shotgun metagenomic datasets to identify microbial signatures associated
+with disease resistance in tomato. Sequencing data were retrieved from
+BioProject PRJNA777724 \parencite{yin2022tomato}. The dataset comprises 60
+rhizosphere 16S rRNA (V3--V4) amplicon libraries generated from four
+cultivars---two susceptible (A57, HG70) and two resistant (HG64, HF12).
+Samples were collected across five experimental conditions: baseline
+(pre-inoculation at day 0), as well as inoculated and uninoculated controls
+at days 5 and 10 ($n = 3$ biological replicates per group). Additionally,
+36 matched shotgun metagenomic libraries were profiled for the baseline
+(day 0) and day-5 timepoints. The evaluation comprised two analytical
+stages, including an initial autonomous workflow and a researcher-guided re-analysis.
+In the initial stage, the agent independently performed sequence processing,
+diversity profiling, community composition comparisons, and identification
+of taxa enriched in resistant cultivars relative to susceptible controls.
+Comparisons with the source study focused on inoculation-induced diversity
+shifts and biomarker identification at the genus and species levels. In the 
+second stage, to evaluate the impact of profiler version on taxonomic 
+recovery, researchers prompted a follow-up reanalysis using MetaPhlAn2 to align 
+with the original study's tool rather than the agent's default MetaPhlAn3 
+configuration.
 
 \subsubsection{Case 2 --- Colorectal cancer faecal metagenomic analysis}
 \label{sec:methods-crc}
 
-The colorectal-cancer analysis used the C1 cohort reported by Yu \textit{et
-al.}, comprising 74 CRC cases and 54 controls \parencite{yu2017crc}.  Among the
-cases, 36 were stage I--II and 38 were stage III--IV.  Species relative
-abundances were obtained with MetaPhlAn3, and HUMAnN3 was used to quantify gene
-families in UniRef90.  KO abundances were obtained by summing the reads
-per kilobase values of UniRef90 gene families mapped to each KO.
-
-Species-level Bray--Curtis dissimilarities were analysed by principal
-coordinates analysis.  PERMANOVA tested disease status, cancer stage,
-sex, age, and body-mass index.  Species, gene families, and KO groups were
-compared between CRC and control samples using two-sided Wilcoxon rank-sum
-tests with Benjamini--Hochberg correction.  For the differentially abundant
-species, pairwise Spearman correlations were corrected for multiple testing.
-The displayed co-occurrence network retained associations with
-$|\rho|\geq0.4$ and adjusted $q<0.05$.
-
-Predictive analyses were performed separately on gene-family and KO abundance
-tables.  Within each training fold, significantly differentially abundant
-features were ranked by Wilcoxon significance, and the top 150 formed the
-candidate pool.  Pairwise Spearman-correlation filtering removed redundant
-features at $|\rho|>0.8$, retaining at most 30 candidates.  Spearman-based
-minimum-redundancy maximum-relevance (mRMR) selection then retained 15
-features for each feature type.  Feature abundances were standardized before
-fitting L2-regularized logistic-regression classifiers with balanced class
-weights.
-
-Performance was assessed by nested fivefold cross-validation.  Feature
-selection and tuning of the inverse regularization strength $C$ were
-performed in the inner loop, using $C\in\{0.01,0.03,0.1,0.3,1.0\}$.
-Preprocessing, feature selection and model fitting were confined to the
-corresponding training data.  ROC curves and pooled AUROCs were calculated
-from the outer-fold out-of-fold predicted probabilities.  Sensitivity and
-specificity were reported at thresholds selected using Youden's index.
-% TODO: specify the significance threshold used for functional-feature screening
-% and the prediction set used to select the Youden thresholds.
+This case evaluated MicroBioAgent's ability to identify disease-associated
+microbial features and assess their predictive value for colorectal cancer
+(CRC). The analysis used the Hong Kong C1 cohort, available under accession
+PRJEB10878, comprising 128 faecal metagenomes from 74 patients with CRC and
+54 controls \parencite{yu2017crc}. The CRC group included 36 early-stage
+cases (stages I--II) and 38 late-stage cases (stages III--IV). The analysis
+tasks covered community diversity and composition, differential abundance
+of species and functional features, and associations with clinical variables.
+Functional analyses included both gene-family and KEGG Orthology (KO)
+abundance profiles. The task further required species co-occurrence network
+analysis to examine relationships among CRC-associated taxa, together with
+marker selection and classifier development to distinguish CRC cases from
+controls. Comparisons with the original study focused on evaluating the
+direction of species associations with CRC and co-occurrence patterns among
+disease-associated taxa, while the predictive performance of the selected
+markers and classifier was assessed using AUROC, sensitivity, and specificity.
 
 \subsubsection{Case 3 --- Polyethylene-enrichment genome-resolved metagenomic analysis}
 \label{sec:methods-mag}
 
-The genome-resolved analysis used six single-end Oxford Nanopore long-read
-metagenomes from two soil inocula enriched on low-molecular-weight
-polyethylene, triacontane (C30) or tetracontane (C40)
-\parencite{sandholm2025polyethylene}.  Assembly was performed with myloasm
-through Aviary.  Binning used Aviary recover with MetaBAT2, Rosella, SemiBin
-and VAMB, followed by bin refinement with DASTool and quality assessment
-with CheckM2.  For the quality groups reported here, MAGs with completeness
-$\geq90\%$ and contamination $\leq5\%$ were designated high quality.
-Remaining MAGs with completeness $\geq50\%$ and contamination $\leq10\%$
-were designated medium quality.  Dereplication used skani with average
-nucleotide identity $\geq95\%$ and aligned fraction $\geq30\%$.
-Taxonomy was assigned using GTDB-Tk with GTDB release R232.
-
-Reads were cross-mapped to genomes using CoverM, with abundance quantified
-as reads per kilobase per million mapped reads (RPKM).  The resulting MAG
-abundance profiles were summarized at genus and species levels.  Each
-inoculum--substrate combination was represented by one metagenome, and MAGs
-were not treated as independent biological replicates.
-
-One representative MAG was selected for each of ten target taxa chosen
-from the source study.  Genes were predicted using Prodigal and functionally
-annotated using eggNOG-mapper v2.1.13.  Annotated genes were counted under
-three functional categories comprising alkane terminal oxidation,
-2-ketone or oxidized-derivative metabolism, and the KEGG M00087
-$\beta$-oxidation module.  These counts describe genomic coding potential.
-The complete gene-to-category rules and gene-level annotations are reserved
-for the Supplementary Information, together with a table documenting the
-source-study targets, representative MAG identifiers, full taxonomic
-assignments and the evidence supporting their correspondence.
+This case evaluated MicroBioAgent's ability to recover microbial genomes
+from metagenomic data and characterize their functional potential. The
+evaluation utilized six Oxford Nanopore long-read metagenomes from project
+PRJEB97175 \parencite{sandholm2025polyethylene}, derived from two soil inocula
+enriched on low-molecular-weight polyethylene, triacontane, or tetracontane.
+The analysis tasks covered metagenomic assembly, binning, quality filtration
+for high- and medium-quality metagenome-assembled genomes (MAGs),
+dereplication, and taxonomic classification, alongside cross-culture
+abundance profiling and gene functional annotation for MAGs assigned to ten
+focal taxa from the original study. Evaluation examined whether MAGs
+corresponding to the ten taxa of interest in the original study were
+recovered and whether their abundance patterns across enrichment cultures
+were characterized. Functional evaluation examined whether the annotations
+identified genes associated with the three metabolic processes investigated
+in the original study, namely alkane terminal oxidation, metabolism of
+2-ketones or oxidized derivatives, and $\beta$-oxidation.
 
 \subsection{Robustness and ablation experiments}
 \label{sec:reliability-experiments}
@@ -1255,5 +1164,72 @@ included in the accompanying archive.
     positive coefficient and nominal $P<0.05$ in both contrasts.}
   \label{fig:tomato-enrichment}
 \end{figure}
+
+\FloatBarrier
+
+% TODO: complete the release-specific evidence record for all comparison cells.
+\begin{table}[htbp]
+  \centering
+  \caption{Reported capabilities of bioinformatics agents relevant to end-to-end
+    microbiome analysis.  The three microbiome columns specifically
+    concern analysis beginning with sequencing reads.}
+  \label{tab:agent-capabilities}
+  \scriptsize
+  \setlength{\tabcolsep}{2.5pt}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabularx}{\linewidth}{@{}l*{6}{>{\centering\arraybackslash}X}@{}}
+    \toprule
+      & \multicolumn{2}{c}{Agent operation}
+      & \multicolumn{3}{c}{Microbiome analysis from reads}
+      & Deployment \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(l){7-7}
+    Agent
+      & Autonomous workflow execution
+      & Human-in-the-loop
+      & 16S amplicon
+      & Reference-based shotgun
+      & Assembly / MAG
+      & On-premises analysis \\
+    \midrule
+    BIA
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    BioChatter
+      & \textemdash & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    AutoBA
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    \shortstack[l]{Biomni\\(open-source)}
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    BioAgents
+      & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
+    M3A
+      & $\checkmark$ & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    BioMedAgent
+      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+    BioMaster
+      & $\checkmark$ & \textemdash & \textemdash & $\checkmark$ & \textemdash & $\checkmark$ \\
+    MetaClaw
+      & $\checkmark$ & \textemdash & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$(partial) \\
+    MicroBioAgent
+      & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} $\checkmark$, reported support,
+    \textemdash, support not established from the reviewed sources, which
+    does not demonstrate inability. The comparison draws on the published
+    descriptions of the related systems
+    \parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
+    johri2026m3a,xin2024bia,lobentanzer2025biochatter,
+    bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.
+    Biomni denotes the open-source release.
+    MetaClaw reports assembly and genome-resolved binning through FlowHub
+    \parencite{zhang2026metaclaw}. Its partial on-premises designation reflects
+    the use of FlowHub for upstream metagenomic processing and local containers
+    for downstream analysis. This scope comparison is not a performance benchmark.
+  \end{minipage}
+\end{table}
 
 \end{document}

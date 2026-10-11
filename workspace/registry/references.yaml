@@ -1,4 +1,114 @@
 # Reference database paths for analysis.
 # If a needed path is missing, ask the user — do not invent paths.
 
-references: {}
+version: 1
+
+refdb_root:
+  host_path: /opt/Metagenome_profiling
+  container_path: /refdb
+
+references:
+  silva_ssu_nr99_seqs:
+    description: SILVA 138.2 SSURef NR99 full-length reference sequences (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-ssu-nr99-full-seqs.qza
+  silva_ssu_nr99_tax:
+    description: SILVA 138.2 SSURef NR99 taxonomy (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-ssu-nr99-tax.qza
+  silva_v4_seqs:
+    description: SILVA 138.2 V4 (515F/806R) reference sequences (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v4-515F-806R-seqs.qza
+  silva_v4_tax:
+    description: SILVA 138.2 V4 (515F/806R) taxonomy (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v4-515F-806R-tax.qza
+  silva_v34_seqs:
+    description: SILVA 138.2 V3-V4 (341F/806R) reference sequences (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v34-341F-806R-seqs.qza
+  silva_v34_tax:
+    description: SILVA 138.2 V3-V4 (341F/806R) taxonomy (.qza)
+    kind: file
+    relative_path: 16S_refs/silva-138.2/silva-138.2-v34-341F-806R-tax.qza
+
+  kneaddata_db_human_genome:
+    description: KneadData human genome Bowtie2 reference (hg37dec_v0.1 indexes live in this directory)
+    kind: directory
+    relative_path: kneaddata_db_human_genome
+  metaphlan_bowtie2_db:
+    description: MetaPhlAn Bowtie2 database directory (mpa_v30 / mpa_v31 CHOCOPhlAn 201901)
+    kind: directory
+    relative_path: metaphlan_databases
+  humann_chocophlan:
+    description: HUMAnN ChocoPhlAn nucleotide database (v296_201901)
+    kind: directory
+    relative_path: humann_databases/chocophlan_v296_201901
+  humann_uniref:
+    description: HUMAnN UniRef protein database (uniref90_201901.dmnd)
+    kind: directory
+    relative_path: humann_databases/uniref
+  humann_utility_mapping:
+    description: HUMAnN utility mapping database
+    kind: directory
+    relative_path: humann_databases/utility_mapping
+
+  eggnog_mapper_data:
+    description: EggNOG mapper data directory (eggnog.db, diamond DB)
+    kind: directory
+    relative_path: eggnog/eggnog_5.0
+  eggnog_bact_arch_dmnd:
+    description: EggNOG bacteria/archaea Diamond database
+    kind: file
+    relative_path: eggnog/bact_arch/bact_arch.dmnd
+  vfdb_dmnd:
+    description: VFDB Diamond database
+    kind: file
+    relative_path: VFDB_db/VFDB.dmnd
+  card_db:
+    description: CARD local DB for RGI (card.json + localDB)
+    kind: directory
+    relative_path: CARD_db
+  bakta_db:
+    description: Bakta full DB v6.0 (version.json + amrfinderplus-db; pass as --db / BAKTA_DB)
+    kind: directory
+    relative_path: bakta_db_full/db-v6.0
+  gapseq_sequences:
+    description: gapseq UniProt reference sequences (Bacteria/Archaea under dat/seq; pass as find/doall -D)
+    kind: directory
+    relative_path: gapseq_db/dat/seq
+  gutsmash_db:
+    description: gutSMASH --databases root (pfam/, clusterblast/, resfam/)
+    kind: directory
+    relative_path: gutsmash/databases
+  antismash_db:
+    description: official antiSMASH 8 --databases root (pfam 35, clusterblast, knownclusterblast, …)
+    kind: directory
+    relative_path: antiSMASH_db/databases
+
+  aviary_gtdb:
+    description: GTDB for Aviary / GTDB-Tk
+    kind: directory
+    relative_path: aviary_db/gtdb/release232
+  aviary_checkm2:
+    description: CheckM2 database for Aviary
+    kind: directory
+    relative_path: aviary_db/checkm2db
+  aviary_eggnog:
+    description: EggNOG data directory for Aviary (set only for aviary runs)
+    kind: directory
+    relative_path: aviary_db/eggnog
+  aviary_singlem:
+    description: SingleM metapackage for Aviary
+    kind: directory
+    relative_path: aviary_db/singlem
+
+  kegg_ko_link:
+    description: KEGG link ko→pathway table
+    kind: file
+    relative_path: KEGG_ko/kegg_link_ko_pathway.txt
+  kegg_pathway_list:
+    description: KEGG pathway list (ko)
+    kind: file
+    relative_path: KEGG_ko/kegg_list_pathway_ko.txt

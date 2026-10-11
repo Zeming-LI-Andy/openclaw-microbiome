@@ -1,4 +1,4 @@
-You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA gene amplicon data from a tomato bacterial-wilt experiment involving **4 cultivars × 3 timepoints × 3 biological replicates**.
+You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA gene amplicon data from a tomato bacterial-wilt experiment.
 Conduct a comprehensive exploratory and comparative microbiome analysis covering both 16S rRNA and shotgun metagenomic profiling, following the standardized workflow below.
 
 ## Data Characterization and Quality Control
