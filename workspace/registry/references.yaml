@@ -4,7 +4,7 @@
 version: 1
 
 refdb_root:
-  host_path: /opt/Metagenome_profiling
+  host_path: /refdb
   container_path: /refdb
 
 references:
