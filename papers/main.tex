@@ -997,32 +997,89 @@ in the original study, namely alkane terminal oxidation, metabolism of
 \subsection{Robustness and ablation experiments}
 \label{sec:reliability-experiments}
 
+To reduce computational overhead during repeated testing, robustness and
+ablation experiments were conducted using preprocessed data from Case 1.
+The 16S dataset comprised the ASV table, representative sequences, a rooted
+phylogenetic tree, denoising statistics, and sample metadata. For shotgun
+sequencing, 36 QC-filtered and host-cleared libraries were used, each
+subsampled to 20\% of its original read depth. These normalized inputs were
+consistently applied across all experimental conditions, with each session
+executing downstream analyses independently from scratch.
+
 \subsubsection{Robustness across models and prompt granularity}
 
-Robustness will be evaluated with frozen Case~1 inputs in a
-$3\times3\times3$ design comprising three language models, three prompt
-granularities, and three independent sessions per cell (27 sessions).  The
-complete system, computational environment, skills, and staged data will be held
-fixed.  Detailed prompts specify the metrics, statistical tests, and figure
-types, medium prompts specify the same analytical goals but leave method
-selection to the agent, simple prompts state only the dataset and biological
-question.  Each replicate will begin in a new conversation, and methodological
-coaching will not be provided after the plan is confirmed.
+Robustness was evaluated across three large language models
+(\texttt{glm5.3-flash}, \texttt{deepseek-v4-flash}, and
+\texttt{deepseek-v4-pro}) and three levels of prompt detail. Each
+model--prompt combination was executed in three independent replicates,
+yielding a total of 27 experimental sessions. All prompts focused on
+identifying resistance-associated microbiome patterns in the Case~1 datasets,
+but varied in their level of analytical specificity.
 
-The 16S inputs comprise a post-DADA2 ASV table, representative sequences,
-rooted tree, denoising statistics, and metadata.  Shotgun inputs comprise the
-36 matched libraries after KneadData processing and random subsampling to
-20\% of reads with a fixed seed of 42.  Previously generated diversity,
-MetaPhlAn, statistical, and figure outputs are excluded.
+\begin{itemize}
+  \item \textbf{Detailed prompt:} Specified exact tasks and analytical
+    requirements. It encompassed initial data characterization (sample
+    metadata, experimental design, sequencing depth, and quality control
+    summaries), 16S workflows (alpha- and beta-diversity analysis, taxonomic
+    classification, community profiling, and differential abundance), and
+    shotgun species-level profiling with differential abundance testing. For
+    both datasets, it explicitly requested comparing each resistant cultivar
+    against the susceptible group across individual timepoints and identifying
+    taxa consistently enriched in both HG64 and HF12 at T1, T2C, and T2. It
+    further mandated specific methods, such as sequencing-depth normalization
+    prior to calculating Shannon diversity, weighted and unweighted UniFrac,
+    Bray--Curtis dissimilarity, weighted-UniFrac PCoA, PERMANOVA, and PERMDISP,
+    along with precise visualization targets.
+  \item \textbf{Medium prompt:} Retained the core analytical scope (data
+    characterization, 16S and shotgun analyses, cultivar comparisons, and
+    shared enriched taxa detection), but omitted specific metric names and
+    statistical tests, leaving method selection and visualization formats to
+    the LLM agent.
+  \item \textbf{Simple prompt:} Outlined only the high-level biological
+    objective, identifying microbiome patterns associated with wilt resistance,
+    without prescribing specific analytical steps or methodologies.
+\end{itemize}
 
-Completion will be scored from usable artifacts for data characterization, 16S
-alpha diversity, 16S beta diversity, 16S taxonomy and differential abundance,
-and shotgun taxonomy and differential abundance.  Each domain will receive 0,
-0.5, or 1.  Method adherence will be scored separately for detailed prompts.
-Agreement among the three repeats of a cell will be assessed using pairwise
-correlation of Shannon values, Mantel correlation of shared distance metrics,
-and Procrustes comparison of ordinations.  With three repeats per cell, these
-comparisons will be treated as an initial repeatability screen.
+System configurations, analytical software, reference databases, and
+preprocessed inputs were held constant across all runs. Each replicate was
+initialized in a clean conversation session without further methodological
+guidance following initial plan confirmation.
+
+To evaluate model performance across these conditions, task completion was
+systematically evaluated across six distinct analytical tasks: (1) 16S alpha
+diversity, (2) 16S beta diversity, (3) 16S taxonomic profiling, (4) 16S
+differential abundance analysis, (5) shotgun species-level taxonomic profiling,
+and (6) shotgun differential abundance analysis. Across all model--prompt
+combinations, each task was evaluated using task-specific criteria. A task was
+counted as completed when its required outputs were present and fulfilled the
+corresponding analytical objective; otherwise, it was marked as incomplete.
+The task completion rate was then calculated as the proportion of successful
+replicates out of the three independent sessions for each task. This assessment
+quantified the task coverage achieved under each prompt condition, reflecting
+how effectively the model executed the required pipeline with varying levels of
+guidance.
+
+Adherence to explicit methodological requirements was evaluated exclusively
+under the detailed prompt condition. Each session was assessed against eight
+predefined requirements: (1) sequencing-depth normalization prior to diversity
+calculations, (2) Shannon diversity calculation, (3) weighted UniFrac distance
+calculation, (4) unweighted UniFrac distance calculation, (5) Bray--Curtis
+dissimilarity calculation, (6) weighted-UniFrac PCoA ordination, (7) PERMANOVA
+testing, and (8) PERMDISP testing. Each requirement was assigned a binary score
+(satisfied versus unsatisfied) based on inspection of analysis scripts and
+generated outputs. The adherence rate for each model--prompt combination was
+calculated as the average proportion of requirements satisfied across the three
+independent replicates. This evaluation was omitted for the medium and simple
+prompt conditions, where method selection was entirely unconstrained.
+
+Repeatability is evaluated through pairwise comparisons of the three sessions
+within each model--prompt combination. Per-sample Shannon values are compared
+using Pearson correlation, distance matrices calculated with the same metric
+are compared using Mantel correlation, and corresponding ordinations are
+compared using Procrustes analysis. Samples are matched by identifier before
+comparison. Analyses with missing outputs or incompatible metrics are recorded
+as unavailable comparisons, and the number of comparisons contributing to each
+summary is reported.
 
 \subsubsection{Component-ablation design}
 
