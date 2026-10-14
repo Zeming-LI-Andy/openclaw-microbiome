@@ -11,6 +11,9 @@ coverage/
 .current_job_id
 .microbiome/
 
+# 600 dpi figure masters. PNG, PDF, and SVG stay tracked.
+*.tiff
+
 # LaTeX (papers/) — keep sources; ignore build products only
 papers/**/build/
 *.aux
