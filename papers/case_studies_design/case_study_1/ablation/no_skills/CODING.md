@@ -69,7 +69,7 @@ Do not mix unrelated languages in one script “for convenience.” Split runs.
 Bash tips when using conda:
 
 - Prefer `conda run -n ENV --no-capture-output …` over `conda activate` in scripts.
-- Prefer `set -eo pipefail`. Avoid `set -u` together with fragile activate hooks.
+- Put `set -eo pipefail` in the shell that contains the pipe. In a script file, put it at the top of that file. In an `exec` command that itself contains `|`, put it at the start of that command. The script’s setting does not apply to an outer `bash script.sh | tee`. Running `bash script.sh` with no outer pipe already returns the script’s exit code, so do not set `pipefail` again on that outer command. Avoid `set -u` together with fragile activate hooks.
 - Let the process **fail on error**; do not swallow CLI exit codes and continue.
 
 ## Long-running steps (avoid exec timeouts)
@@ -84,10 +84,18 @@ never `terminal`:
    `background: true`: it backgrounds immediately and bypasses the observation
    window. The `command` must run the real workload in the foreground; never
    use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent detachment.
-2. Keep a job log under `reproducibility/logs/<step>.log`. Prefer
-   `… 2>&1 | tee <log>` so **both** the file and OpenClaw’s session capture see
-   output. If you must use pure `> log 2>&1`, follow with a visible
-   `echo "DONE …"` (not redirected) so the completion payload still has stdout.
+2. Keep a job log under `reproducibility/logs/<step>.log`. An `exec` command
+   that pipes through `tee` must enable pipefail in that same command, or the
+   exit code is `tee`’s:
+   ```bash
+   set -eo pipefail
+   <CLI> 2>&1 | tee reproducibility/logs/<step>.log
+   ```
+   When the work is a script file, keep set -eo pipefail at the top of the file and repeat it on the outer pipe:
+   ```bash
+   set -eo pipefail
+   bash analysis/<step>/run.sh 2>&1 | tee reproducibility/logs/<step>.log
+   ```
 3. Inspect the exec result after the observation window:
    - Completed or failed: verify or diagnose it directly; do not yield.
    - Awaiting approval or no `sessionId`: handle that state; do not yield.
@@ -105,7 +113,7 @@ never `terminal`:
 one step → exec (foreground) → verify → next step
 
 # Long-running step (background)
-one step → exec(command="<CLI> 2>&1 | tee <log>",
+one step → exec(command="set -eo pipefail; <CLI-or-bash-script> 2>&1 | tee <log>",
                 yieldMs=30000, timeout=0)
 → confirm status=running + sessionId → sessions_yield
 → background exec ends → wake → verify → next step

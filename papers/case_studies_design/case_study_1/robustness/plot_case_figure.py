@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Stack the completion heatmap, model distributions, and prompt comparisons."""
+"""Task completion and between-model outcome distributions.
+
+Panel b includes diversity, composition, and the DESeq2 model comparisons.
+Prompt-level comparisons are a separate figure, by_prompt_models.
+"""
 
 from __future__ import annotations
 
@@ -16,7 +20,7 @@ from matplotlib.patches import Patch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, "/home/comp/cszmli/.cursor/skills/nature-figure/scripts")
 import plot_composition_da_distributions as comp
-import plot_prompt_comparison as prompts
+import plot_da_model_comparison as da_models
 import plot_task_completion as heatmap
 from audit_panel_alignment import require_matplotlib_panel_alignment
 from plot_model_distributions import MODEL_LABEL, MODEL_ORDER, PALETTE
@@ -104,22 +108,17 @@ def draw() -> None:
     _style()
     summary = pd.read_csv(TABLES / "task_completion_summary.tsv", sep="\t")
     values, tests = _distribution_frames()
-    stacked = []
-    for model, _stem in prompts.MODELS:
-        series = {}
-        series.update(prompts.diversity_by_prompt(model))
-        series.update(prompts.composition_by_prompt(model))
-        panel_tests = prompts.prompt_tests(series)
-        stacked.append((model, series, panel_tests))
+    da_values = pd.read_csv(TABLES / "model_deseq2_comparison_values.tsv", sep="\t")
+    da_tests = pd.read_csv(TABLES / "model_deseq2_comparison_tests.tsv", sep="\t")
 
-    # One content width. The heatmap colorbar occupies the right margin of block a only.
-    fig = plt.figure(figsize=(7.20, 15.2))
-    heat_gs = fig.add_gridspec(2, 3, left=0.16, right=0.90, bottom=0.778, top=0.972, wspace=0.34, hspace=0.52)
-    dist_gs = fig.add_gridspec(2, 2, left=0.155, right=0.985, bottom=0.462, top=0.712, wspace=0.38, hspace=0.34)
-    prompt_gs = fig.add_gridspec(3, 4, left=0.155, right=0.985, bottom=0.034, top=0.418, wspace=0.46, hspace=0.14)
+    # Heatmap on top. Panel b is the model comparison: diversity, composition, then DESeq2.
+    fig = plt.figure(figsize=(7.20, 11.55))
+    heat_gs = fig.add_gridspec(2, 3, left=0.185, right=0.90, bottom=0.718, top=0.960, wspace=0.34, hspace=0.52)
+    dist_gs = fig.add_gridspec(2, 2, left=0.155, right=0.985, bottom=0.318, top=0.631, wspace=0.38, hspace=0.34)
+    da_gs = fig.add_gridspec(1, 3, left=0.155, right=0.985, bottom=0.086, top=0.256, wspace=0.28)
     heat_axes = heat_gs.subplots()
     dist_axes = dist_gs.subplots().ravel()
-    prompt_axes = prompt_gs.subplots()
+    da_axes = da_gs.subplots()
 
     heatmap.render_heatmap(heat_axes, summary)
     heat_right = heat_axes[0, 2].get_position()
@@ -146,97 +145,60 @@ def draw() -> None:
     )
     for ax in dist_axes:
         ax.set_title(ax.get_title(), pad=8)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
     dist_top = max(ax.get_position().y1 for ax in dist_axes[:2])
     handles = [
         Patch(facecolor=PALETTE[MODEL_LABEL[model]], edgecolor=PALETTE[MODEL_LABEL[model]], label=MODEL_LABEL[model])
         for model in MODEL_ORDER
     ]
+    legend_y = dist_top + 36.0 / (fig.get_size_inches()[1] * 72.0)
     fig.legend(
         handles=handles,
         loc="center",
         ncol=3,
-        bbox_to_anchor=(0.56, dist_top + 0.028),
+        bbox_to_anchor=(0.56, legend_y),
         frameon=False,
         handlelength=1.2,
         columnspacing=1.2,
     )
 
-    for row_i, (model, series, panel_tests) in enumerate(stacked):
-        prompts._draw_panels(
-            prompt_axes[row_i],
-            series,
-            panel_tests,
-            show_titles=row_i == 0,
-            show_xlabels=row_i == len(stacked) - 1,
-        )
-        if row_i == 0:
-            for ax in prompt_axes[row_i]:
-                ax.set_title(ax.get_title(), pad=8)
-        for ax in prompt_axes[row_i]:
-            ax.yaxis.labelpad = 3
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
-    for ax in dist_axes:
+    for ax, (task, level, title) in zip(da_axes, da_models.COMPARE):
+        da_models._draw_panel(ax, da_values, da_tests, task, level, title)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-    prompts._match_column_limits(prompt_axes)
+    da_axes[0].set_ylabel("DESeq2 log2 fold change")
+
     fig.canvas.draw()
-    for ax in list(dist_axes) + list(prompt_axes.ravel()):
+    for ax in dist_axes:
         comp._ensure_bracket_headroom(ax)
-    for col in range(prompt_axes.shape[1]):
-        column = [prompt_axes[row, col] for row in range(prompt_axes.shape[0])]
-        needed = max(comp._required_bracket_points(ax) for ax in column)
-        if needed <= 42.0:
-            continue
-        for ax in column:
-            comp._ensure_bracket_headroom(ax, points=needed)
-        lowers, uppers = [], []
-        for ax in column:
-            y0, y1 = ax.get_ylim()
-            lowers.append(min(y0, y1))
-            uppers.append(max(y0, y1))
-        for ax in column:
-            ax.set_ylim(min(lowers), max(uppers))
-    for ax in list(dist_axes) + list(prompt_axes.ravel()):
+    for ax in da_axes:
+        needed = max(comp._required_bracket_points(ax), 14.0)
+        comp._ensure_bracket_headroom(ax, points=needed)
+    da_models._share_16s_limits(da_axes)
+    fig.canvas.draw()
+    for ax in list(dist_axes) + list(da_axes):
         comp.place_brackets_above_data(ax)
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
-    _align_ylabel_column(
-        [dist_axes[0], dist_axes[2], prompt_axes[0, 0], prompt_axes[1, 0], prompt_axes[2, 0]],
-        renderer,
-    )
+    _align_ylabel_column([dist_axes[0], dist_axes[2]], renderer)
     _align_ylabel_column([dist_axes[1], dist_axes[3]], renderer)
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
     points_to_px = fig.dpi / 72.0
-    name_half_px = 0.5 * 7.0 * points_to_px
-    name_gap_px = 12.0 * points_to_px
-    name_left_px = []
-    for row_i, (model, _series, _panel_tests) in enumerate(stacked):
-        label_box = prompt_axes[row_i, 0].yaxis.label.get_window_extent(renderer)
-        center_y = (label_box.y0 + label_box.y1) / 2.0
-        center_x = label_box.x0 - name_gap_px - name_half_px
-        name_left_px.append(center_x - name_half_px)
-        anchor_x, anchor_y = fig.transFigure.inverted().transform((center_x, center_y))
-        fig.text(
-            anchor_x,
-            anchor_y,
-            prompts.ROW_LABEL[model],
-            rotation=90,
-            rotation_mode="anchor",
-            va="center",
-            ha="center",
-            fontsize=7,
-            fontweight="bold",
-        )
-    letter_x = (min(name_left_px) - 14.0 * points_to_px) / fig.bbox.width
+    left_edges = []
+    for ax in (heat_axes[0, 0], heat_axes[1, 0]):
+        left_edges.append(ax.yaxis.label.get_window_extent(renderer).x0)
+        for label in ax.get_yticklabels():
+            if label.get_text():
+                left_edges.append(label.get_window_extent(renderer).x0)
+    for ax in (dist_axes[0], dist_axes[2]):
+        left_edges.append(ax.yaxis.label.get_window_extent(renderer).x0)
+    letter_x = (min(left_edges) - 14.0 * points_to_px) / fig.bbox.width
     _place_letter(fig, heat_axes[0, 0], "a", letter_x, 4)
-    _place_letter(fig, dist_axes[0], "b", letter_x, 12)
-    _place_letter(fig, prompt_axes[0, 0], "c", letter_x, 12)
-    _place_letter(fig, prompt_axes[1, 0], "d", letter_x, 8)
-    _place_letter(fig, prompt_axes[2, 0], "e", letter_x, 8)
+    _place_letter(fig, dist_axes[0], "b", letter_x, 4)
 
-    stem = FIGS / "case1_robustness"
+    stem = FIGS / "case1_completion_models"
     require_matplotlib_panel_alignment(
         fig,
         json_out=str(stem.with_suffix(".alignment.json")),

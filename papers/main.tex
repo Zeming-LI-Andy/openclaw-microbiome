@@ -511,62 +511,49 @@ across multiple taxa of interest.
 \subsection{Robustness across models and prompt granularity}
 \label{sec:robustness}
 
-Robustness will be evaluated on frozen Case~1 inputs with the complete system
-under three models, three prompt granularities, and three independent sessions
-per cell (27 sessions).  The primary outcome is artifact-level completion of
-the common scientific goals: data characterization, 16S alpha and beta
-diversity, taxonomic and differential-abundance analysis, and shotgun
-taxonomic and differential-abundance analysis.  Method-specific adherence is
-scored only for the detailed prompt.  Shannon agreement, distance-matrix
-Mantel tests, and Procrustes comparisons of ordinations provide secondary
-repeatability measures.
-% RESULTS PENDING: robustness-session-results
-% RESULTS PENDING: robustness-output-concordance
+We evaluated completion and output stability on the frozen Case~1 inputs
+with the complete system.  Three models, DeepSeek-Pro, DeepSeek-Flash and
+GLM-Flash, were crossed with detailed, medium and simple prompts, and each
+cell contained three sessions.  Six analyses were scored: 16S alpha
+diversity, 16S beta diversity, 16S taxonomic profiling, 16S differential
+abundance, shotgun species-level taxonomic profiling and shotgun
+differential abundance (Supplementary Figure~\ref{fig:robustness-models}a).
+Every 16S analysis was completed in three of three sessions.  Shotgun
+taxonomic profiling and shotgun differential abundance were likewise
+completed in three of three sessions, except under the GLM-Flash detailed
+prompt (2/3), where one session contained no shotgun reads.
 
-\begin{table}[htbp]
-  \centering
-  \caption{Planned reporting table for robustness across models and prompt
-    granularity.  Each cell summarizes three independent sessions.  Values
-    will be inserted after the 27-session experiment is complete.}
-  \label{tab:robustness-results}
-  \scriptsize
-  \setlength{\tabcolsep}{3pt}
-  \renewcommand{\arraystretch}{1.18}
-  \begin{tabularx}{\linewidth}{@{}llccccc@{}}
-    \toprule
-    Model & Prompt
-      & \shortstack{Completed\\sessions}
-      & \shortstack{Artifact score\\mean / 5}
-      & \shortstack{Shannon\\agreement $r$}
-      & \shortstack{Mantel\\agreement $r$}
-      & \shortstack{Procrustes\\disparity} \\
-    \midrule
-    Model A & Detailed & pending & pending & pending & pending & pending \\
-            & Medium   & pending & pending & pending & pending & pending \\
-            & Simple   & pending & pending & pending & pending & pending \\
-    \addlinespace
-    Model B & Detailed & pending & pending & pending & pending & pending \\
-            & Medium   & pending & pending & pending & pending & pending \\
-            & Simple   & pending & pending & pending & pending & pending \\
-    \addlinespace
-    Model C & Detailed & pending & pending & pending & pending & pending \\
-            & Medium   & pending & pending & pending & pending & pending \\
-            & Simple   & pending & pending & pending & pending & pending \\
-    \bottomrule
-  \end{tabularx}
-  \vspace{0.35em}
+Shannon index, pairwise weighted UniFrac distance and DESeq2 log$_2$ fold
+change did not differ among models (Supplementary
+Figure~\ref{fig:robustness-models}b).  For both diversity summaries, every
+model pair had a Holm-adjusted $P = 1$ within each prompt.  DESeq2
+comparisons used only sessions that ran DESeq2 and only taxa shared across
+those sessions (Supplementary Table~\ref{tab:da-model-methods}): 216 genera
+for the detailed 16S prompt, 332 genera for the medium 16S prompt and 43
+species for the detailed shotgun prompt.  No model pair differed after Holm
+correction.  The medium shotgun prompt yielded no DESeq2 results that could
+be compared across models, and DeepSeek-Pro contributed one of three
+sessions to each DESeq2 comparison.  Relative abundance of shared genera
+and species differed among models in some prompt conditions.
 
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} Completed sessions are reported as $n/3$.  The artifact
-    score sums five prespecified analysis domains, each scored 0, 0.5, or 1.
-    Agreement statistics summarize pairwise comparisons among repeats within
-    a model--prompt cell.  Mantel results are reported separately by distance
-    metric in the Supplementary Information, the main-table value summarizes
-    metrics shared by all three sessions.  Lower Procrustes disparity denotes
-    closer agreement.
-  \end{minipage}
-\end{table}
+Within each model, prompt level left the Shannon index and weighted UniFrac
+distance unchanged (Supplementary Figure~\ref{fig:robustness-prompts}).
+Relative abundance differed between some prompt levels.  Detailed and medium
+16S analyses both used DESeq2.  Their genus-level log$_2$ fold changes
+differed for DeepSeek-Pro (111 shared genera, $P = 0.014$) and did not
+differ for DeepSeek-Flash (668 genera, $P = 0.32$) or GLM-Flash (413 genera,
+$P = 0.28$).  Shotgun detailed-versus-medium contrasts were not significant
+within any model ($P = 0.16$, $0.73$ and $0.25$ for DeepSeek-Pro,
+DeepSeek-Flash and GLM-Flash).  These shotgun values are not the same
+estimand: DeepSeek-Pro reported a Wilcoxon log$_2$ fold change,
+DeepSeek-Flash a Mann--Whitney $U$ log$_2$ fold change and GLM-Flash a
+DESeq2 log$_2$ fold change (Supplementary Table~\ref{tab:da-prompt-methods}).
+They were therefore not compared across models.
+
+The rank tests compare distributions of magnitudes.  Samples, sample pairs
+and taxa come from this one experiment and are not independent replicates.
+The comparisons do not establish that community structure was preserved or
+that the same taxa were called as differentially abundant.
 
 \FloatBarrier
 
@@ -575,80 +562,46 @@ repeatability measures.
 
 \subsubsection{Component contributions to end-to-end analysis}
 
-End-to-end component ablation will compare the complete system with
-conditions lacking shipped skills, coding and long-execution guidance, or the
-session-runtime extension.  Each condition uses the same detailed Case~1 prompt,
-frozen inputs, one model, and three independent sessions without mid-run user
-feedback.  The primary outcomes are end-to-end task success, artifact
-completion across nine requested outputs, adherence to the eight prespecified
-methods, and total token use.  Task completion is additionally resolved by
-output type to identify which parts of the requested analysis are omitted
-under each ablation.  Raw token use will be interpreted together with
-completion because a stalled session can consume fewer tokens by performing
-less analysis.
-% RESULTS PENDING: ablation-session-results
+We compared the complete system with removal of the shipped microbiome skills
+and with removal of the coding and long-execution instructions
+(\cref{fig:component-ablation}).  The session-runtime extension was left in
+place.  Every condition used the detailed Case~1 prompt, the frozen
+preprocessed inputs, and one model, with no user message after the initial
+plan confirmation.  The complete-system sessions are the three detailed-prompt
+\texttt{deepseek-v4-pro} sessions.  Each ablated condition was scored from
+three archived sessions.
 
-\begin{table}[htbp]
+All nine requested outputs were present in each complete-system session.
+Without skills, one session did not contain an analysis report (26 of 27
+output checks).  Without coding guidance, one session did not retain analysis
+scripts (26 of 27 output checks); the other requested outputs were present.
+All eight methods named in the detailed prompt were used in every session.
+Token totals were not present in the archived job records.
+
+This comparison asks whether those components were required to finish the
+prespecified downstream analysis when the prompt already named the methods.
+It does not test upstream read processing, other models, or less specific
+prompts.
+
+\begin{figure}[htbp]
   \centering
-  \caption{Planned reporting table for end-to-end component ablation.  Each
-    condition contains three independent sessions using the same model,
-    detailed prompt, and frozen inputs.}
-  \label{tab:end-to-end-ablation}
-  \scriptsize
-  \setlength{\tabcolsep}{1.3pt}
-  \renewcommand{\arraystretch}{1.18}
-  \textit{A. Core ablation outcomes}\\[0.3em]
-  \begin{tabularx}{\linewidth}{@{}l*{3}{>{\centering\arraybackslash}X}@{}}
-    \toprule
-    Condition
-      & \shortstack{Task completion\\rate (\%)}
-      & \shortstack{Method adherence\\rate (\%)}
-      & \shortstack{Median total\\tokens} \\
-    \midrule
-    Full & pending & pending & pending \\
-    $-$Runtime extension & pending & pending & pending \\
-    $-$Skills & pending & pending & pending \\
-    $-$Exec guidance & pending & pending & pending \\
-    \bottomrule
-  \end{tabularx}
-
-  \vspace{0.8em}
-  \textit{B. Completion of individual requested tasks}\\[0.3em]
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X*{4}{>{\centering\arraybackslash}p{0.14\linewidth}}@{}}
-    \toprule
-    Task & Full & \shortstack{$-$Runtime\\extension} & $-$Skills & $-$Exec guidance \\
-    \midrule
-    16S $\alpha$ diversity & pending & pending & pending & pending \\
-    16S $\beta$ diversity & pending & pending & pending & pending \\
-    16S taxonomic table & pending & pending & pending & pending \\
-    16S differential abundance & pending & pending & pending & pending \\
-    MetaPhlAn table & pending & pending & pending & pending \\
-    Shotgun differential abundance & pending & pending & pending & pending \\
-    Figures & pending & pending & pending & pending \\
-    Scripts & pending & pending & pending & pending \\
-    Report & pending & pending & pending & pending \\
-    \bottomrule
-  \end{tabularx}
-  \vspace{0.35em}
-
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} Full denotes the complete system, $-$Runtime extension uses the
-    standard session runtime, $-$Skills removes the microbiome domain skills,
-    and $-$Exec guidance removes the coding and long-execution instructions.
-    Each task-specific cell in panel B reports the number of sessions that
-    produced a valid result for that task ($n/3$).  Task completion rate is
-    the percentage of the nine task items completed, averaged across the three
-    sessions in a condition.  Method adherence rate is the percentage of the
-    eight methods named
-    in the detailed prompt: sequencing-depth normalization, Shannon diversity,
-    weighted UniFrac, unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA,
-    PERMANOVA, and PERMDISP that were used as requested, averaged across the
-    three sessions.  Median total tokens use the same accounting source in all
-    conditions.  Individual-session and pre-failure token counts are reported
-    in the Supplementary Information.
-  \end{minipage}
-\end{table}
+  \includegraphics[width=\linewidth]{component_ablation.pdf}
+  \caption{Component contributions to end-to-end Case~1 analysis.
+    (a)~Nine requested outputs.
+    (b)~Eight methods named in the detailed prompt: sequencing-depth
+    normalization, Shannon diversity, weighted UniFrac, unweighted UniFrac,
+    Bray--Curtis distance, weighted-UniFrac PCoA, PERMANOVA, and PERMDISP.
+    Each row is one independent session.
+    A cell is filled when that output or method was present in the archived
+    job and marked when it was not.
+    Full is the complete system, $-$Skills removes the microbiome domain
+    skills, and $-$Exec guidance removes the coding and long-execution
+    instructions.
+    Each condition contains three sessions.
+    Completion records whether a usable artifact was produced.
+    It is not a test of agreement with the original study.}
+  \label{fig:component-ablation}
+\end{figure}
 
 \subsubsection{Runtime ablation for analysis continuity}
 
@@ -747,9 +700,11 @@ supports review of such distinctions, although their correct interpretation
 still requires scientific judgment.
 
 The current evidence establishes feasibility across the selected cases.
-The planned robustness and component-ablation experiments have not yet
-established aggregate completion rates, model dependence, or the contribution
-of each component to analytical performance.  Comparisons with a general
+The robustness experiment has not yet established aggregate completion rates
+or model dependence.  The component comparison
+(\cref{fig:component-ablation}) is limited to one model, a detailed prompt,
+and preprocessed inputs, so it does not show that skills or coding guidance
+are dispensable for other tasks.  Comparisons with a general
 agent given the same software and resources would further quantify the value
 of the integrated system.  Agreement between repeated analyses should be
 assessed alongside method correctness and independently checked results,
@@ -1083,26 +1038,29 @@ summary is reported.
 
 \subsubsection{Component-ablation design}
 
-The component ablation will use the detailed robustness prompt, the same frozen
-inputs, and one fixed model.  Four conditions will be evaluated in three
-independent sessions each: the complete system, the standard session runtime
-without the extension, removal of the microbiome domain procedures, and removal
-of the coding and long-execution guidance.  No feedback will be introduced while a session is
-running.  All other workspace instructions, software resources, and reference
-resources will be held constant wherever they are not the component under test.
+The component ablation used the detailed robustness prompt, the same frozen
+inputs, and one fixed model.  Three conditions were evaluated: the complete
+system, removal of the microbiome domain procedures, and removal of the coding
+and long-execution guidance.  The session-runtime extension was held constant;
+its effect during a running command is tested separately below.  No feedback
+was introduced while a session was running.  All other workspace instructions,
+software resources, and reference resources were held constant wherever they
+were not the component under test.  Each condition contains three archived
+sessions.
 
-Task completion will be scored using nine binary items: 16S alpha diversity, 16S
+Task completion was scored with nine binary items: 16S alpha diversity, 16S
 beta diversity, a 16S taxonomic table, 16S differential abundance, a
 MetaPhlAn table, shotgun differential abundance, figures, analysis scripts,
-and an analysis report.  An item will be counted only when the corresponding
-artifact exists and is usable.  Method adherence will be scored against eight
-requirements in the detailed prompt: sequencing-depth normalization, Shannon
-diversity, weighted UniFrac, unweighted UniFrac, Bray--Curtis,
-weighted-UniFrac PCoA, PERMANOVA, and PERMDISP.  Task and method rates will be
-calculated per session and averaged within condition.  Total token use will be
-obtained from the same accounting source for every session and interpreted
-together with completion because an early failure can consume fewer tokens by
-performing less work.
+and an analysis report.  An item was counted only when the corresponding
+artifact existed and was usable.  A genus-level 16S table was accepted when it
+contained genus labels, or a level-6 collapsed table, for at least 30 samples.
+Method adherence was scored against eight requirements in the detailed prompt:
+sequencing-depth normalization, Shannon diversity, weighted UniFrac,
+unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA, PERMANOVA, and
+PERMDISP.  A method was counted when the corresponding matrix, ordination, or
+test result was present, including PERMDISP output stored under a misspelled
+filename.  Token totals were not available in the archived job records and are
+not reported.
 
 \subsubsection{Runtime-extension experiment}
 
@@ -1285,8 +1243,148 @@ included in the accompanying archive.
     MetaClaw reports assembly and genome-resolved binning through FlowHub
     \parencite{zhang2026metaclaw}. Its partial on-premises designation reflects
     the use of FlowHub for upstream metagenomic processing and local containers
-    for downstream analysis. This scope comparison is not a performance benchmark.
+    for downstream analysis.     This scope comparison is not a performance benchmark.
   \end{minipage}
 \end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Differential-abundance methods and replicates averaged in the
+    detailed-versus-medium prompt comparison.  Each row is one comparison.
+    Session counts are the replicates, out of three, whose result for that
+    method entered the average.}
+  \label{tab:da-prompt-methods}
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabular}{@{}llccc@{}}
+    \toprule
+    Model & Method
+      & \shortstack{Detailed\\sessions}
+      & \shortstack{Medium\\sessions}
+      & \shortstack{Taxa\\compared} \\
+    \midrule
+    \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
+    \addlinespace
+    DeepSeek-Pro   & DESeq2            & 1/3 & 1/3 & 111 \\
+    DeepSeek-Flash & DESeq2            & 2/3 & 2/3 & 668 \\
+    GLM-Flash      & DESeq2            & 3/3 & 1/3 & 413 \\
+    \addlinespace
+    \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
+    \addlinespace
+    DeepSeek-Pro   & Wilcoxon          & 1/3 & 1/3 & 14 \\
+    DeepSeek-Flash & Mann--Whitney $U$ & 1/3 & 1/3 & 39 \\
+    GLM-Flash      & DESeq2            & 2/3 & 1/3 & 9 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} The simple prompt was not included.  Display names
+    correspond to \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, and
+    \texttt{glm5.3-flash}.  Within a replicate, the median log$_2$ fold change
+    of each taxon was retained.  Those values were then averaged across the
+    included replicates; a taxon missing from a replicate was not imputed as
+    zero.  A taxon was compared only when both prompts produced a finite
+    value.  DESeq2 values are negative-binomial log$_2$ fold changes.
+    Wilcoxon and Mann--Whitney $U$ values are log$_2$ ratios of group means
+    reported with the rank test, not the rank statistic.  One DeepSeek-Flash
+    detailed replicate reported only ASV-level DESeq2 results and was excluded
+    from the genus comparison.  One GLM-Flash detailed replicate did not
+    analyse shotgun libraries.
+  \end{minipage}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{DESeq2 sessions included in the cross-model comparison of
+    differential-abundance effect sizes.  Each row is one model.  Session
+    counts are the replicates, out of three, whose DESeq2 result entered the
+    comparison.  The medium shotgun prompt produced no DESeq2 results.}
+  \label{tab:da-model-methods}
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    Model
+      & \shortstack{Detailed\\sessions}
+      & \shortstack{Medium\\sessions}
+      & \shortstack{Detailed\\taxa shared}
+      & \shortstack{Medium\\taxa shared} \\
+    \midrule
+    \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
+    \addlinespace
+    DeepSeek-Pro   & 1/3 & 1/3 & 216 & 332 \\
+    DeepSeek-Flash & 2/3 & 2/3 & 216 & 332 \\
+    GLM-Flash      & 3/3 & 1/3 & 216 & 332 \\
+    \addlinespace
+    \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
+    \addlinespace
+    DeepSeek-Pro   & 1/3 & \textemdash & 43 & \textemdash \\
+    DeepSeek-Flash & 2/3 & \textemdash & 43 & \textemdash \\
+    GLM-Flash      & 2/3 & \textemdash & 43 & \textemdash \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} Display names correspond to \texttt{deepseek-v4-pro},
+    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}.  A taxon was
+    shared when every included session reported a finite DESeq2 log$_2$ fold
+    change for it, so the shared count is the same in each row of a block.
+    Within a session, the value for a taxon is that session's DESeq2
+    coefficient; values were then averaged across the included sessions.
+    One GLM-Flash detailed replicate did not analyse shotgun libraries.
+  \end{minipage}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{case1_completion_models.png}
+  \caption{Task completion and cross-model comparisons on the frozen Case~1
+    inputs.  (a)~Completion of six requested analyses.  Each cell is the
+    number of sessions, out of three, in which the analysis was completed.
+    The GLM-Flash detailed shotgun cells are 2/3 because one session
+    contained no shotgun reads.  (b)~Shannon index, pairwise weighted
+    UniFrac distance, relative abundance and DESeq2 log$_2$ fold change
+    compared among models within each prompt.  Shannon points are
+    session means of per-sample indexes.  UniFrac points are session means
+    of distances between unordered sample pairs ($n = 1{,}770$).
+    Relative-abundance points are session means for taxa whose mean was at
+    least 5\% in every compared group.  DESeq2 points are means across
+    sessions that ran DESeq2, for taxa shared by the compared models
+    (Supplementary Table~\ref{tab:da-model-methods}); the medium shotgun
+    prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
+    tests with Holm correction within each set of three pairs.  n.s.,
+    Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
+    $P < 0.001$.  Samples, sample pairs and taxa come from one experiment
+    and are not independent replicates.}
+  \label{fig:robustness-models}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{by_prompt_models.png}
+  \caption{Within-model comparisons across prompt levels.  Rows are
+    DeepSeek-Pro, DeepSeek-Flash and GLM-Flash.  The first four columns
+    follow the point definitions in Supplementary
+    Figure~\ref{fig:robustness-models}.  The differential-abundance columns
+    compare the detailed and medium prompts only.  16S values are DESeq2
+    log$_2$ fold changes.  Shotgun values are Wilcoxon, Mann--Whitney $U$
+    and DESeq2 log$_2$ fold changes for DeepSeek-Pro, DeepSeek-Flash and
+    GLM-Flash, respectively (Supplementary Table~\ref{tab:da-prompt-methods}),
+    and are not compared across rows.  Brackets in the first four columns
+    are two-sided Mann--Whitney $U$ tests with Holm correction within each
+    set of three prompt pairs.  Each differential-abundance bracket is a
+    single pair.  n.s., adjusted $P \geq 0.05$; *, $P < 0.05$; **,
+    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs and taxa come from
+    one experiment and are not independent replicates.}
+  \label{fig:robustness-prompts}
+\end{figure}
+
+\FloatBarrier
 
 \end{document}

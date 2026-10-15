@@ -42,7 +42,7 @@ PROMPT_COLOR = {
 }
 PANELS = (
     ("16s_shannon", "Shannon index", "16S alpha diversity", False),
-    ("16s_beta", "Pairwise weighted UniFrac distance", "16S beta diversity", False),
+    ("16s_beta", "Weighted UniFrac distance", "16S beta diversity", False),
     ("16s_composition", "Genus relative abundance", "16S genus-level\ntaxonomic profiling", True),
     ("shotgun_composition", "Species relative abundance", "shotgun species-level\ntaxonomic profiling", True),
 )
@@ -130,14 +130,25 @@ def prompt_tests(series: dict[str, dict[str, np.ndarray]]) -> pd.DataFrame:
     return pd.DataFrame.from_records(rows)
 
 
-def _draw_panels(axes, series: dict[str, dict[str, np.ndarray]], tests: pd.DataFrame, show_titles: bool, show_xlabels: bool) -> None:
-    for ax, (task, ylabel, title, log_y) in zip(axes, PANELS):
+def _draw_panels(
+    axes,
+    series: dict[str, dict[str, np.ndarray]],
+    tests: pd.DataFrame,
+    show_titles: bool,
+    show_xlabels: bool,
+    panels=PANELS,
+    title_pad: float = 42,
+    ylabel_for=None,
+    box_width: float = 0.42,
+    label_rotation: float = 35,
+) -> None:
+    for ax, (task, ylabel, title, log_y) in zip(axes, panels):
         present = [level for level in LEVEL_ORDER if len(series.get(task, {}).get(level, [])) > 0]
         for index, level in enumerate(present):
             ax.boxplot(
                 [series[task][level]],
                 positions=[index],
-                widths=0.42,
+                widths=box_width,
                 patch_artist=True,
                 showfliers=False,
                 boxprops={"facecolor": PROMPT_COLOR[level], "edgecolor": PROMPT_COLOR[level], "linewidth": 0.6, "alpha": 0.85},
@@ -146,13 +157,15 @@ def _draw_panels(axes, series: dict[str, dict[str, np.ndarray]], tests: pd.DataF
                 medianprops={"color": "#222222", "linewidth": 0.6},
             )
         ax.set_xticks(range(len(present)))
+        horizontal = label_rotation % 180 != 90
         ax.set_xticklabels(
             [LEVEL_LABEL[level] for level in present],
-            rotation=35,
-            ha="right",
+            rotation=label_rotation,
             rotation_mode="anchor",
+            ha="right" if horizontal else "center",
+            va="center" if horizontal else "top",
         )
-        ax.tick_params(axis="x", labelbottom=show_xlabels, length=0)
+        ax.tick_params(axis="x", labelbottom=show_xlabels, length=0, pad=18 if not horizontal else 2)
         ax.set_xlim(-0.55, max(len(present) - 1, 0) + 0.55)
         if len(present) >= 2:
             comp._add_significance_brackets(
@@ -161,8 +174,8 @@ def _draw_panels(axes, series: dict[str, dict[str, np.ndarray]], tests: pd.DataF
                 tests.loc[tests["task"] == task],
                 centers=[float(i) for i in range(len(present))],
             )
-        ax.set_ylabel(ylabel)
-        ax.set_title(title if show_titles else "", pad=42)
+        ax.set_ylabel(ylabel if ylabel_for is None else ylabel_for(task, ylabel))
+        ax.set_title(title if show_titles else "", pad=title_pad)
         if log_y:
             # abundance_floor already removed non-positive sample–taxon pairs.
             ax.set_yscale("log")
@@ -202,6 +215,30 @@ def _match_column_limits(axes) -> None:
         hi = max(item[1] for item in bounds)
         for ax in column:
             ax.set_ylim(lo, hi)
+
+
+def _seat_brackets(fig, axes) -> None:
+    """Keep brackets just above the whiskers without a tall empty cap.
+
+    Three-group panels need the full stack. A single comparison only needs
+    the lower bracket, so those panels keep more of the frame for the boxes.
+    """
+    fig.canvas.draw()
+    for ax in axes.ravel():
+        needed = max(comp._required_bracket_points(ax), 14.0)
+        comp._ensure_bracket_headroom(ax, points=needed)
+    for col in range(len(PANELS)):
+        column = [axes[row, col] for row in range(axes.shape[0])]
+        lowers, uppers = [], []
+        for ax in column:
+            y0, y1 = ax.get_ylim()
+            lowers.append(min(y0, y1))
+            uppers.append(max(y0, y1))
+        for ax in column:
+            ax.set_ylim(min(lowers), max(uppers))
+    fig.canvas.draw()
+    for ax in axes.ravel():
+        comp.place_brackets_above_data(ax)
 
 
 def draw(series: dict[str, dict[str, np.ndarray]], tests: pd.DataFrame, stem_name: str) -> None:
@@ -247,10 +284,58 @@ ROW_LABEL = {
     "deepseek-flash": "DeepSeek-Flash",
     "glm-flash": "GLM-Flash",
 }
+DA_PANELS = (
+    ("16s_da", "DESeq2 log2 fold change", "16S differential\nabundance", False),
+    ("shotgun_da", "log2 fold change", "shotgun differential\nabundance", False),
+)
 
 
-def draw_stacked(rows: list[tuple[str, dict, pd.DataFrame]], stem_name: str) -> None:
-    """Three models stacked, each with the four prompt comparisons."""
+def _load_da(model: str):
+    """Session-mean log2 fold changes already restricted to the plotted methods."""
+    import plot_da_prompt_comparison as da
+
+    series = {}
+    frames = []
+    sources = (
+        ("16s_da", "16s_da_by_prompt_values.tsv", "16s_da_by_prompt_tests.tsv"),
+        ("shotgun_da", "shotgun_da_by_prompt_values.tsv", "shotgun_da_by_prompt_tests.tsv"),
+    )
+    for task, values_name, tests_name in sources:
+        frame = pd.read_csv(TABLES / values_name, sep="\t")
+        frame = frame.loc[frame["model"] == model]
+        by_level = {}
+        for level, sub in frame.groupby("level"):
+            by_level[str(level)] = sub.groupby("taxon")["log2fc"].mean()
+        populated = [item for item in by_level.values() if len(item)]
+        shared = set.intersection(*(set(item.index) for item in populated)) if populated else set()
+        series[task] = {
+            level: item.loc[sorted(shared)].to_numpy(dtype=float)
+            for level, item in by_level.items()
+            if len(item) and shared
+        }
+        panel_tests = pd.read_csv(TABLES / tests_name, sep="\t")
+        panel_tests = panel_tests.loc[panel_tests["model"] == model].copy()
+        panel_tests["task"] = task
+        frames.append(panel_tests)
+        print(f"{model} {task}: shared_taxa={len(shared)}", flush=True)
+    shotgun_label = {
+        key: f"{da.SHOTGUN_METHOD[key]} log2 fold change" for key in da.SHOTGUN_METHOD
+    }
+    return series, pd.concat(frames, ignore_index=True), shotgun_label[model]
+
+
+def _align_ylabel_column(axes, renderer) -> None:
+    """Line up one column of y-axis titles on the same right edge."""
+    boxes = [ax.yaxis.label.get_window_extent(renderer) for ax in axes]
+    target = min(box.x1 for box in boxes)
+    for ax, box in zip(axes, boxes):
+        x_pos, y_pos = ax.yaxis.label.get_position()
+        new_x, _ = ax.transAxes.inverted().transform((x_pos + (target - box.x1), 0))
+        ax.yaxis.set_label_coords(new_x, y_pos)
+
+
+def draw_stacked(rows, stem_name: str) -> None:
+    """Three models by six tasks, including differential abundance, in one grid."""
     mpl.rcParams.update(
         {
             "font.family": "sans-serif",
@@ -269,22 +354,78 @@ def draw_stacked(rows: list[tuple[str, dict, pd.DataFrame]], stem_name: str) -> 
             "figure.facecolor": "white",
         }
     )
-    fig, axes = plt.subplots(len(rows), 4, figsize=(7.20, 7.70), constrained_layout=False)
-    fig.subplots_adjust(left=0.105, right=0.99, top=0.855, bottom=0.062, wspace=0.48, hspace=0.52)
-    for row_i, (model, series, tests) in enumerate(rows):
-        _draw_panels(axes[row_i], series, tests, show_titles=row_i == 0, show_xlabels=row_i == len(rows) - 1)
-        pos = axes[row_i, 0].get_position()
+    fig = plt.figure(figsize=(7.20, 6.20))
+    grid = fig.add_gridspec(len(rows), 6, left=0.125, right=0.968, top=0.90, bottom=0.125, wspace=0.74, hspace=0.18)
+    axes = grid.subplots()
+    panels = PANELS + DA_PANELS
+    for row_i, (model, series, tests, da_series, da_tests, shotgun_ylabel) in enumerate(rows):
+        merged = dict(series)
+        merged.update(da_series)
+
+        def ylabel_for(task, default, label=shotgun_ylabel):
+            if task != "shotgun_da":
+                return default
+            if label.startswith("Mann-Whitney"):
+                return "Mann-Whitney log2FC"
+            return label
+
+        _draw_panels(
+            axes[row_i],
+            merged,
+            pd.concat([tests, da_tests], ignore_index=True),
+            show_titles=row_i == 0,
+            show_xlabels=row_i == len(rows) - 1,
+            panels=panels,
+            ylabel_for=ylabel_for,
+            box_width=0.58,
+            label_rotation=90,
+        )
+        if row_i == 0:
+            for ax in axes[row_i]:
+                ax.set_title(ax.get_title(), pad=8)
+        for ax in axes[row_i]:
+            ax.yaxis.labelpad = 1
+    _match_column_limits(axes)
+    _seat_brackets(fig, axes)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    for col in range(axes.shape[1]):
+        _align_ylabel_column([axes[row, col] for row in range(axes.shape[0])], renderer)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    points_to_px = fig.dpi / 72.0
+    name_half_px = 0.5 * 7.0 * points_to_px
+    name_gap_px = 12.0 * points_to_px
+    name_left_px = []
+    for row_i, (model, _series, _tests, _da_series, _da_tests, _shotgun_ylabel) in enumerate(rows):
+        label_box = axes[row_i, 0].yaxis.label.get_window_extent(renderer)
+        center_y = (label_box.y0 + label_box.y1) / 2.0
+        center_x = label_box.x0 - name_gap_px - name_half_px
+        name_left_px.append(center_x - name_half_px)
+        anchor_x, anchor_y = fig.transFigure.inverted().transform((center_x, center_y))
         fig.text(
-            0.012,
-            pos.y0 + pos.height / 2.0,
+            anchor_x,
+            anchor_y,
             ROW_LABEL[model],
             rotation=90,
+            rotation_mode="anchor",
             va="center",
-            ha="left",
+            ha="center",
             fontsize=7,
             fontweight="bold",
         )
-    _match_column_limits(axes)
+    letter_x = (min(name_left_px) - 12.0 * points_to_px) / fig.bbox.width
+    for row_i, letter in enumerate("abc"):
+        top = axes[row_i, 0].get_window_extent().y1 + 4.0 * points_to_px
+        fig.text(
+            letter_x,
+            top / fig.bbox.height,
+            letter,
+            ha="left",
+            va="bottom",
+            fontsize=8,
+            fontweight="bold",
+        )
     stem = FIGS / stem_name
     require_matplotlib_panel_alignment(
         fig,
@@ -313,7 +454,8 @@ def main() -> None:
         tests = prompt_tests(series)
         tests.insert(0, "model", model)
         frames.append(tests)
-        stacked.append((model, series, tests))
+        da_series, da_tests, shotgun_ylabel = _load_da(model)
+        stacked.append((model, series, tests, da_series, da_tests, shotgun_ylabel))
         tests.to_csv(TABLES / f"{stem_name}_tests.tsv", sep="\t", index=False)
         draw(series, tests, stem_name)
     pd.concat(frames, ignore_index=True).to_csv(TABLES / "prompt_comparison_tests.tsv", sep="\t", index=False)

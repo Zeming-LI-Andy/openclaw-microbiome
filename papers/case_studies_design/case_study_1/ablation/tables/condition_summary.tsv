@@ -1,0 +1,7 @@
+condition	item_type	n_sessions	n_items	n_completed	n_possible
+full	task	3	9	27	27
+full	method	3	8	24	24
+no-skills	task	3	9	26	27
+no-skills	method	3	8	24	24
+no-coding	task	3	9	26	27
+no-coding	method	3	8	24	24
