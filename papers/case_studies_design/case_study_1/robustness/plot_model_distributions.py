@@ -32,16 +32,16 @@ TABLES = OUT / "tables"
 FIGS = OUT / "figures"
 MODEL_ORDER = ["glm-flash", "deepseek-flash", "deepseek-pro"]
 MODEL_LABEL = {
-    "glm-flash": "GLM-Flash",
-    "deepseek-flash": "DeepSeek-Flash",
-    "deepseek-pro": "DeepSeek-Pro",
+    "glm-flash": "glm5.3-flash",
+    "deepseek-flash": "deepseek-v4-flash",
+    "deepseek-pro": "deepseek-v4-pro",
 }
 LEVEL_ORDER = ["detailed", "medium", "simple"]
 LEVEL_LABEL = {"detailed": "Detailed", "medium": "Medium", "simple": "Simple"}
 PALETTE = {
-    "GLM-Flash": "#B64342",
-    "DeepSeek-Flash": "#42949E",
-    "DeepSeek-Pro": "#0F4D92",
+    "glm5.3-flash": "#B64342",
+    "deepseek-v4-flash": "#42949E",
+    "deepseek-v4-pro": "#0F4D92",
 }
 PAIRS = [
     ("glm-flash", "deepseek-flash"),

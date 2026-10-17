@@ -1360,7 +1360,7 @@ def main() -> None:
         [("16s_da", "16S genus log2FC"), ("shotgun_da", "Shotgun species log2FC")],
         (
             "One session-averaged log2FC per genus or species shared across models.",
-            "Holm p, left to right: GLM-Flash vs DeepSeek-Flash; GLM-Flash vs DeepSeek-Pro; DeepSeek-Flash vs DeepSeek-Pro.",
+            "Holm p, left to right: glm5.3-flash vs deepseek-v4-flash; glm5.3-flash vs deepseek-v4-pro; deepseek-v4-flash vs deepseek-v4-pro.",
         ),
         "model_distribution_da",
     )

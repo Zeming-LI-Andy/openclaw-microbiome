@@ -196,7 +196,7 @@ def _draw_panel(ax: plt.Axes, values: pd.DataFrame, tests: pd.DataFrame, task: s
     ax.set_xticks(range(len(present)))
     ax.set_xticklabels(
         [models.MODEL_LABEL[model] for model in present],
-        rotation=55,
+        rotation=70,
         rotation_mode="anchor",
         ha="right",
         va="top",
@@ -222,8 +222,8 @@ def _share_16s_limits(axes) -> None:
 
 def draw(values: pd.DataFrame, tests: pd.DataFrame) -> None:
     _style()
-    fig = plt.figure(figsize=(7.20, 3.40))
-    grid = fig.add_gridspec(1, 3, left=0.115, right=0.988, top=0.86, bottom=0.22, wspace=0.28)
+    fig = plt.figure(figsize=(7.20, 3.70))
+    grid = fig.add_gridspec(1, 3, left=0.115, right=0.988, top=0.86, bottom=0.28, wspace=0.28)
     axes = grid.subplots()
     for ax, (task, level, title) in zip(axes, COMPARE):
         _draw_panel(ax, values, tests, task, level, title)

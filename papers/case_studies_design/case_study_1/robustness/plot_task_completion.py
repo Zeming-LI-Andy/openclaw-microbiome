@@ -293,7 +293,7 @@ def draw(summary: pd.DataFrame) -> None:
         }
     )
     fig, axes = plt.subplots(2, 3, figsize=(7.20, 4.15), constrained_layout=False)
-    fig.subplots_adjust(left=0.15, right=0.90, top=0.90, bottom=0.11, wspace=0.28, hspace=0.62)
+    fig.subplots_adjust(left=0.17, right=0.90, top=0.90, bottom=0.11, wspace=0.28, hspace=0.62)
     render_heatmap(axes, summary)
     cax = fig.add_axes([0.915, 0.22, 0.016, 0.52])
     fig.colorbar(ScalarMappable(norm=Normalize(0, 100), cmap=plt.get_cmap("Blues")), cax=cax, label="Percentage of runs (%)")

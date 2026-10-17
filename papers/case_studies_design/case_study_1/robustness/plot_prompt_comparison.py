@@ -280,9 +280,9 @@ def draw(series: dict[str, dict[str, np.ndarray]], tests: pd.DataFrame, stem_nam
 
 
 ROW_LABEL = {
-    "deepseek-pro": "DeepSeek-Pro",
-    "deepseek-flash": "DeepSeek-Flash",
-    "glm-flash": "GLM-Flash",
+    "deepseek-pro": "deepseek-v4-pro",
+    "deepseek-flash": "deepseek-v4-flash",
+    "glm-flash": "glm5.3-flash",
 }
 DA_PANELS = (
     ("16s_da", "DESeq2 log2 fold change", "16S differential\nabundance", False),

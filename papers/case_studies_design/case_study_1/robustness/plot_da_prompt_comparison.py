@@ -8,8 +8,8 @@ inside a result table, then the mean across sessions that ran the chosen
 method. Simple-prompt sessions are excluded.
 
 16S uses genus-level DESeq2 log2FoldChange for every model. Shotgun cannot:
-GLM-Flash uses DESeq2, DeepSeek-Flash uses the log2FC reported with
-Mann-Whitney, and DeepSeek-Pro uses the log2FC reported with Wilcoxon.
+glm5.3-flash uses DESeq2, deepseek-v4-flash uses the log2FC reported with
+Mann-Whitney, and deepseek-v4-pro uses the log2FC reported with Wilcoxon.
 Those three log2FC definitions are not the same quantity.
 
 The bracket is one two-sided Mann-Whitney U test on the two taxon-level
@@ -38,9 +38,9 @@ TABLES = OUT / "tables"
 FIGS = OUT / "figures"
 ROW_ORDER = ("deepseek-pro", "deepseek-flash", "glm-flash")
 ROW_LABEL = {
-    "deepseek-pro": "DeepSeek-Pro",
-    "deepseek-flash": "DeepSeek-Flash",
-    "glm-flash": "GLM-Flash",
+    "deepseek-pro": "deepseek-v4-pro",
+    "deepseek-flash": "deepseek-v4-flash",
+    "glm-flash": "glm5.3-flash",
 }
 PROMPT_ORDER = ("detailed", "medium")
 PROMPT_LABEL = {"detailed": "Detailed", "medium": "Medium"}
