@@ -15,9 +15,9 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 
 | 会话                | 模型调用 | `process` | `sessions_yield` | `exec` |  uncached |     cached |  output |      total |
 | ------------------- | -------: | ----------: | -----------------: | -------: | --------: | ---------: | ------: | ---------: |
-| 1-ablation-no-patch |      155 |          66 |                  3 |       80 |   505,808 | 16,077,696 |  45,359 | 16,628,863 |
-| 2-ablation-no-patch |      268 |          86 |                  2 |      140 | 1,332,507 | 33,867,264 | 153,569 | 35,353,340 |
-| 3-ablation-no-patch |      145 |          20 |                  4 |       84 |   695,597 | 15,208,704 |  88,260 | 15,992,561 |
+| 1-ablation-no-patch |      155 |          66 |                  0 |       80 |   505,808 | 16,077,696 |  45,359 | 16,628,863 |
+| 2-ablation-no-patch |      268 |          86 |                  0 |      140 | 1,332,507 | 33,867,264 | 153,569 | 35,353,340 |
+| 3-ablation-no-patch |      145 |          20 |                  0 |       84 |   695,597 | 15,208,704 |  88,260 | 15,992,561 |
 | 1-ablation-full     |      150 |           1 |                 17 |       91 |   505,931 | 12,370,176 |  48,530 | 12,924,637 |
 | 2-ablation-full     |      124 |          21 |                  5 |       74 |   686,782 | 14,028,544 |  97,594 | 14,812,920 |
 | 3-ablation-full     |      126 |           0 |                 13 |       82 |   458,430 | 15,273,216 | 107,450 | 15,839,096 |
@@ -40,18 +40,18 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 
 三次合计 21,057,751，占 no-patch 全部 token 的 31%。`1-ablation-no-patch` 里最长的一段连续 poll 是 15 次。`2-ablation-no-patch` 有 44 段 poll，其中 26 次发生在上下文已经超过 15 万 token 之后，所以后半段每次 poll 都更贵。
 
-`2-ablation-no-patch` 只 yield 了两次，都在 MetaPhlAn 后半段；yield 之后它又注册了 automation 来盯进度，并继续 poll。这和「yield 一次然后停下」是两条路径。
+`2-ablation-no-patch` 全程没有调用 `sessions_yield`，在 MetaPhlAn 后半段还注册了 automation 来盯进度，并继续 poll。这和「yield 一次然后停下」是两条路径。
 
 ## 原因 2：会话 2 的轮次和上下文一起变长
 
 `2-ablation-no-patch` 的 35,353,340 可以拆开：
 
-| 调用内容                              | 次数 | 提示词 token |
-| ------------------------------------- | ---: | -----------: |
-| exec                                  |  133 |   16,278,733 |
-| process                               |   86 |   11,280,679 |
-| write / edit                          |   32 |    4,682,984 |
-| 其余（计划、yield、automation、收尾） |   17 | 约 2,700,000 |
+| 调用内容                      | 次数 | 提示词 token |
+| ----------------------------- | ---: | -----------: |
+| exec                          |  133 |   16,278,733 |
+| process                       |   86 |   11,280,679 |
+| write / edit                  |   32 |    4,682,984 |
+| 其余（计划、automation、收尾） |   17 | 约 2,700,000 |
 
 同一次 full（`2-ablation-full`）是 124 次调用、1,481 万 token。no-patch 这一次是 268 次。调用数约为 2.1 倍，cached input 约为 2.4 倍（33,867,264 / 14,028,544）。单次上下文的中位数是 139,302 token，末尾升到 233,259。调用数和单次长度是同一件事的两面：poll、改脚本、重跑命令都写进历史，后面每轮都重读。
 
@@ -65,15 +65,15 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 
 这解释 uncached 列，不解释 total。no-patch 的 uncached 合计 2,533,912，只占 total 的 3.7%。
 
-命令 yield 之后，或模型刚结束一轮，下一条用户消息常常是成对出现的 `[OpenClaw heartbeat poll]`。紧接着的那一次模型调用只命中约 8192 个 cached token，其余整段历史按未缓存重计；再下一次又命中刚写上的缓存。
+模型刚结束一轮后，下一条用户消息常常是成对出现的 `[OpenClaw heartbeat poll]`。紧接着的那一次模型调用只命中约 8192 个 cached token，其余整段历史按未缓存重计；再下一次又命中刚写上的缓存。
 
 | 会话                | 位置                            |                   uncached |   cached |
 | ------------------- | ------------------------------- | -------------------------: | -------: |
 | 1-ablation-no-patch | seq 68，heartbeat 之后          |                     84,948 |        0 |
-| 1-ablation-no-patch | seq 253，yield 之后的 heartbeat |                    126,924 |      256 |
+| 1-ablation-no-patch | seq 253，heartbeat 之后         |                    126,924 |      256 |
 | 2-ablation-no-patch | seq 473                         |                    179,093 |    8,192 |
-| 2-ablation-no-patch | seq 486，yield 之后             |                    185,906 |    8,192 |
-| 2-ablation-no-patch | seq 519，第二次 yield 之后      |                    207,494 |    8,192 |
+| 2-ablation-no-patch | seq 486，heartbeat 之后         |                    185,906 |    8,192 |
+| 2-ablation-no-patch | seq 519，heartbeat 之后         |                    207,494 |    8,192 |
 | 2-ablation-no-patch | seq 562，结束语之后的 heartbeat |                    225,067 |    8,192 |
 | 3-ablation-no-patch | seq 51、196、258                | 64,844 + 123,729 + 136,686 | 各 6,144 |
 
@@ -89,4 +89,4 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 
 full 的 `papers/case_studies_design/case_study_1/ablation/full/CODING.md` 要求：`status: "running"` 且有 `sessionId` 时调用 `sessions_yield`；不要 poll-loop，也不要用 automation 看守一条还在跑的命令。`process` 只在用户要求查看或中止时使用。
 
-no-patch 的 `AGENTS.md` 在硬规则处停在「用 exec、不要编造结果」，没有 yield、`yieldMs` 或 poll 的说明。转录里的行为与此相符：三次 `process` 为 66、86、20，`sessions_yield` 为 3、2、4；会话 2 还另外建了 automation 来等 MetaPhlAn。
+no-patch 的 `AGENTS.md` 在硬规则处停在「用 exec、不要编造结果」，没有 yield、`yieldMs` 或 poll 的说明。转录里的行为与此相符：三次 `process` 为 66、86、20，`sessions_yield` 均为 0；会话 2 还另外建了 automation 来等 MetaPhlAn。
