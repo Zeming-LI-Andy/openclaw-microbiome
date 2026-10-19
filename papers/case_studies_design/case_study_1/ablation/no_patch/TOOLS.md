@@ -15,13 +15,6 @@ Other work uses native OpenClaw **Read** plus the shell **`exec`**.
 Run all analysis CLIs through **`exec`** (the OpenClaw shell tool).
 
 - **Never use `terminal`** for analysis CLIs; it is an operator-facing UI PTY.
-- Long jobs: call `exec` with **`yieldMs: 30000`** and **`timeout: 0`**; omit
-  `background: true` so startup failures can return during the 30-second
-  observation window. Keep the command itself in the foreground. Never use
-  `nohup`, trailing `&`, `disown`, `setsid`, or equivalent shell detachment.
-- Inspect the exec result. If it reports `status: "running"` with a valid
-  `sessionId`, call `sessions_yield`; otherwise handle the returned completion,
-  failure, or approval state directly. See `CODING.md`.
 
 ## Registries (read these)
 
@@ -76,6 +69,4 @@ Local DB annotation: `shotgun-eggnog`, `shotgun-vfdb`, `shotgun-rgi`,
 ## Coding while analyzing
 
 Read **`CODING.md`**: one analysis step at a time, small self-contained runs,
-outputs under `analysis/<step>/`, `conda run -n …` from the registry. For
-multi-hour CLIs, background `exec` + `sessions_yield`, then continue when
-background exec ends (not automations babysitting).
+outputs under `analysis/<step>/`, `conda run -n …` from the registry.

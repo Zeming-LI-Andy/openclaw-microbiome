@@ -9,7 +9,7 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 
 账单里 95.8% 是 cached input。系统提示在 no-patch 里更短，单次调用并没有因为提示词变长而变贵。贵在 **轮次变多，而且每一轮都把已经变长的历史重新读一遍**。
 
-轮次变多的直接原因：长命令还在跑时，模型用 `process poll` 反复查询，而不是 `sessions_yield` 一次、等命令结束后再被唤醒。full 的 `CODING.md` 禁止这种轮询；no-patch 的 `AGENTS.md` / `TOOLS.md` 没有这组规则。
+轮次变多的直接原因：长命令还在跑时，模型用 `process poll` 反复查询，而不是 `sessions_yield` 一次、等命令结束后再被唤醒。full 在 `CODING.md`、`AGENTS.md` 和 `TOOLS.md` 中要求使用 `sessions_yield` 并禁止这种轮询；no-patch 移除了这组规则。
 
 ## 三次和 full 的对比
 
@@ -23,8 +23,6 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 | 3-ablation-full     |      126 |           0 |                 13 |       82 |   458,430 | 15,273,216 | 107,450 | 15,839,096 |
 
 模型：`1-ablation-no-patch` 是 `deepseek/deepseek-v4-pro`（reasoning = 0）。另外两次 no-patch 是 `huoshan/deepseek-v4-pro-ga-260813`（reasoning 分别 96,706 和 46,823，已含在 output 中）。full 的第一次是 huoshan 与 deepseek 混用，后两次是 huoshan。
-
-作为参照，三次 no-skills 的 `process` 次数是 13、0、0，`sessions_yield` 是 25、19、22。它们的 total 是 16,975,649、10,922,275、11,840,182。
 
 ## 原因 1：用 process poll 代替 yield
 
@@ -77,16 +75,16 @@ no-patch 三次合计 67,974,764 token，均值 22,658,255。full 三次合计 4
 | 2-ablation-no-patch | seq 562，结束语之后的 heartbeat |                    225,067 |    8,192 |
 | 3-ablation-no-patch | seq 51、196、258                | 64,844 + 123,729 + 136,686 | 各 6,144 |
 
-`2-ablation-no-patch` 这四次合计 797,560 uncached，占该次 uncached 的 60%，占该次 total 的 2.3%。同一机制在 no-skills 里也出现过。它放大的是「已经很长的历史被整段重计一次」，前提仍是历史已经被 poll 和重试撑长。
+`2-ablation-no-patch` 这四次合计 797,560 uncached，占该次 uncached 的 60%，占该次 total 的 2.3%。它放大的是「已经很长的历史被整段重计一次」，前提仍是历史已经被 poll 和重试撑长。
 
 ## 对总量影响很小的部分
 
 - **reasoning。** 会话 2 的 96,706 和会话 3 的 46,823 都在 output 里。会话 2 的 output 一共 153,569，不到 total 的 0.5%。会话 1 没有 reasoning，total 仍然有 1,663 万，因为 poll 本身就占了 44%。
 - **单次工具输出过大。** 三次 no-patch 里，单条工具结果超过 2 万字符的只有两条（约 2.8 万和 2.1 万字符）。没有把整份大文件读进上下文。
-- **系统提示变长。** no-patch 少了 `CODING.md`。多花的 token 不在这段固定前缀上，而在被重读的对话历史上。
+- **系统提示变长。** no-patch 删去了长任务 yield 与禁止轮询的规则段落，系统提示比 full 更短。多花的 token 不在这段固定前缀上，而在被重读的对话历史上。
 
 ## 和现有规则的对应关系
 
 full 的 `papers/case_studies_design/case_study_1/ablation/full/CODING.md` 要求：`status: "running"` 且有 `sessionId` 时调用 `sessions_yield`；不要 poll-loop，也不要用 automation 看守一条还在跑的命令。`process` 只在用户要求查看或中止时使用。
 
-no-patch 的 `AGENTS.md` 在硬规则处停在「用 exec、不要编造结果」，没有 yield、`yieldMs` 或 poll 的说明。转录里的行为与此相符：三次 `process` 为 66、86、20，`sessions_yield` 均为 0；会话 2 还另外建了 automation 来等 MetaPhlAn。
+no-patch 的 `AGENTS.md`、`TOOLS.md` 和 `CODING.md` 删去了长任务 `yieldMs`、`sessions_yield`、会话唤醒及禁止 `process` 轮询的说明。转录里的行为与此相符：三次 `process` 为 66、86、20，`sessions_yield` 均为 0；会话 2 还另外建了 automation 来等 MetaPhlAn。

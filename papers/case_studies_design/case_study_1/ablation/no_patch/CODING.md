@@ -11,7 +11,7 @@ Instead:
 
 1. Pick **one** current step (usually one skill).
 2. Write or assemble a **small, self-contained** command/script for that step.
-3. **Run it now** (see **Long-running steps** below for multi-hour CLIs).
+3. **Run it now**.
 4. On completion, check exit status, logs, and outputs under this session’s job
    dir.
 5. Only then move to the next step.
@@ -69,47 +69,8 @@ Do not mix unrelated languages in one script “for convenience.” Split runs.
 Bash tips when using conda:
 
 - Prefer `conda run -n ENV --no-capture-output …` over `conda activate` in scripts.
-- Prefer `set -eo pipefail`. Avoid `set -u` together with fragile activate hooks.
+- Put `set -eo pipefail` in the shell that contains the pipe. In a script file, put it at the top of that file. In an `exec` command that itself contains `|`, put it at the start of that command. The script’s setting does not apply to an outer `bash script.sh | tee`. Running `bash script.sh` with no outer pipe already returns the script’s exit code, so do not set `pipefail` again on that outer command. Avoid `set -u` together with fragile activate hooks.
 - Let the process **fail on error**; do not swallow CLI exit codes and continue.
-
-## Long-running steps (avoid exec timeouts)
-
-Many microbiome CLIs (Aviary assemble/recover, HUMAnN, heavy EggNOG, DADA2 on
-large cohorts, …) can run far longer than the default **exec process timeout**
-(~30 minutes). Do **not** hold a foreground `exec` for hours. Use
-**timed-yield `exec` + `sessions_yield`**, then continue when the exec ends —
-never `terminal`:
-
-1. Call `exec` with **`yieldMs: 30000`** and **`timeout: 0`**. Omit
-   `background: true`: it backgrounds immediately and bypasses the observation
-   window. The `command` must run the real workload in the foreground; never
-   use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent detachment.
-2. Keep a job log under `reproducibility/logs/<step>.log`. Prefer
-   `… 2>&1 | tee <log>` so **both** the file and OpenClaw’s session capture see
-   output. If you must use pure `> log 2>&1`, follow with a visible
-   `echo "DONE …"` (not redirected) so the completion payload still has stdout.
-3. Inspect the exec result after the observation window:
-   - Completed or failed: verify or diagnose it directly; do not yield.
-   - Awaiting approval or no `sessionId`: handle that state; do not yield.
-   - **`status: "running"`** with a valid `sessionId`: call `sessions_yield`
-     with the step name and `sessionId`.
-   Do not sleep, poll-loop, or use automations to babysit a live step.
-4. When the **background exec ends** and the session wakes: verify exit +
-   `analysis/<step>/`, then the next step. Use **`process`** (`poll` / `log` /
-   `kill`) **only when the user asks** for status or control — not as a
-   substitute for waiting on background exec end, and never as a
-   wait-until-done loop.
-
-```text
-# Short / quick step (foreground)
-one step → exec (foreground) → verify → next step
-
-# Long-running step (background)
-one step → exec(command="<CLI> 2>&1 | tee <log>",
-                yieldMs=30000, timeout=0)
-→ confirm status=running + sessionId → sessions_yield
-→ background exec ends → wake → verify → next step
-```
 
 ## Multi-stage runs inside one step
 

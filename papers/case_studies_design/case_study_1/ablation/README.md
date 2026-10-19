@@ -10,9 +10,4 @@ Do not tell the agent which condition it is in.
 | Directory | Ablate | Workspace prompts | Runtime |
 |-----------|--------|-------------------|--------|
 | `full/` | — | Current plugin workspace (control) | Patched OpenClaw + plugin skills |
-| `no_patch/` | exec-session-wake pack | Same as `full/` | **Unpatched** OpenClaw; skills on |
-| `no_skills/` | Skills | No `plugin-skills/` pointers | Patched OpenClaw; **do not load** plugin skills |
-| `no_coding/` | `CODING.md` | No coding guide; no yield / one-step rules | Patched OpenClaw; skills on |
-
-`no_skills` must also disable skill loading (empty plugin `skills`, or equivalent).
-Editing AGENTS/TOOLS alone is not enough — OpenClaw still injects skill descriptions.
+| `no_patch/` | exec-session-wake pack + long-run yield rules | Same as `full/`, with `yieldMs` / `sessions_yield` / anti-polling rules removed from `AGENTS.md`, `TOOLS.md`, and `CODING.md` | **Unpatched** OpenClaw; skills on |

@@ -45,10 +45,9 @@ When the user gives an analysis goal:
    Do **not** start heavy compute until the user confirms the plan
    (or clearly says to run).
 2. After confirm: follow the `CODING.md` to execute the plan. **Keep the plan status
-   updated in real time** as you go. After each background `exec` ends and the
-   session wakes, briefly report result + updated plan status, then continue the
-   next unfinished task. Do not stop between tasks unless you hit a blocker that
-   needs the user.
+   updated in real time** as you go. Briefly report each step’s result + updated
+   plan status, then continue the next unfinished task. Do not stop between tasks
+   unless you hit a blocker that needs the user.
 3. If a task fails and you confirm it cannot succeed: mark it **skipped** in the
    plan (with the reason), and mark any later tasks that **depend on it** as
    **skipped** too. Continue with remaining independent tasks. Do not invent
@@ -63,13 +62,6 @@ When the user gives an analysis goal:
 2. All analysis I/O stays under the session job dir.
 3. Shell analysis commands go through **`exec` only** (`TOOLS.md`) — never
    `terminal`.
-4. Long jobs use `exec` with **`yieldMs: 30000`** and **`timeout: 0`**, not
-   `background: true`. Call `sessions_yield` only if exec returns
-   **`status: "running"`** with a valid `sessionId`; otherwise handle the
-   returned state directly (see `CODING.md`).
-5. With exec **`yieldMs` parameter**, keep the command itself in the foreground;
-   never use `nohup`, trailing `&`, `disown`, `setsid`, or equivalent shell
-   detachment.
-6. **Always use absolute paths** for every file and directory you read, write,
+4. **Always use absolute paths** for every file and directory you read, write,
    or pass to a tool (commands, scripts, configs, arguments). Never relative
    paths; never depend on cwd.
