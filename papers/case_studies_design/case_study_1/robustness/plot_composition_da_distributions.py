@@ -2,10 +2,11 @@
 """Distribution comparisons for composition and differential abundance.
 
 Composition value: relative abundance of one genus (16S) or one species
-(shotgun) in one sample. Each session is scaled to sum to 1, and a taxon
-missing from a session that has the sample enters the average as 0. A
-sample–taxon pair is kept only when that session-mean relative abundance
-is at least 5% in every compared group.
+(shotgun) in one sample, taken from the original table. An abundance table
+is used as stored. A count table is converted once, per sample, before
+taxon names are filtered. A taxon missing from a session that has the
+sample enters the average as 0. A sample–taxon pair is kept only when that
+session-mean relative abundance is at least 5% in every compared group.
 Differential-abundance value: raw log2FC for taxa shared across models.
 Coefficients and LDA scores are not used.
 """
@@ -122,17 +123,26 @@ def read_table(path: Path) -> pd.DataFrame | None:
     return frame
 
 
-def to_proportions(matrix: pd.DataFrame) -> pd.DataFrame:
-    numeric = matrix.apply(pd.to_numeric, errors="coerce").fillna(0.0)
-    numeric = numeric.clip(lower=0)
+def as_relative_abundance(matrix: pd.DataFrame) -> pd.DataFrame:
+    """Return each sample's share of its original table.
+
+    One decision covers the whole table, and it is made before taxon names
+    are filtered. A merged table has one row per sample, so a count table is
+    divided by that sample's own total. A percent table is divided by 100.
+    An abundance table that already sums to about 1 is unchanged.
+    """
+    numeric = matrix.apply(pd.to_numeric, errors="coerce").fillna(0.0).clip(lower=0)
     sums = numeric.sum(axis=1)
-    median_sum = float(sums[sums > 0].median()) if (sums > 0).any() else 0.0
-    if median_sum > 1.5:
-        if numeric.to_numpy().max() <= 100 and 50 <= median_sum <= 150:
-            numeric = numeric / 100.0
-        else:
-            numeric = numeric.div(sums.where(sums > 0), axis=0).fillna(0.0)
-    return numeric
+    positive = sums[sums > 0]
+    if positive.empty:
+        return numeric
+    median_sum = float(positive.median())
+    maximum = float(numeric.to_numpy().max())
+    if median_sum <= 1.5:
+        return numeric
+    if maximum <= 100 and 50 <= median_sum <= 150:
+        return numeric / 100.0
+    return numeric.div(sums.where(sums > 0), axis=0).fillna(0.0)
 
 
 def orient_abundance(frame: pd.DataFrame, kind: str) -> pd.DataFrame | None:
@@ -161,11 +171,10 @@ def orient_abundance(frame: pd.DataFrame, kind: str) -> pd.DataFrame | None:
     else:
         return None
     renamed.index = renamed.index.astype(str)
-    taxa = [cleaner(col) or "__other__" for col in renamed.columns]
-    renamed.columns = taxa
-    renamed = renamed.groupby(renamed.columns, axis=1).sum()
     renamed = renamed[~renamed.index.duplicated(keep="first")]
-    proportions = to_proportions(renamed)
+    proportions = as_relative_abundance(renamed)
+    proportions.columns = [cleaner(col) or "__other__" for col in proportions.columns]
+    proportions = proportions.groupby(proportions.columns, axis=1).sum()
     if "__other__" in proportions.columns:
         proportions = proportions.drop(columns=["__other__"])
     if proportions.shape[1] < 1 or proportions.shape[0] < 30:
@@ -321,6 +330,54 @@ def collapse_asv_genus(analysis: Path) -> tuple[pd.DataFrame | None, str]:
     return records, source
 
 
+def _profile_records(path: Path) -> list[tuple[str, float]]:
+    records = []
+    for line in path.read_text(errors="replace").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) < 3:
+            continue
+        try:
+            amount = float(parts[2])
+        except ValueError:
+            continue
+        records.append((parts[0], amount))
+    return records
+
+
+def _species_from_profile(path: Path) -> list[tuple[str, float]]:
+    """Species values from one sample file, on the file's own scale.
+
+    UNKNOWN is ignored when deciding the scale, because some profiles store
+    that line as a percentage and the clade lines as proportions. A percent
+    file is divided by 100. A count file is divided by the sum of its own
+    species rows. Species that fail the name filter are removed afterwards.
+    """
+    rows = _profile_records(path)
+    taxonomic = [
+        amount
+        for clade, amount in rows
+        if amount > 0 and clade.strip().upper() not in {"UNKNOWN", "UNCLASSIFIED"}
+    ]
+    maximum = max(taxonomic) if taxonomic else 0.0
+    species_rows: list[tuple[str, float]] = []
+    for clade, amount in rows:
+        if amount <= 0 or "|s__" not in clade or "|t__" in clade:
+            continue
+        species_rows.append((clean_species(clade), amount))
+    if not species_rows:
+        return []
+    if maximum > 100:
+        denom = sum(amount for _name, amount in species_rows)
+        if denom <= 0:
+            return []
+        return [(name, amount / denom) for name, amount in species_rows if name]
+    if maximum > 1.5:
+        return [(name, amount / 100.0) for name, amount in species_rows if name]
+    return [(name, amount) for name, amount in species_rows if name]
+
+
 def merge_metaphlan_profiles(analysis: Path) -> tuple[pd.DataFrame | None, str]:
     profiles = [
         path
@@ -334,33 +391,14 @@ def merge_metaphlan_profiles(analysis: Path) -> tuple[pd.DataFrame | None, str]:
         sample = canon_sample(path.name[: -len("_profile.txt")])
         if not sample:
             continue
-        for line in path.read_text(errors="replace").splitlines():
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) < 3 or "|s__" not in parts[0] or "|t__" in parts[0]:
-                continue
-            species = clean_species(parts[0])
-            if not species:
-                continue
-            try:
-                amount = float(parts[2])
-            except ValueError:
-                continue
-            if amount <= 0:
-                continue
+        for species, amount in _species_from_profile(path):
             totals[(sample, species)] = totals.get((sample, species), 0.0) + amount
     if not totals:
         return None, ""
     records = pd.Series(totals).unstack(fill_value=0.0)
-    sums = records.sum(axis=1)
-    records = records.div(sums.where(sums > 0), axis=0).fillna(0.0)
     if records.shape[0] < 30 or records.shape[1] < 1:
         return None, ""
     source = str(profiles[0].parent.relative_to(analysis)) + "/*_profile.txt"
-    return records, source
-
-
     return records, source
 
 
@@ -588,13 +626,15 @@ def abundance_floor(groups: dict[str, pd.Series], floor: float) -> dict[str, pd.
 
 
 def compositional_session(matrix: pd.DataFrame) -> pd.Series:
-    """Relative abundance per sample–taxon pair, with each sample scaled to 1."""
+    """Relative abundance per sample–taxon pair from the original table.
+
+    Name filtering has already removed unnamed taxa. The remaining values are
+    not scaled to 1.
+    """
     stacked = session_sample_taxon(matrix).clip(lower=0)
     if not len(stacked):
         return stacked
-    totals = stacked.groupby(level="sample_id").transform("sum")
-    scaled = stacked.where(totals > 0, 0.0) / totals.where(totals > 0, 1.0)
-    return scaled[scaled > 0]
+    return stacked[stacked > 0]
 
 
 def mean_profiles(parts: list[pd.Series]) -> pd.Series:

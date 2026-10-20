@@ -3,9 +3,10 @@
 
 Shannon uses one session-averaged index per shared sample. Beta uses the
 session-averaged weighted UniFrac distance of one unordered sample pair
-shared across prompts. Composition uses the session-mean relative abundance
-of one taxon in one sample, keeping pairs whose abundance is at least 5% in
-every prompt. Mann–Whitney U tests compare those values, with Holm adjustment
+shared across prompts. Composition uses the session-mean relative abundance of one taxon in one
+sample on the original-table scale. An abundance table is kept as stored,
+and a count table is converted per sample before name filtering. Pairs
+whose abundance is at least 5% in every prompt are kept. Mann–Whitney U tests compare those values, with Holm adjustment
 within each task.
 """
 
@@ -165,7 +166,7 @@ def _draw_panels(
             ha="right" if horizontal else "center",
             va="center" if horizontal else "top",
         )
-        ax.tick_params(axis="x", labelbottom=show_xlabels, length=0, pad=18 if not horizontal else 2)
+        ax.tick_params(axis="x", labelbottom=show_xlabels, length=0, pad=18 if not horizontal else 8)
         ax.set_xlim(-0.55, max(len(present) - 1, 0) + 0.55)
         if len(present) >= 2:
             comp._add_significance_brackets(
