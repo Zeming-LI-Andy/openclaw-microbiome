@@ -65,11 +65,11 @@ Within one model and one prompt, the three sessions are averaged per pair, with 
 
 One composition table is taken from each session.
 
-Genus candidates are text tables whose path contains `genus` and does not contain shotgun, MetaPhlAn, or species. Species candidates contain `species` or `merged_abundance` and do not contain `16s` or `genus`. Differential-abundance, pathway, phylum, class, order, and family tables are not candidates. A candidate also has to look like an abundance table (`relab`, `relative`, `composition`, `count`, `proportion`, or `genus_table`).
+Genus candidates are text tables whose path contains `genus` and does not contain shotgun, MetaPhlAn, or species. Species candidates contain `species` or `merged_abundance` and do not contain `16s` or `genus`. Pathway, phylum, class, order, and family tables are not candidates. A differential-abundance path is not a candidate unless the filename is a species abundance table: it contains both `metaphlan` and `species`, contains `species_samples`, or starts with `species_relab`. Significance, result, p-value, LEfSe, MaAsLin, DESeq, and ANCOM files stay out. Other candidates have to look like an abundance table (`relab`, `relative`, `composition`, `count`, `proportion`, or `genus_table`). Those species-abundance filenames are accepted without that extra token.
 
-The table is turned so that rows are samples. A sample id is recognized only when it matches a cultivar–timepoint–replicate pattern such as `A57-T1-RS1`. At least 30 samples are required. Genus and species names are taken from a `g__` or `s__` label when that label is present, otherwise from the last taxonomy token. The name is lowercased and spaces become underscores. Blank names, `unclassified`, `uncultured`, `incertae_sedis`, and species labels that end in `_sp` or are shorter than five characters are dropped. Strain labels (`t__`) are not species. Duplicate taxon columns are summed. Duplicate sample rows keep the first.
+The table is turned so that rows are samples. A trailing `_profile` is removed first, so a MetaPhlAn column such as `HG70RS3T2_profile` is read as the sample id. A sample id is recognized only when it matches a cultivar–timepoint–replicate pattern such as `A57-T1-RS1`. At least 30 samples are required. Genus and species names are taken from a `g__` or `s__` label when that label is present, otherwise from the last taxonomy token. The name is lowercased and spaces become underscores. Blank names, `unclassified`, `uncultured`, `incertae_sedis`, and species labels that end in `_sp` or are shorter than five characters are dropped. Strain labels (`t__`) are not species. Duplicate taxon columns are summed. Duplicate sample rows keep the first.
 
-A merged table is converted before taxon names are filtered. Non-numeric cells become 0 and negative values are clipped to 0. The whole table is classified once. If the median row sum is at most 1.5, the table is already relative abundance and its values are kept. If the maximum is at most 100 and the median row sum is between 50 and 150, it is a percentage table and is divided by 100. Any other large-sum table is raw counts: each sample is divided by its own row total, including taxa that the name filter will drop. Names are filtered after that conversion. Blank names, and the other names dropped above, leave the table, and the remaining values are not scaled to 1. Zero abundances are dropped.
+A merged table is converted before taxon names are filtered. Non-numeric cells become 0 and negative values are clipped to 0. If the table contains species rows and also a higher rank or `UNKNOWN`, only the species rows are kept before the scale is chosen. Kingdom through genus repeat the same reads. The whole table is classified once. If the median row sum is at most 1.5, the table is already relative abundance and its values are kept. If the maximum is at most 100 and the median row sum is between 50 and 150, it is a percentage table and is divided by 100. Any other large-sum table is raw counts: each sample is divided by its own row total, including taxa that the name filter will drop. Names are filtered after that conversion. Blank names, and the other names dropped above, leave the table, and the remaining values are not scaled to 1. Zero abundances are dropped.
 
 A single-sample file is handled on its own. MetaPhlAn `*_profile.txt` files are the single-sample species source. Each file is one sample. The `UNKNOWN` line is ignored when reading the file's scale, because that line is sometimes a percentage while the clade lines are proportions. A file whose clade values exceed 1.5 and stay at most 100 is divided by 100. A file whose clade values stay at most 1.5 is kept as stored. A file whose clade values exceed 100 is treated as counts and each species is divided by the sum of the species rows in that file. Species that fail the name filter are removed after this conversion, without a second scaling. Files are then placed side by side. Counts from different samples are not added into one denominator.
 
@@ -175,14 +175,28 @@ At Detailed, GLM-Flash’s genus relative abundances sit above both DeepSeek mod
 | Detailed | 97 | 0.212 | 0.223 | 0.215 | GLM-Flash vs DeepSeek-Flash | 4,770 | 0.868 | 1 | n.s. |
 | Detailed | 97 | 0.212 | 0.223 | 0.215 | GLM-Flash vs DeepSeek-Pro | 4,750 | 0.908 | 1 | n.s. |
 | Detailed | 97 | 0.212 | 0.223 | 0.215 | DeepSeek-Flash vs DeepSeek-Pro | 4,677 | 0.945 | 1 | n.s. |
-| Medium | 6 | 0.483 | 0.0708 | 0.185 | GLM-Flash vs DeepSeek-Flash | 36 | 0.00216 | 0.00649 | \*\* |
-| Medium | 6 | 0.483 | 0.0708 | 0.185 | GLM-Flash vs DeepSeek-Pro | 30 | 0.0649 | 0.0649 | n.s. |
-| Medium | 6 | 0.483 | 0.0708 | 0.185 | DeepSeek-Flash vs DeepSeek-Pro | 0 | 0.00216 | 0.00649 | \*\* |
-| Simple | 62 | 0.155 | 0.173 | 0.454 | GLM-Flash vs DeepSeek-Flash | 1,541 | 0.0572 | 0.0572 | n.s. |
-| Simple | 62 | 0.155 | 0.173 | 0.454 | GLM-Flash vs DeepSeek-Pro | 425 | 7.51×10⁻¹⁴ | 2.25×10⁻¹³ | \*\*\* |
-| Simple | 62 | 0.155 | 0.173 | 0.454 | DeepSeek-Flash vs DeepSeek-Pro | 559 | 9.83×10⁻¹² | 1.97×10⁻¹¹ | \*\*\* |
+| Medium | 10 | 0.454 | 0.140 | 0.158 | GLM-Flash vs DeepSeek-Flash | 95 | 7.69×10⁻⁴ | 2.31×10⁻³ | \*\* |
+| Medium | 10 | 0.454 | 0.140 | 0.158 | GLM-Flash vs DeepSeek-Pro | 94 | 1.01×10⁻³ | 2.31×10⁻³ | \*\* |
+| Medium | 10 | 0.454 | 0.140 | 0.158 | DeepSeek-Flash vs DeepSeek-Pro | 50 | 1 | 1 | n.s. |
+| Simple | 68 | 0.158 | 0.392 | 0.392 | GLM-Flash vs DeepSeek-Flash | 899 | 7.86×10⁻¹⁰ | 2.36×10⁻⁹ | \*\*\* |
+| Simple | 68 | 0.158 | 0.392 | 0.392 | GLM-Flash vs DeepSeek-Pro | 899 | 7.86×10⁻¹⁰ | 2.36×10⁻⁹ | \*\*\* |
+| Simple | 68 | 0.158 | 0.392 | 0.392 | DeepSeek-Flash vs DeepSeek-Pro | 2,314 | 0.995 | 0.995 | n.s. |
 
-At Detailed, the three species-abundance distributions are not separated. At Medium, six shared sample–species pairs remain after the 0.05 floor. GLM-Flash’s median is 0.483, DeepSeek-Flash’s is 0.0708, and DeepSeek-Pro’s is 0.185. GLM-Flash vs DeepSeek-Pro stays n.s. At Simple, DeepSeek-Pro’s median (0.454) sits above GLM-Flash (0.155) and DeepSeek-Flash (0.173); GLM-Flash vs DeepSeek-Flash stays n.s.
+At Detailed, the three species-abundance distributions are not separated. At Medium, ten shared sample–species pairs remain after the 0.05 floor. GLM-Flash’s median is 0.454. DeepSeek-Flash (0.140) and DeepSeek-Pro (0.158) are not separated from each other. At Simple, GLM-Flash’s median (0.158) sits below DeepSeek-Flash and DeepSeek-Pro, which share the median 0.392; DeepSeek-Flash vs DeepSeek-Pro is n.s.
+
+### Why the relative-abundance distributions separate
+
+The brackets above compare session means. A genus or species missing from a session that still has the sample is filled with 0 before that mean. The separations come from a few sessions’ annotation and table-building choices. Samples and taxa still come from one experiment.
+
+**16S genus, Detailed.** DeepSeek-Flash replicate 1 and DeepSeek-Pro replicate 1 classified ASVs with a naive Bayes classifier trained on SILVA 138.2 V4 (515F/806R). In both taxonomies the dominant ASV `183d8dd16fc49e01dac209fb9a87f14d` (57,028 reads on A57-T2-RS1) is labeled `g__Paraherbaspirillum`, at confidence about 0.78. *Ralstonia*, *Pseudarthrobacter*, and *Sphingomonas* have no ASVs, so those genera are 0 in that session and pull the three-session mean down. The other two replicates of each model label that ASV as *Ralstonia*. This is the Detailed separation of GLM-Flash from each DeepSeek model, and DeepSeek-Flash’s Detailed-versus-Simple separation. One further DeepSeek-Flash Detailed replicate keeps only the 15 genera with the highest mean abundance, so one genus in the 32-pair intersection is absent from that table and is filled with 0. That single pair does not account for the bracket.
+
+**16S genus, Medium.** DeepSeek-Pro replicate 2 collapsed the ASV table with `asv.groupby(labels.values)`. The taxonomy file is sorted by Feature ID and the ASV table is not, so genus labels were attached by row position. On A57-T2-RS1 the *Ralstonia* count in that table is 1,666 / 111,860 (1.49%). The same ASV joined by Feature ID is 59,200 / 111,860 (52.9%). Replicate 3 of the same model keeps the Feature-ID total. The mean of the scrambled table and the intact table is what sits below GLM-Flash (0.347) and DeepSeek-Flash (0.346). GLM-Flash versus DeepSeek-Flash stays n.s. The same Medium table is why DeepSeek-Pro’s three prompt distributions separate. DeepSeek-Pro Medium replicate 1 also trained a V4 classifier, but that genus table was not the one used here.
+
+**Shotgun species.** GLM-Flash at Medium (all three replicates) and at Simple (replicates 1 and 2) set MetaPhlAn `--bowtie2db` to the index directory `mpa_v31_CHOCOPhlAn_201901`. The other models set `--bowtie2db` to the parent directory `/refdb/metaphlan_databases` and named the index with `--index`. With the index directory, almost no reads match a marker. GLM-Flash Medium replicate 2 turned on `--unknown_estimation` and wrote, for HG64-T1-RS1, `UNKNOWN` = 99.57% and *Stenotrophomonas acidaminiphila* = 0.254% of all reads. Replicates 1 and 3 omitted that flag, so MetaPhlAn rescaled the matched 0.43% to 100% and wrote the same species as 59.25%, in a file of about 10 species. DeepSeek-Flash and DeepSeek-Pro, on the same reads and with the parent directory, wrote about 26 species and 20.40% for this species. The Medium comparison species are inside GLM-Flash’s short list, so its median (0.454) sits above 0.140 and 0.158.
+
+At Simple the compared species are mostly absent from those short files. On A57-T2-RS1, GLM-Flash replicate 1 wrote four species closed to 100%, led by *Streptomyces griseorubiginosus* at 53.23%, and did not write *Ralstonia*. DeepSeek-Pro replicate 1 used the same v31 index and the same reads (`SRR16817052`), with the parent directory, and wrote *Ralstonia solanacearum* at 67.83% and *Streptomyces griseorubiginosus* at 0.22%. GLM-Flash replicates 1 and 2 therefore contribute 0 for *Ralstonia*; replicate 3 contributes the 148-species table at 0.507. The three-session mean is about one third of that full table. Both DeepSeek models have the species in all three runs, and their medians are both 0.392. `--unknown_estimation` changes whether the unmatched reads are written down. The short species list follows the database directory.
+
+GLM-Flash Detailed shotgun used the parent directory and `mpa_v30`. That is why, inside GLM-Flash, the Detailed species median sits below Medium and Simple. DeepSeek-Flash and DeepSeek-Pro shotgun prompt comparisons stay n.s.; those runs used the parent directory.
 
 ---
 
@@ -281,17 +295,17 @@ DeepSeek-Pro’s three prompt distributions are separated: Medium is the low med
 
 | Model | *n* | Detailed median | Medium median | Simple median | Pair | *U* | Raw *P* | Holm *P* | Bracket |
 |---|---:|---:|---:|---:|---|---:|---:|---:|---|
-| DeepSeek-Pro | 107 | 0.190 | 0.190 | 0.190 | Detailed vs Medium | 5,729 | 0.993 | 1 | n.s. |
-| DeepSeek-Pro | 107 | 0.190 | 0.190 | 0.190 | Detailed vs Simple | 5,729 | 0.993 | 1 | n.s. |
-| DeepSeek-Pro | 107 | 0.190 | 0.190 | 0.190 | Medium vs Simple | 5,731.5 | 0.989 | 1 | n.s. |
-| DeepSeek-Flash | 66 | 0.323 | 0.177 | 0.166 | Detailed vs Medium | 3,788 | 2.39×10⁻¹³ | 7.16×10⁻¹³ | \*\*\* |
-| DeepSeek-Flash | 66 | 0.323 | 0.177 | 0.166 | Detailed vs Simple | 3,512 | 1.29×10⁻⁹ | 2.57×10⁻⁹ | \*\*\* |
-| DeepSeek-Flash | 66 | 0.323 | 0.177 | 0.166 | Medium vs Simple | 1,801 | 0.0866 | 0.0866 | n.s. |
+| DeepSeek-Pro | 99 | 0.208 | 0.208 | 0.213 | Detailed vs Medium | 4,900.5 | 1 | 1 | n.s. |
+| DeepSeek-Pro | 99 | 0.208 | 0.208 | 0.213 | Detailed vs Simple | 4,850 | 0.901 | 1 | n.s. |
+| DeepSeek-Pro | 99 | 0.208 | 0.208 | 0.213 | Medium vs Simple | 4,850 | 0.901 | 1 | n.s. |
+| DeepSeek-Flash | 99 | 0.219 | 0.213 | 0.213 | Detailed vs Medium | 4,785 | 0.775 | 1 | n.s. |
+| DeepSeek-Flash | 99 | 0.219 | 0.213 | 0.213 | Detailed vs Simple | 4,785 | 0.775 | 1 | n.s. |
+| DeepSeek-Flash | 99 | 0.219 | 0.213 | 0.213 | Medium vs Simple | 4,900 | 1 | 1 | n.s. |
 | GLM-Flash | 12 | 0.114 | 0.406 | 0.405 | Detailed vs Medium | 12 | 5.92×10⁻⁴ | 1.18×10⁻³ | \*\* |
 | GLM-Flash | 12 | 0.114 | 0.406 | 0.405 | Detailed vs Simple | 9 | 3.08×10⁻⁴ | 9.24×10⁻⁴ | \*\*\* |
 | GLM-Flash | 12 | 0.114 | 0.406 | 0.405 | Medium vs Simple | 73 | 0.977 | 0.977 | n.s. |
 
-DeepSeek-Pro’s three shotgun medians are 0.190. DeepSeek-Flash’s Detailed median (0.323) sits above Medium (0.177) and Simple (0.166); Medium vs Simple is n.s. GLM-Flash has 12 shared pairs: Detailed median 0.114, Medium 0.406, Simple 0.405. Detailed is separated from both other prompts; Medium vs Simple is n.s.
+DeepSeek-Pro’s three shotgun medians are 0.208, 0.208, and 0.213. DeepSeek-Flash’s are 0.219, 0.213, and 0.213. All six of those brackets are n.s. GLM-Flash has 12 shared pairs: Detailed median 0.114, Medium 0.406, Simple 0.405. Detailed is separated from both other prompts; Medium vs Simple is n.s.
 
 ### Differential abundance across Detailed and Medium
 
@@ -334,7 +348,7 @@ All three shotgun brackets are n.s. GLM-Flash’s medians have opposite signs (1
 
 Across models and across prompts, the 16S Shannon distributions (*n* = 60) and the weighted UniFrac distance distributions (*n* = 1,770) are not separated. Every one of those 36 brackets is n.s.
 
-Genus and species relative-abundance distributions do separate in some panels. Between models, 16S genus separates at Detailed (GLM-Flash vs each DeepSeek model) and at Medium (DeepSeek-Pro vs each of the other two). Shotgun species separates at Medium for GLM-Flash vs DeepSeek-Flash and for DeepSeek-Flash vs DeepSeek-Pro, and at Simple for DeepSeek-Pro vs each of the other two. Within models, DeepSeek-Pro 16S genus separates on all three prompt pairs. DeepSeek-Flash 16S genus separates for Detailed vs Simple only. DeepSeek-Flash shotgun species separates for Detailed vs Medium and Detailed vs Simple. GLM-Flash shotgun species separates for Detailed vs Medium and Detailed vs Simple. GLM-Flash’s 16S genus prompt comparison and DeepSeek-Pro’s shotgun species prompt comparison stay n.s. on every pair. 16S genus at Simple, and shotgun species at Detailed, also stay n.s. for every between-model pair.
+Genus and species relative-abundance distributions do separate in some panels. Between models, 16S genus separates at Detailed (GLM-Flash vs each DeepSeek model) and at Medium (DeepSeek-Pro vs each of the other two). Shotgun species separates at Medium and at Simple for GLM-Flash vs each DeepSeek model. DeepSeek-Flash vs DeepSeek-Pro stays n.s. at both of those prompts. Within models, DeepSeek-Pro 16S genus separates on all three prompt pairs. DeepSeek-Flash 16S genus separates for Detailed vs Simple only. GLM-Flash shotgun species separates for Detailed vs Medium and Detailed vs Simple. GLM-Flash’s 16S genus prompt comparison, DeepSeek-Flash’s shotgun species prompt comparison, and DeepSeek-Pro’s shotgun species prompt comparison stay n.s. on every pair. 16S genus at Simple, and shotgun species at Detailed, also stay n.s. for every between-model pair. The sessions behind the abundance separations are under “Why the relative-abundance distributions separate”: a SILVA 138.2 V4 classifier, one 16S genus table collapsed by row position, and MetaPhlAn runs whose database directory was the index folder, with `--unknown_estimation` present or absent.
 
 Where all three models ran DESeq2, the log2 fold-change distributions are not separated: 216 genera at Detailed, 332 genera at Medium, and 43 species at shotgun Detailed. Within a model, Detailed vs Medium separates only DeepSeek-Pro’s 16S DESeq2 comparison (111 genera, *P* = 0.0141). The other five within-model differential-abundance comparisons are n.s., including all three shotgun comparisons, whose methods and taxon counts differ by model (14, 39, and 9).
 

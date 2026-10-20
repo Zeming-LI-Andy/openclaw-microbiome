@@ -46,9 +46,12 @@ P_FLOOR = 1e-300
 
 
 def canon_sample(value: object) -> str:
-    text = str(value).upper().split("_SRR")[0]
-    text = "".join(ch for ch in text if ch.isalnum())
     import re
+
+    text = str(value).strip()
+    text = re.sub(r"(?i)(_profile)+$", "", text)
+    text = text.upper().split("_SRR")[0]
+    text = "".join(ch for ch in text if ch.isalnum())
 
     match = re.match(r"([A-Z]+\d*)T(\dC?)RS(\d+)$", text)
     if match:
@@ -145,6 +148,42 @@ def as_relative_abundance(matrix: pd.DataFrame) -> pd.DataFrame:
     return numeric.div(sums.where(sums > 0), axis=0).fillna(0.0)
 
 
+def _species_abundance_name(name: str) -> bool:
+    """A species composition table, including one saved beside a DA script."""
+    lowered = name.lower()
+    if any(token in lowered for token in ("sig", "result", "pval", "padj", "lefse", "maaslin", "deseq", "ancom")):
+        return False
+    if "metaphlan" in lowered and "species" in lowered:
+        return True
+    return "species_samples" in lowered or lowered.startswith("species_relab")
+
+
+def _species_rows_only(matrix: pd.DataFrame) -> pd.DataFrame:
+    """Use species rows when a MetaPhlAn merge also stores higher ranks.
+
+    Kingdom through genus repeat the same reads. The scale decision has to
+    see the species values themselves.
+    """
+    import re
+
+    species_flags = []
+    saw_species = False
+    saw_other_rank = False
+    for name in matrix.columns:
+        text = str(name)
+        is_species = bool(re.search(r"(^|[|;])s__", text)) and not bool(re.search(r"(^|[|;])t__", text))
+        is_other = text.strip().upper() in {"UNKNOWN", "UNCLASSIFIED"} or (
+            bool(re.search(r"(^|[|;])[dkpcofg]__", text)) and "s__" not in text.lower()
+        )
+        species_flags.append(is_species)
+        saw_species = saw_species or is_species
+        saw_other_rank = saw_other_rank or is_other
+    if not (saw_species and saw_other_rank):
+        return matrix
+    kept = [column for column, flag in zip(matrix.columns, species_flags) if flag]
+    return matrix.loc[:, kept]
+
+
 def orient_abundance(frame: pd.DataFrame, kind: str) -> pd.DataFrame | None:
     cleaner = clean_genus if kind == "genus" else clean_species
     working = frame.copy()
@@ -172,6 +211,10 @@ def orient_abundance(frame: pd.DataFrame, kind: str) -> pd.DataFrame | None:
         return None
     renamed.index = renamed.index.astype(str)
     renamed = renamed[~renamed.index.duplicated(keep="first")]
+    if kind == "species":
+        renamed = _species_rows_only(renamed)
+        if renamed.shape[1] < 1:
+            return None
     proportions = as_relative_abundance(renamed)
     proportions.columns = [cleaner(col) or "__other__" for col in proportions.columns]
     proportions = proportions.groupby(proportions.columns, axis=1).sum()
@@ -190,7 +233,8 @@ def composition_candidates(analysis: Path, kind: str) -> list[Path]:
         rel = str(path.relative_to(analysis)).lower()
         if any(bad in rel for bad in ("deseq", "maaslin", "lefse", "ancom", "significant", "pathway", "by_cultivar", "by_timepoint", "/features/", "phylum", "class", "order", "family")):
             continue
-        if "diff" in rel and not any(token in path.name.lower() for token in ("count", "relab", "composition", "abundance", "proportion", "genus_table")):
+        species_table = kind == "species" and _species_abundance_name(path.name)
+        if "diff" in rel and not species_table and not any(token in path.name.lower() for token in ("count", "relab", "composition", "abundance", "proportion", "genus_table")):
             continue
         if kind == "genus":
             if any(bad in rel for bad in ("shotgun", "metaphlan", "species")):
@@ -202,7 +246,7 @@ def composition_candidates(analysis: Path, kind: str) -> list[Path]:
                 continue
             if "species" not in rel and "merged_abundance" not in rel:
                 continue
-        if not any(key in rel for key in ("relab", "relative", "relabund", "composition", "count", "merged_abundance", "proportion", "genus_table")):
+        if not species_table and not any(key in rel for key in ("relab", "relative", "relabund", "composition", "count", "merged_abundance", "proportion", "genus_table")):
             continue
         found.append(path)
     return found

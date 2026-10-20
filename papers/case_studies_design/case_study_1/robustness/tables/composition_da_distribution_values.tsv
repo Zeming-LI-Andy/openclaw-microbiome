@@ -289,103 +289,103 @@ session	replicate	level	model	task	unit	value	source
 		detailed	deepseek-flash	shotgun_composition	HG70-T2C-RS3|mitsuaria_sp_pdc51	0.0725766382747189	
 		detailed	deepseek-flash	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.2806874828109974	
 		detailed	deepseek-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.10490378372271865	
-		detailed	deepseek-pro	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.8019380602267311	
-		detailed	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_hwn_4	0.06329990035232276	
-		detailed	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.7931643352046106	
-		detailed	deepseek-pro	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.6494123726614868	
-		detailed	deepseek-pro	shotgun_composition	A57-T1-RS3|sorangium_cellulosum	0.12138105290307956	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.4784893333333333	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.5071502666666666	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|paraburkholderia_soli	0.07881312541050821	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.45047160319339724	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.42659951072354785	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.4739199333333333	
-		detailed	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.5049601333333332	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS1|mitsuaria_sp_pdc51	0.0661196612198366	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.6634189676323624	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.18992026666666664	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.4577313333333333	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.2181887273072731	
-		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.5423796746180795	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|comamonas_testosteroni	0.06266102661879858	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.16507251741618914	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|lysobacter_soli	0.07058390582117463	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.4493850272681514	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.44556476292607483	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.2026083826270141	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|cloacibacterium_normanense	0.05268775770175632	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|comamonas_aquatica	0.06080026400202665	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|lysobacter_soli	0.11069856433702328	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|mitsuaria_sp_pdc51	0.09487761706982929	
-		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.2918694271097289	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.4607375333333333	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.5290924	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.4672038906822402	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.5192291307839745	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.45401313333333343	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.5393299333333332	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|cystobacter_fuscus	0.05427255243514231	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.2763989453425466	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|mitsuaria_sp_pdc51	0.13756754143791894	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.5820242067527343	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.36525098251217486	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|mitsuaria_sp_pdc51	0.0864378452028813	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.1651383162055046	
-		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.07601934660253397	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.19937879999999997	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|lysobacter_soli	0.0542068	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.1751492	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.20396813333333333	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|flavobacterium_suncheonense	0.06257260856875235	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|lysobacter_soli	0.11508931697050302	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|mitsuaria_sp_pdc51	0.14195000650473172	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.1690578302056354	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.2153305844405111	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|devosia_sp_h5989	0.10565745792301641	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|lysobacter_soli	0.10521666378944843	
-		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.20813622491100356	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.4763546365429037	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.5065260681852878	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.477124438009807	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.4653371201062699	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.45426198088180886	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.48847269491628253	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.31113268189927595	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.2790966546821873	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|paraburkholderia_soli	0.06419032256756936	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.6228374666666666	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|paraburkholderia_soli	0.0694618	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08372206666666666	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.5590344602745388	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|paraburkholderia_soli	0.0634795565417975	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.0635299568751375	
-		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|pseudomonas_putida_group	0.08963893094528556	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|lysobacter_soli	0.12274259087075795	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.15794660683859826	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.2810065966427002	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.18846117180628194	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.3892917333333334	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|mitsuaria_sp_pdc51	0.14359033333333335	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|sorangium_cellulosum	0.05182973333333333	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|lysobacter_soli	0.1358435194711947	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.45762239208192085	
-		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.1639234797387974	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.45345853333333336	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.5179216	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.42809447939041223	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.5460963594061452	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.46752882511558447	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.5135744452504526	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|lysobacter_soli	0.09587645498446729	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.5783920883084677	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.07286736177219579	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|mitsuaria_sp_pdc51	0.126751088350233	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.36637682418218304	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.3659750268487964	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|lysobacter_soli	0.08218926666666666	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|mitsuaria_sp_pdc51	0.10167880000000001	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.40779946666666667	
-		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.1510796666666667	
+		detailed	deepseek-pro	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.8019411	
+		detailed	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_hwn_4	0.06330079999999999	
+		detailed	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.7931734	
+		detailed	deepseek-pro	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.6494183	
+		detailed	deepseek-pro	shotgun_composition	A57-T1-RS3|sorangium_cellulosum	0.12138339999999999	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.478489	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.5071504	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|paraburkholderia_soli	0.07881389999999999	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.45046790000000003	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.426595	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.4739199	
+		detailed	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.5049602	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS1|mitsuaria_sp_pdc51	0.0661185	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.6634135000000001	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.1899204	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.457732	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.218187	
+		detailed	deepseek-pro	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.5423768	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|comamonas_testosteroni	0.06266060000000001	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.1650713	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|lysobacter_soli	0.0705848	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.44938079999999997	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.44556660000000003	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.20260960000000003	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|cloacibacterium_normanense	0.0526869	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|comamonas_aquatica	0.060800700000000006	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|lysobacter_soli	0.11069839999999999	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|mitsuaria_sp_pdc51	0.0948769	
+		detailed	deepseek-pro	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.2918706	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.4607363	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.5290935999999999	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.46720350000000005	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.5192261	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.45401470000000005	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.5393298999999999	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|cystobacter_fuscus	0.0542741	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.27639980000000003	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS1|mitsuaria_sp_pdc51	0.137567	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.5820234	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.36525329999999995	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|mitsuaria_sp_pdc51	0.0864372	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.1651383	
+		detailed	deepseek-pro	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.0760194	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.19937819999999998	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|lysobacter_soli	0.05420519999999999	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.17514880000000002	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.2039672	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|flavobacterium_suncheonense	0.06257360000000001	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|lysobacter_soli	0.1150884	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|mitsuaria_sp_pdc51	0.1419493	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.1690559	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.2153298	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|devosia_sp_h5989	0.1056583	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|lysobacter_soli	0.10521710000000001	
+		detailed	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.20813849999999998	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.47635910000000004	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.5065317	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.4771195	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.46533369999999996	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.4542607	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.4884716	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.3111278	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.2790944	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS1|paraburkholderia_soli	0.0641892	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.6228362	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|paraburkholderia_soli	0.0694627	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08372310000000001	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.5590311	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|paraburkholderia_soli	0.0634787	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.0635293	
+		detailed	deepseek-pro	shotgun_composition	HG64-T2C-RS3|pseudomonas_putida_group	0.0896375	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|lysobacter_soli	0.12274449999999999	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.1579457	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.2810063	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.1884627	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.38929259999999993	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|mitsuaria_sp_pdc51	0.1435905	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS2|sorangium_cellulosum	0.051829599999999997	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|lysobacter_soli	0.1358446	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.4576213	
+		detailed	deepseek-pro	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.1639244	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.45345779999999997	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.5179224	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.42809600000000003	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.5461	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.4675259	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.5135741	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|lysobacter_soli	0.09587659999999999	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.5783997	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.0728675	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|mitsuaria_sp_pdc51	0.1267529	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.3663789	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.3659762	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|lysobacter_soli	0.0821889	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|mitsuaria_sp_pdc51	0.10167820000000001	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.4077992	
+		detailed	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.1510795	
 		detailed	glm-flash	16s_da	1959-1	-2.8199204447911623	
 		detailed	glm-flash	16s_da	abditibacterium	0.2385742098481005	
 		detailed	glm-flash	16s_da	achromobacter	0.4437644996870162	
@@ -1836,23 +1836,35 @@ session	replicate	level	model	task	unit	value	source
 		medium	deepseek-pro	16s_composition	HG70-T3-RS2|ralstonia	0.35266928323743474	
 		medium	deepseek-pro	16s_composition	HG70-T3-RS3|ralstonia	0.29888485964450795	
 		medium	glm-flash	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.14354957052998282	
+		medium	glm-flash	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.2471794010393771	
 		medium	glm-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.4797148404980578	
 		medium	glm-flash	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.4281777765753611	
 		medium	glm-flash	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.5463286131197437	
+		medium	glm-flash	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.3564285542179484	
+		medium	glm-flash	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.2580156971985675	
 		medium	glm-flash	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.672465844642677	
+		medium	glm-flash	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.4843132285437055	
 		medium	glm-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.48543015725855465	
-		medium	deepseek-flash	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.06295192592309136	
-		medium	deepseek-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.07855862236682828	
-		medium	deepseek-flash	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.08267812136915569	
-		medium	deepseek-flash	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.08110114431977762	
-		medium	deepseek-flash	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.06287394958700147	
-		medium	deepseek-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.05794589638272508	
-		medium	deepseek-pro	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.16513830550461053	
-		medium	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.203967193201094	
+		medium	deepseek-flash	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.12503399850582017	
+		medium	deepseek-flash	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.07640803076049031	
+		medium	deepseek-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.1921131445603356	
+		medium	deepseek-flash	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.21526622616203075	
+		medium	deepseek-flash	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.2133766925382308	
+		medium	deepseek-flash	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08420509432206114	
+		medium	deepseek-flash	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.06313466666666666	
+		medium	deepseek-flash	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.17001363333333333	
+		medium	deepseek-flash	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.0748365692924903	
+		medium	deepseek-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.154705	
+		medium	deepseek-pro	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.1651383	
+		medium	deepseek-pro	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.0760194	
+		medium	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.2039672	
 		medium	deepseek-pro	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.2153298	
-		medium	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.20813852775181108	
+		medium	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.20813849999999998	
+		medium	deepseek-pro	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08372310000000001	
+		medium	deepseek-pro	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.0635293	
 		medium	deepseek-pro	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.1639244	
-		medium	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.15107951510795456	
+		medium	deepseek-pro	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.0728675	
+		medium	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.1510795	
 		medium	glm-flash	16s_da	abditibacterium	0.09863938207753546	
 		medium	glm-flash	16s_da	achromobacter	0.6175356508152725	
 		medium	glm-flash	16s_da	acidibacter	-0.45161056453008097	
@@ -3029,6 +3041,7 @@ session	replicate	level	model	task	unit	value	source
 		simple	glm-flash	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.2673137	
 		simple	glm-flash	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.26439113333333336	
 		simple	glm-flash	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.21647276666666668	
+		simple	glm-flash	shotgun_composition	A57-T1-RS3|streptomyces_griseorubiginosus	0.37629456666666666	
 		simple	glm-flash	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.15949633333333332	
 		simple	glm-flash	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.16905013333333332	
 		simple	glm-flash	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.15015596666666667	
@@ -3038,6 +3051,7 @@ session	replicate	level	model	task	unit	value	source
 		simple	glm-flash	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.22113783333333337	
 		simple	glm-flash	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.0633068	
 		simple	glm-flash	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.15257733333333334	
+		simple	glm-flash	shotgun_composition	A57-T2C-RS2|parafilimonas_terrae	0.29525500000000005	
 		simple	glm-flash	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.072729	
 		simple	glm-flash	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.18079226666666667	
 		simple	glm-flash	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.05502376666666667	
@@ -3054,6 +3068,8 @@ session	replicate	level	model	task	unit	value	source
 		simple	glm-flash	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.09213326666666667	
 		simple	glm-flash	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.19400779999999998	
 		simple	glm-flash	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.12175109999999999	
+		simple	glm-flash	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.19309623333333334	
+		simple	glm-flash	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.2630496666666667	
 		simple	glm-flash	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.06645939999999999	
 		simple	glm-flash	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.05838293333333334	
 		simple	glm-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.4629960666666666	
@@ -3071,6 +3087,7 @@ session	replicate	level	model	task	unit	value	source
 		simple	glm-flash	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.20761206666666665	
 		simple	glm-flash	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.3504811666666667	
 		simple	glm-flash	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.1863437	
+		simple	glm-flash	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.2586021666666667	
 		simple	glm-flash	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.05264856666666667	
 		simple	glm-flash	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.09366876666666667	
 		simple	glm-flash	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.0628209	
@@ -3084,134 +3101,147 @@ session	replicate	level	model	task	unit	value	source
 		simple	glm-flash	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.15584196666666666	
 		simple	glm-flash	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.17119136666666668	
 		simple	glm-flash	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.1927999	
+		simple	glm-flash	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.4801613666666667	
 		simple	glm-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.12212630000000001	
 		simple	glm-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.12199206666666666	
 		simple	glm-flash	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.13593306666666666	
 		simple	glm-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.5154935666666667	
-		simple	deepseek-flash	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.2921088841697575	
-		simple	deepseek-flash	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.29740111073449355	
-		simple	deepseek-flash	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.4478262851574664	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.18681370232492708	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.3174370501797394	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.11373077147981762	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.25597320486280134	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.16614297122939034	
-		simple	deepseek-flash	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.2918466816261344	
-		simple	deepseek-flash	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.25908090944463613	
-		simple	deepseek-flash	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.07188655331305599	
-		simple	deepseek-flash	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.17343010785808485	
-		simple	deepseek-flash	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.08493363362370637	
-		simple	deepseek-flash	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.2113063463653012	
-		simple	deepseek-flash	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.05884798381818504	
-		simple	deepseek-flash	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.17319755914857113	
-		simple	deepseek-flash	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.2677963676633681	
-		simple	deepseek-flash	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.11798548591210273	
-		simple	deepseek-flash	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.1557023943825606	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.1655418102744442	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.30991734058773684	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.1411516058478323	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.34331855776598225	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.18899558980934517	
-		simple	deepseek-flash	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.3557166872771187	
-		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.13339185250459493	
-		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.3381977497332755	
-		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.18701162237183178	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.15848143907973547	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.16518527695475702	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.1523774362305926	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.11781619813291609	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.14289834766406442	
-		simple	deepseek-flash	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.07853143572713886	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.11231719456731325	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.31402347777277134	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.11630728678136472	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.2722921800028247	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.11494975483980331	
-		simple	deepseek-flash	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.24689861805421273	
-		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.1794899074226736	
-		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.16100983873847713	
-		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.4606855240689686	
-		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.061926404003558415	
-		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.35791776995552554	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.10585245852082609	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.18349334660402108	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.12649911909995434	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.19831951506556575	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.27668952689391085	
-		simple	deepseek-flash	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.10134675695243099	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.1356414891471376	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.27277738914712674	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.09432327534917335	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.31267367693813214	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.164119803502685	
-		simple	deepseek-flash	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.2897073021943476	
-		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.36841725518502105	
-		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.06260430022777538	
-		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.1643555161257596	
-		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.2513644576622103	
-		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.09357350226094203	
-		simple	deepseek-pro	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.8019411	
-		simple	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.7931734	
-		simple	deepseek-pro	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.6494183	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.478489	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.5071504	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.45046790000000003	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.426595	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.4739199	
-		simple	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.5049602	
-		simple	deepseek-pro	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.6634135000000001	
-		simple	deepseek-pro	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.1899204	
-		simple	deepseek-pro	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.457732	
-		simple	deepseek-pro	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.218187	
-		simple	deepseek-pro	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.5423768	
-		simple	deepseek-pro	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.1650713	
-		simple	deepseek-pro	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.44938079999999997	
-		simple	deepseek-pro	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.44556660000000003	
-		simple	deepseek-pro	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.2026096	
-		simple	deepseek-pro	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.2918706	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.4607363	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.5290935999999999	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.46720350000000005	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.5192261	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.45401470000000005	
-		simple	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.5393298999999999	
-		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.27639980000000003	
-		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.5820234	
-		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.36525329999999995	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.19937819999999998	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.17514880000000002	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.2039672	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.1690559	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.2153298	
-		simple	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.20813849999999998	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.47635910000000004	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.5065317	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.47711950000000003	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.46533369999999996	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.4542607	
-		simple	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.4884716	
-		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.3111278	
-		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.2790944	
-		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.6228362	
-		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08372310000000001	
-		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.5590311	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.1579457	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.2810063	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.1884627	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.3892926	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.4576213	
-		simple	deepseek-pro	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.1639244	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.45345779999999997	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.5179224	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.42809600000000003	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.5461	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.4675259	
-		simple	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.5135741	
-		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.5783997	
-		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.3663789	
-		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.3659762	
-		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.4077992	
-		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.1510795	
+		simple	deepseek-flash	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.80993276477479	
+		simple	deepseek-flash	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.8063370506638382	
+		simple	deepseek-flash	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.6639747245587376	
+		simple	deepseek-flash	shotgun_composition	A57-T1-RS3|streptomyces_griseorubiginosus	0.05164019215207986	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.41961584525196144	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.5641839971446699	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.3630471097897014	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.49207682809834125	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.4177639141733513	
+		simple	deepseek-flash	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.5599480246445877	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.6923829499525583	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.19586058443092128	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.47222308223915577	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS2|parafilimonas_terrae	0.05132439386762716	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.22701338862137735	
+		simple	deepseek-flash	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.5644931212896588	
+		simple	deepseek-flash	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.16683434863278326	
+		simple	deepseek-flash	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.4671735501868437	
+		simple	deepseek-flash	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.46424020020465334	
+		simple	deepseek-flash	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.20731311130784993	
+		simple	deepseek-flash	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.3016083418268781	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.4045537873225919	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.5843904120160611	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.37803502016857154	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.606578681828498	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.3939816859969189	
+		simple	deepseek-flash	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.5992223067168295	
+		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.29664567864796304	
+		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.647612930615812	
+		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.38867565428801193	
+		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.12503401056227934	
+		simple	deepseek-flash	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.0764080985586517	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.19732320960793825	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.1993068082851135	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.19211321064163675	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.17463242620258954	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.21526628647600277	
+		simple	deepseek-flash	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.21337676074764259	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.37917461824875914	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.5977836588525135	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.3873922790123571	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.5366808341016802	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.38940063583255463	
+		simple	deepseek-flash	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.5420187131008211	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.31620223229101824	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.28364640249695744	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.6264217636784587	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08420505730349391	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.5555585853999875	
+		simple	deepseek-flash	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.0631346674313734	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.16385097221930586	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.28668037695628207	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.1957036399422595	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.4271159169429226	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.4683838916520299	
+		simple	deepseek-flash	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.17001354262511667	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.39726029640470867	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.5715885255747692	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.3413950990376486	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.6278504665280286	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.41446161500854833	
+		simple	deepseek-flash	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.5647061215891519	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.5934283740743275	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.07483652617692367	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.29402979161092396	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.3955266395707437	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.41637302987416597	
+		simple	deepseek-flash	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.15470509002643096	
+		simple	deepseek-pro	shotgun_composition	A57-T1-RS1|mitsuaria_sp_pdc51	0.8099328666666666	
+		simple	deepseek-pro	shotgun_composition	A57-T1-RS2|mitsuaria_sp_pdc51	0.8063369000000001	
+		simple	deepseek-pro	shotgun_composition	A57-T1-RS3|lysobacter_soli	0.6639748	
+		simple	deepseek-pro	shotgun_composition	A57-T1-RS3|streptomyces_griseorubiginosus	0.051640200000000004	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_pseudosolanacearum	0.41961586666666667	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS1|ralstonia_solanacearum	0.5641838666666666	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_pseudosolanacearum	0.3630470333333333	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS2|ralstonia_solanacearum	0.49207696666666667	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_pseudosolanacearum	0.41776406666666666	
+		simple	deepseek-pro	shotgun_composition	A57-T2-RS3|ralstonia_solanacearum	0.559948	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS1|paraburkholderia_soli	0.6923828666666667	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS2|mitsuaria_sp_pdc51	0.19586063333333334	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS2|paraburkholderia_soli	0.47222326666666664	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS2|parafilimonas_terrae	0.0513244	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS3|mitsuaria_sp_pdc51	0.22701333333333332	
+		simple	deepseek-pro	shotgun_composition	A57-T2C-RS3|paraburkholderia_soli	0.5644931	
+		simple	deepseek-pro	shotgun_composition	HF12-T1-RS1|flavobacterium_johnsoniae	0.16683443333333334	
+		simple	deepseek-pro	shotgun_composition	HF12-T1-RS1|pseudomonas_putida_group	0.4671735333333333	
+		simple	deepseek-pro	shotgun_composition	HF12-T1-RS2|lysobacter_soli	0.4642402333333333	
+		simple	deepseek-pro	shotgun_composition	HF12-T1-RS2|pseudomonas_putida_group	0.20731303333333337	
+		simple	deepseek-pro	shotgun_composition	HF12-T1-RS3|pseudomonas_putida_group	0.3016082	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_pseudosolanacearum	0.40455386666666665	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS1|ralstonia_solanacearum	0.5843906	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_pseudosolanacearum	0.3780351	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS2|ralstonia_solanacearum	0.6065786333333333	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_pseudosolanacearum	0.39398150000000004	
+		simple	deepseek-pro	shotgun_composition	HF12-T2-RS3|ralstonia_solanacearum	0.5992225999999999	
+		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS1|lysobacter_soli	0.29664566666666675	
+		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS2|lysobacter_soli	0.6476129666666667	
+		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS3|lysobacter_soli	0.38867566666666664	
+		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS3|sphingopyxis_terrae	0.12503399999999998	
+		simple	deepseek-pro	shotgun_composition	HF12-T2C-RS3|streptomyces_griseorubiginosus	0.07640803333333333	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|flavobacterium_suncheonense	0.19732316666666663	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|pseudomonas_putida_group	0.19930686666666667	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS1|stenotrophomonas_acidaminiphila	0.19211313333333332	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS2|pseudomonas_putida_group	0.17463240000000002	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS2|stenotrophomonas_acidaminiphila	0.2152662333333333	
+		simple	deepseek-pro	shotgun_composition	HG64-T1-RS3|stenotrophomonas_acidaminiphila	0.21337669999999997	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_pseudosolanacearum	0.37917476666666666	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS1|ralstonia_solanacearum	0.5977836	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_pseudosolanacearum	0.3873921666666667	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS2|ralstonia_solanacearum	0.5366808999999999	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_pseudosolanacearum	0.38940066666666673	
+		simple	deepseek-pro	shotgun_composition	HG64-T2-RS3|ralstonia_solanacearum	0.5420186	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS1|lysobacter_soli	0.3162022666666667	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS1|mitsuaria_sp_pdc51	0.2836464	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS2|mitsuaria_sp_pdc51	0.6264218	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS2|parafilimonas_terrae	0.08420509999999999	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS3|mitsuaria_sp_pdc51	0.5555587000000001	
+		simple	deepseek-pro	shotgun_composition	HG64-T2C-RS3|parafilimonas_terrae	0.06313466666666667	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|mitsuaria_sp_pdc51	0.16385106666666663	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|pandoraea_pnomenusa	0.2866803	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS1|paraburkholderia_soli	0.19570363333333332	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS2|lysobacter_soli	0.4271159	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS3|mitsuaria_sp_pdc51	0.4683838333333334	
+		simple	deepseek-pro	shotgun_composition	HG70-T1-RS3|streptomyces_griseorubiginosus	0.17001363333333333	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_pseudosolanacearum	0.39726029999999996	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS1|ralstonia_solanacearum	0.5715884333333333	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_pseudosolanacearum	0.3413949333333333	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS2|ralstonia_solanacearum	0.6278506666666667	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_pseudosolanacearum	0.41446160000000004	
+		simple	deepseek-pro	shotgun_composition	HG70-T2-RS3|ralstonia_solanacearum	0.5647061666666667	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS1|mitsuaria_sp_pdc51	0.5934282	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS1|streptomyces_griseorubiginosus	0.07483656666666667	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_pseudosolanacearum	0.2940297666666667	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS2|ralstonia_solanacearum	0.39552676666666664	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS3|paraburkholderia_soli	0.4163728666666666	
+		simple	deepseek-pro	shotgun_composition	HG70-T2C-RS3|streptomyces_griseorubiginosus	0.154705	
 		simple	deepseek-flash	16s_da	[polyangium]_brachysporum_group	0.6159439354422656	
 		simple	deepseek-flash	16s_da	abditibacterium	0.24060853349835748	
 		simple	deepseek-flash	16s_da	achromobacter	0.628544565684776	
