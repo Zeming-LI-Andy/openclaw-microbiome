@@ -7,7 +7,8 @@ is used as stored. A count table is converted once, per sample, before
 taxon names are filtered. A taxon missing from a session that has the
 sample enters the average as 0. A sample–taxon pair is kept only when that
 session-mean relative abundance is at least 5% in every compared group.
-Differential-abundance value: raw log2FC for taxa shared across models.
+Differential-abundance value: one log2FC per taxon, focal cultivar, and
+timepoint. Susceptible controls in one session are averaged first.
 Coefficients and LDA scores are not used.
 """
 
@@ -524,59 +525,330 @@ def resistance_mask(frame: pd.DataFrame, path: Path) -> pd.Series:
     return keep
 
 
-def parse_lfc_table(path: Path) -> pd.DataFrame | None:
-    frame = read_table(path)
+def _canon_time(value: object) -> str:
+    import re
+
+    raw = re.sub(r"[^A-Z0-9]", "", str(value).upper())
+    return {"T1": "T1", "1": "T1", "T2": "T2", "2": "T2", "T2C": "T2C", "2C": "T2C", "T3": "T3", "3": "T3", "T3C": "T3C", "3C": "T3C"}.get(raw, "")
+
+
+def _find_time(text: object) -> str:
+    import re
+
+    upper = str(text).upper()
+    for pattern, canon in (("T3C", "T3C"), ("T2C", "T2C"), ("3C", "T3C"), ("2C", "T2C"), ("T1", "T1"), ("T2", "T2"), ("T3", "T3")):
+        if re.search(rf"(^|[^A-Z0-9]){pattern}([^A-Z0-9]|$)", upper):
+            return canon
+    return ""
+
+
+def _find_cultivar(text: object) -> str:
+    upper = str(text).upper()
+    for name in ("HF12", "HG64", "HG70", "A57"):
+        if name in upper:
+            return name
+    if "SUSCEPT" in upper or "CONTROL" in upper:
+        return "Sus"
+    return ""
+
+
+def _parse_comparison(text: object) -> tuple[str, str, str]:
+    import re
+
+    raw = str(text)
+    match = re.search(
+        r"(HF12|HG64|HG70)\s*[_\- ]?\s*vs\s*[_\- ]?\s*(A57|HG70|susceptible(?:_controls)?|sus|control)",
+        raw,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        focal = match.group(1).upper()
+        control_token = match.group(2).lower()
+        control = {"a57": "A57", "hg70": "HG70"}.get(control_token, "Sus")
+        return focal, control, _find_time(raw)
+    if re.fullmatch(r"HF12|HG64|HG70", raw.strip(), flags=re.IGNORECASE):
+        return raw.strip().upper(), "", ""
+    return "", "", ""
+
+
+def _maaslin_abundance_frame(path: Path) -> pd.DataFrame | None:
+    """Read MaAsLin abundance rows when a compiled table dropped the model column."""
+    if path.name != "daa_master.tsv":
+        return None
+    frames = []
+    for item in sorted((path.parent.parent / "daa").glob("*/all_results.tsv")):
+        frame = read_table(item)
+        if frame is None:
+            continue
+        mapping = column_lookup(frame)
+        if "model" not in mapping or "coef" not in mapping:
+            continue
+        model = frame[mapping["model"]].fillna("").astype(str).str.lower()
+        kept = frame.loc[model.str.contains("abund")].copy()
+        coef = pd.to_numeric(kept[mapping["coef"]], errors="coerce")
+        kept = kept.loc[np.isfinite(coef.to_numpy(dtype=float))].copy()
+        if "timepoint" not in column_lookup(kept):
+            kept["timepoint"] = item.parent.name
+        frames.append(kept)
+    if not frames:
+        return None
+    return pd.concat(frames, ignore_index=True)
+
+
+def _effect_pieces(frame: pd.DataFrame) -> list[pd.DataFrame]:
+    mapping = column_lookup(frame)
+    paired = []
+    for key, original in mapping.items():
+        if key == "lfcvsa57":
+            paired.append((original, "A57"))
+        elif key == "lfcvshg70":
+            paired.append((original, "HG70"))
+        elif key == "lfcvssus":
+            paired.append((original, "Sus"))
+    if paired:
+        pieces = []
+        for column, control in paired:
+            part = frame.copy()
+            part["log2fc"] = pd.to_numeric(part[column], errors="coerce")
+            part["control_fixed"] = control
+            pieces.append(part)
+        return pieces
+    column = None
+    for key in ("log2foldchange", "log2fc", "log2fcapprox", "coef"):
+        if key in mapping:
+            column = mapping[key]
+            break
+    if column is None:
+        for key, original in mapping.items():
+            if "se" in key or "stderr" in key or "pvalue" in key or "padj" in key:
+                continue
+            if key.startswith("log2fc") or key.startswith("log2fold") or key == "lfc":
+                column = original
+                break
+    if column is None:
+        return []
+    part = frame.copy()
+    part["log2fc"] = pd.to_numeric(part[column], errors="coerce")
+    part["control_fixed"] = ""
+    return [part]
+
+
+def _contrast_id(frame: pd.DataFrame, path: Path) -> pd.Series:
+    mapping = column_lookup(frame)
+    focal = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    control = frame["control_fixed"].astype(str) if "control_fixed" in frame.columns else pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    timepoint = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    if "comparison" in mapping:
+        parsed = frame[mapping["comparison"]].map(_parse_comparison)
+        focal = parsed.map(lambda item: item[0])
+        control = control.where(control.str.len() > 0, parsed.map(lambda item: item[1]))
+        timepoint = parsed.map(lambda item: item[2])
+    for key in ("focal", "focalcultivar", "resistant", "value"):
+        if key in mapping:
+            found = frame[mapping[key]].map(_find_cultivar)
+            focal = focal.where(focal.str.len() > 0, found)
+    if "control" in mapping:
+        found = frame[mapping["control"]].map(_find_cultivar)
+        control = control.where(control.str.len() > 0, found)
+    if "timepoint" in mapping:
+        found = frame[mapping["timepoint"]].map(_canon_time)
+        timepoint = timepoint.where(timepoint.str.len() > 0, found)
+    file_focal, file_control, file_time = _parse_comparison(path.name)
+    if not file_focal:
+        file_focal = _find_cultivar(path.name) if _find_cultivar(path.name) in {"HF12", "HG64"} else ""
+    if not file_time:
+        file_time = _find_time(path.name)
+    if not file_control and ("control" in path.name.lower() or "suscept" in path.name.lower()):
+        file_control = "Sus"
+    focal = focal.where(focal.str.len() > 0, file_focal)
+    control = control.where(control.str.len() > 0, file_control)
+    timepoint = timepoint.where(timepoint.str.len() > 0, file_time)
+    pooled = pd.Series(False, index=frame.index)
+    if "enrichedin" in mapping and frame[mapping["enrichedin"]].astype(str).str.contains("suscept", case=False).any():
+        pooled = pooled | True
+    if "meansusceptible" in mapping or path.name == "daa_master.tsv":
+        pooled = pooled | True
+    control = control.where(control.str.len() > 0, pooled.map(lambda flag: "Sus" if flag else ""))
+    if "direction" in mapping:
+        named_control = frame[mapping["direction"]].astype(str).str.contains(r"resist", case=False)
+        control = control.where(control.str.len() > 0, named_control.map(lambda flag: "Sus" if flag else ""))
+    resistant = focal.isin(["HF12", "HG64"])
+    both = resistant & control.str.len().gt(0) & timepoint.str.len().gt(0)
+    pair_only = resistant & control.str.len().gt(0) & timepoint.str.len().eq(0)
+    blob = path.name.lower()
+    phenotype = (
+        focal.str.len().eq(0)
+        & timepoint.str.len().eq(0)
+        & any(token in blob for token in ("resist", "phenotyp", "suscept"))
+    )
+    contrast = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    contrast = contrast.where(~both, focal + "_vs_" + control + "_" + timepoint)
+    contrast = contrast.where(~pair_only, focal + "_vs_" + control)
+    contrast = contrast.where(~phenotype, "resistant_vs_susceptible")
+    return contrast
+
+
+def effect_rows(path: Path) -> pd.DataFrame | None:
+    """One log2 fold change per taxon and per contrast. Different contrasts stay separate."""
+    frame = _maaslin_abundance_frame(path)
+    if frame is None:
+        frame = read_table(path)
     if frame is None:
         return None
     mapping = column_lookup(frame)
-    lfc_col = None
-    for key in ("log2foldchange", "log2fc", "log2fcapprox"):
-        if key in mapping:
-            lfc_col = mapping[key]
-            break
-    if lfc_col is None:
-        for key, original in mapping.items():
-            if "se" in key or "stderr" in key or "pvalue" in key:
-                continue
-            if key.startswith("log2fc") or key.startswith("log2fold") or key == "lfc" or key.startswith("lfcvs"):
-                lfc_col = original
-                break
-    if lfc_col is None:
-        return None
-    taxon_col = pick(mapping, ("genus", "species", "taxon", "feature", "label"))
-    if taxon_col is None:
-        return None
-    work = frame.loc[resistance_mask(frame, path)].copy()
     if "model" in mapping:
-        model = work[mapping["model"]].fillna("").astype(str).str.lower()
+        model = frame[mapping["model"]].fillna("").astype(str).str.lower()
         if model.str.contains("abund").any():
-            work = work.loc[model.str.contains("abund")]
+            frame = frame.loc[model.str.contains("abund")].copy()
+    work = frame.loc[resistance_mask(frame, path)].copy()
     if work.empty:
         return None
-    effects = pd.to_numeric(work[lfc_col], errors="coerce")
-    names = work[taxon_col].astype(str)
-    genus = names.map(clean_genus)
-    species = names.map(clean_species)
-    rel = str(path).lower()
-    if "species" in path.name.lower() or "shotgun" in rel or "metaphlan" in rel:
-        rank = "species"
-        taxa = species
-    elif "genus" in path.name.lower() or "16s" in rel:
-        rank = "genus"
-        taxa = genus
-    else:
-        genus_n = int((genus.to_numpy() != "").sum())
-        species_n = int((species.to_numpy() != "").sum())
-        rank = "species" if species_n > genus_n else "genus"
-        taxa = species if rank == "species" else genus
-    effect_array = effects.to_numpy(dtype=float)
-    finite = np.isfinite(effect_array)
-    parsed = pd.DataFrame({"taxon": taxa.to_numpy(), "log2fc": effect_array, "rank": rank})
-    parsed = parsed.iloc[np.flatnonzero((parsed["taxon"].to_numpy() != "") & finite)]
-    if parsed.empty:
+    pieces = _effect_pieces(work)
+    if not pieces:
         return None
-    parsed["finite_fraction"] = float(np.mean(finite))
-    return parsed
+    long = pd.concat(pieces, ignore_index=True)
+    finite = np.isfinite(long["log2fc"].to_numpy(dtype=float))
+    fraction = float(np.mean(finite)) if len(finite) else 0.0
+    long = long.loc[finite].copy()
+    if long.empty:
+        return None
+    long["contrast"] = _contrast_id(long, path)
+    long = long.loc[long["contrast"].astype(str).str.len() > 0].copy()
+    if long.empty:
+        return None
+    rel = str(path).lower().replace("\\", "/")
+    parts = set(rel.split("/"))
+    name = path.name.lower()
+    species_name = _species_names(long)
+    genus_name = _genus_names(long)
+    columns = column_lookup(long)
+    if "shotgun" in rel or "metaphlan" in rel:
+        rank = "species"
+        taxon = species_name
+    elif "genus" in parts or "genus" in name:
+        rank = "genus"
+        taxon = genus_name
+    elif "species" in parts or "species" in name:
+        rank = "species"
+        taxon = species_name
+    elif "16s" in rel:
+        rank = "genus"
+        taxon = genus_name
+    elif int((species_name != "").sum()) > 0:
+        rank = "species"
+        taxon = species_name
+    elif "genus" in columns and "species" not in columns:
+        rank = "genus"
+        taxon = genus_name
+    else:
+        # An empty species column belongs to a species table. Do not read its genus labels as 16S.
+        rank = "species"
+        taxon = species_name
+    long["taxon"] = taxon.to_numpy()
+    long["rank"] = rank
+    long = long.loc[long["taxon"].astype(str).str.len() > 0, ["taxon", "contrast", "log2fc", "rank"]].copy()
+    if rank == "species":
+        long = long.loc[long["taxon"].str.contains("_", regex=False)].copy()
+    long = long.loc[~long["taxon"].str.fullmatch(r"[0-9a-f]{16,}", na=False)].copy()
+    if long.empty:
+        return None
+    # The same taxon and the same contrast can repeat when several features share a name.
+    # Those repeats are one contrast, so they become one median. Different contrasts stay separate.
+    long = long.groupby(["taxon", "contrast", "rank"], as_index=False)["log2fc"].median()
+    long["finite_fraction"] = fraction
+    return long
+
+
+def _species_names(frame: pd.DataFrame) -> pd.Series:
+    mapping = column_lookup(frame)
+    for key in ("species", "taxon", "feature", "label"):
+        if key not in mapping:
+            continue
+        names = frame[mapping[key]].map(clean_species)
+        if bool((names != "").any()):
+            return names
+    return pd.Series([""] * len(frame), index=frame.index)
+
+
+def _genus_names(frame: pd.DataFrame) -> pd.Series:
+    mapping = column_lookup(frame)
+    column = pick(mapping, ("genus", "taxon", "feature", "label"))
+    if column is None:
+        return pd.Series([""] * len(frame), index=frame.index)
+    return frame[column].map(clean_genus)
+
+
+def slot_of_unit(unit: str) -> str:
+    """One slot is a taxon, a focal cultivar, and a timepoint.
+
+    A57, HG70, and the pooled susceptible group are the same slot. A phenotype
+    test with no timepoint stays its own slot. A unit that is already a slot is
+    returned unchanged.
+    """
+    text = str(unit)
+    if "|" not in text:
+        return ""
+    taxon, rest = text.split("|", 1)
+    if rest == "resistant_vs_susceptible":
+        return f"{taxon}|resistant_vs_susceptible"
+    pieces = rest.split("|")
+    if len(pieces) == 2 and pieces[0] in {"HF12", "HG64"} and pieces[1] in {"T1", "T2", "T2C", "T3", "T3C"}:
+        return text
+    if "_vs_" not in rest:
+        return ""
+    focal, tail = rest.split("_vs_", 1)
+    timepoint = ""
+    for token in ("T3C", "T2C", "T1", "T2", "T3"):
+        if tail.endswith("_" + token):
+            timepoint = token
+            break
+    if focal not in {"HF12", "HG64"} or not timepoint:
+        return ""
+    return f"{taxon}|{focal}|{timepoint}"
+
+
+def collapse_controls(series: pd.Series) -> pd.Series:
+    """Mean the susceptible controls in one session for the same taxon, cultivar, and timepoint."""
+    if series is None or len(series) == 0:
+        return pd.Series(dtype=float)
+    frame = pd.DataFrame(
+        {
+            "slot": [slot_of_unit(str(idx)) for idx in series.index],
+            "value": pd.to_numeric(series, errors="coerce").to_numpy(dtype=float),
+        }
+    )
+    frame = frame.loc[frame["slot"].astype(str).str.len() > 0]
+    frame = frame.loc[np.isfinite(frame["value"].to_numpy(dtype=float))]
+    if frame.empty:
+        return pd.Series(dtype=float)
+    return frame.groupby("slot", sort=False)["value"].mean()
+
+
+def on_shared_slots(grouped: dict[str, pd.Series], min_groups: int) -> dict[str, pd.Series]:
+    """Keep the one value per taxon, cultivar, and timepoint present in every group."""
+    usable = {name: series for name, series in grouped.items() if series is not None and len(series)}
+    slot_sets = {}
+    for name, series in usable.items():
+        labels = {slot_of_unit(str(idx)) for idx in series.index}
+        labels.discard("")
+        if labels:
+            slot_sets[name] = labels
+    if len(slot_sets) < min_groups:
+        return {}
+    shared = set.intersection(*slot_sets.values())
+    if not shared:
+        return {}
+    kept = {}
+    for name, series in usable.items():
+        if name not in slot_sets:
+            continue
+        mask = np.asarray([slot_of_unit(str(idx)) in shared for idx in series.index], dtype=bool)
+        part = series.iloc[np.flatnonzero(mask)]
+        if len(part):
+            kept[name] = part
+    if len(kept) < min_groups:
+        return {}
+    return kept
 
 
 def best_lfc(analysis: Path, rank: str) -> tuple[pd.DataFrame | None, str, str]:
@@ -587,7 +859,7 @@ def best_lfc(analysis: Path, rank: str) -> tuple[pd.DataFrame | None, str, str]:
     for path in da_candidates(analysis):
         if "annotated" in path.name.lower():
             continue
-        parsed = parse_lfc_table(path)
+        parsed = effect_rows(path)
         if parsed is None:
             continue
         parsed = parsed.loc[parsed["rank"] == rank]
@@ -599,13 +871,12 @@ def best_lfc(analysis: Path, rank: str) -> tuple[pd.DataFrame | None, str, str]:
         fraction = float(parsed["finite_fraction"].iloc[0])
         if fraction < 0.5:
             continue
-        collapsed = parsed.groupby("taxon", as_index=False)["log2fc"].median()
-        n_taxa = int(len(collapsed))
-        if n_taxa > best_n:
-            best_n = n_taxa
-            best = collapsed
+        n_pairs = int(len(parsed))
+        if n_pairs > best_n:
+            best_n = n_pairs
+            best = parsed.loc[:, ["taxon", "contrast", "log2fc"]].copy()
             source = str(path.relative_to(analysis))
-            note = f"taxa={n_taxa}; rows_in_file={len(parsed)}"
+            note = f"pairs={n_pairs}; contrasts={parsed['contrast'].nunique()}; rows_in_file={n_pairs}"
     if best is None:
         return None, "", "no log2FC table"
     return best, source, note
@@ -755,7 +1026,7 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
                     "level": row.level,
                     "model": row.model,
                     "task": task,
-                    "n": 0 if table is None else int(table["taxon"].nunique()),
+                    "n": 0 if table is None else int(len(table)),
                     "source": source,
                     "note": note,
                 }
@@ -800,17 +1071,18 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
             present = []
             for session in level_sessions:
                 table = da_store.get((session, task))
-                if table is not None and table["taxon"].nunique() >= 1:
+                if table is not None and len(table) >= 1:
                     present.append(session)
             if len(present) < 2:
                 continue
             session_means = {}
             for session in present:
-                table = da_store[(session, task)]
-                grouped = table.groupby("taxon")["log2fc"].mean()
+                table = da_store[(session, task)].drop_duplicates(["taxon", "contrast"], keep="first")
+                grouped = table.groupby(table["taxon"].astype(str) + "|" + table["contrast"].astype(str))["log2fc"].mean()
+                collapsed = collapse_controls(grouped)
                 session_means[session] = {
-                    taxon: float(value)
-                    for taxon, value in grouped.items()
+                    unit: float(value)
+                    for unit, value in collapsed.items()
                     if np.isfinite(value)
                 }
             model_values = {model: {} for model in MODEL_ORDER}
@@ -826,12 +1098,19 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
             present_models = [model for model in MODEL_ORDER if model in model_means]
             if len(present_models) < 2:
                 continue
-            shared = set.intersection(*(set(model_means[model]) for model in present_models))
-            print(f"{level} {task}: models={len(present_models)} shared_taxa={len(shared)} sessions={len(present)}", flush=True)
-            if len(shared) < 1:
-                continue
-            for model in present_models:
-                for taxon in sorted(shared):
+            kept = on_shared_slots(
+                {model: pd.Series(model_means[model], dtype=float) for model in present_models},
+                min_groups=len(present_models),
+            )
+            n_slots = 0
+            if kept:
+                n_slots = len({slot_of_unit(str(idx)) for idx in next(iter(kept.values())).index})
+            print(
+                f"{level} {task}: models={len(kept)} shared_slots={n_slots} sessions={len(present)}",
+                flush=True,
+            )
+            for model, series in kept.items():
+                for taxon, value in series.items():
                     rows.append(
                         {
                             "session": "",
@@ -840,7 +1119,7 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
                             "model": model,
                             "task": task,
                             "unit": taxon,
-                            "value": float(model_means[model][taxon]),
+                            "value": float(value),
                             "source": "",
                         }
                     )
@@ -1443,7 +1722,7 @@ def main() -> None:
         tests,
         [("16s_da", "16S genus log2FC"), ("shotgun_da", "Shotgun species log2FC")],
         (
-            "One session-averaged log2FC per genus or species shared across models.",
+            "One value per taxon, cultivar, and timepoint. Controls within a session are averaged, then sessions are averaged.",
             "Holm p, left to right: glm5.3-flash vs deepseek-v4-flash; glm5.3-flash vs deepseek-v4-pro; deepseek-v4-flash vs deepseek-v4-pro.",
         ),
         "model_distribution_da",

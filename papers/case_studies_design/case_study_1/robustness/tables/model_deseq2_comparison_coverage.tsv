@@ -1,13 +1,13 @@
 assay	level	model	method	sessions_used	taxa_in_model	taxa_shared
-16s	detailed	glm-flash	DESeq2	3	1012	216
-16s	detailed	deepseek-flash	DESeq2	2	1124	216
-16s	detailed	deepseek-pro	DESeq2	1	545	216
-16s	medium	glm-flash	DESeq2	1	508	332
-16s	medium	deepseek-flash	DESeq2	2	852	332
-16s	medium	deepseek-pro	DESeq2	1	431	332
-shotgun	detailed	glm-flash	DESeq2	2	43	43
-shotgun	detailed	deepseek-flash	DESeq2	2	144	43
-shotgun	detailed	deepseek-pro	DESeq2	1	148	43
+16s	detailed	glm-flash	DESeq2	3	9388	1724
+16s	detailed	deepseek-flash	DESeq2	2	7017	1724
+16s	detailed	deepseek-pro	DESeq2	1	4966	1724
+16s	medium	glm-flash	DESeq2	1	4904	2659
+16s	medium	deepseek-flash	DESeq2	2	6171	2659
+16s	medium	deepseek-pro	DESeq2	1	3290	2659
+shotgun	detailed	glm-flash	DESeq2	2	247	228
+shotgun	detailed	deepseek-flash	DESeq2	2	486	228
+shotgun	detailed	deepseek-pro	DESeq2	1	499	228
 shotgun	medium	glm-flash		0	0	0
 shotgun	medium	deepseek-flash		0	0	0
 shotgun	medium	deepseek-pro		0	0	0

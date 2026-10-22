@@ -26,7 +26,7 @@ Numeric values are taken from the tables those figures are drawn from: `task_com
 
 `by_prompt_models.png` is one 3×6 grid. Rows are DeepSeek-Pro (a), DeepSeek-Flash (b), and GLM-Flash (c). Columns are 16S Shannon, weighted UniFrac distance, 16S genus relative abundance, shotgun species relative abundance, 16S differential abundance, and shotgun differential abundance. The first four columns have Detailed, Medium, and Simple. The two differential-abundance columns have Detailed and Medium only.
 
-Brackets on both figures are pairwise two-sided Mann–Whitney U tests on the values that enter the boxes. A pair is tested only when both groups have at least five values; every comparison in these two figures meets that bar. Holm adjustment is inside that panel (three pairs when three groups are present; one pair when only Detailed and Medium are compared, so the Holm *P* equals the raw *P*). The Holm step-down is the usual one: sort the raw *P* values, multiply the *k*-th by the number of tests still remaining, then enforce monotonicity and cap the result at 1. Stars are Holm *P* < 0.05 (\*), < 0.01 (\*\*), < 0.001 (\*\*\*); otherwise the bracket is n.s. These brackets compare distributions of reported values. Samples, sample pairs, and taxa come from one experiment and are not independent replicates. A bracket is not a new biological differential-abundance test. The boxes hide points beyond the whiskers. The test and the reported median use every value, including those hidden points.
+Brackets on both figures are pairwise two-sided Mann–Whitney U tests on the values that enter the boxes. A pair is tested only when both groups have at least five values. Every differential-abundance panel in these two figures has a bracket. Holm adjustment is inside that panel (three pairs when three groups are present; one pair when only Detailed and Medium are compared, so the Holm *P* equals the raw *P*). The Holm step-down is the usual one: sort the raw *P* values, multiply the *k*-th by the number of tests still remaining, then enforce monotonicity and cap the result at 1. Stars are Holm *P* < 0.05 (\*), < 0.01 (\*\*), < 0.001 (\*\*\*); otherwise the bracket is n.s. These brackets compare distributions of reported values. Samples, sample pairs, taxa, and contrasts come from one experiment and are not independent replicates. A bracket is not a new biological differential-abundance test. The boxes hide points beyond the whiskers. The test and the reported median use every value, including those hidden points.
 
 Files are read from each session’s `analysis/` directory. Directories named retired or superseded are skipped, as are `bowtie2`, `bt2`, `bt2out`, `mpa_db`, `provenance`, `dist`, and `node_modules`. A numeric table is a `.tsv`, `.csv`, or `.txt` file. A QIIME2 `.qza` is read only for Shannon and for a distance matrix.
 
@@ -83,8 +83,18 @@ In the between-model panel the groups are the three models inside one prompt. In
 
 ### Differential-abundance values
 
-- Model DESeq2 panels: one DESeq2 log2 fold change per taxon per session, then the mean across sessions that ran DESeq2. No zero-fill. A taxon enters the box only when that value is finite for all three models. 16S is genus. Shotgun is species.
-- Prompt differential-abundance columns: one log2 fold change per taxon per session, then the mean across sessions that ran the method fixed for that model. A taxon enters the box only when it is finite at both Detailed and Medium. Simple is not in these columns.
+A recorded contrast is one taxon, one resistant cultivar (HF12 or HG64), one control, and the timepoint when the table records one. The control is A57, HG70, or Sus. Sus means the pooled susceptible group, A57 and HG70. It is assigned when the table or its file name names the susceptible group or a control group, when a column records the mean of the susceptible samples, or when the direction is enriched or depleted in the resistant cultivar and the comparison itself is only that cultivar. A phenotype table with no cultivar and no timepoint is one contrast, resistant versus susceptible. The sign of the log2 fold change is the direction of that contrast.
+
+A plotted point is one taxon, one resistant cultivar, and one timepoint, for example `Abditibacterium|HF12_T1`. Inside one session, every susceptible control for that point is averaged. A57, HG70, and Sus in the same session become one number. GLM-Flash Detailed replicate 1 stores `lfc_vs_A57` and `lfc_vs_HG70` on the same row; those two log2 fold changes are averaged before the session mean. A session with only one control contributes that log2 fold change unchanged. Sessions of the same model and prompt are then averaged on this point. A session that did not report the point is left out of the mean. It is not filled with zero.
+
+A point enters a between-model box when it is present for all three models, and a between-prompt box when it is present at both Detailed and Medium. Each box then holds one value per point, so the two sides of a bracket have the same *n*. The two intersections are different. A phenotype contrast matches only another phenotype contrast. LEfSe LDA is not a log2 fold change and does not enter these boxes. Simple is not in the prompt differential-abundance columns.
+
+Within one table, rows that name the same taxon and the same contrast, including the same control, become their median. A table with one log2 fold-change column against A57 and another against HG70 is read as two contrasts, and those two values are then averaged into the plotted point. If a MaAsLin `model` column contains an abundance model, only those rows are kept. The compiled `daa_master.tsv` files had dropped that column; they are rebuilt from the abundance rows in `daa/<timepoint>/all_results.tsv`, so a prevalence coefficient is not combined with the abundance coefficient. Those MaAsLin tables are not part of the DESeq2, Wilcoxon, or Mann–Whitney panels in these two figures. A species result has to carry a species name. A genus label is not used in its place, and an ASV table with an empty species column is not read as a 16S genus table. A table is dropped when more than 20% of its names are hexadecimal strings of 16 or more characters.
+
+When the same taxon and the same control occur in more than one file in a session, one value is kept. If the values differ, the larger table is kept and the two values are not averaged. GLM-Flash Detailed replicate 2 wrote genus DESeq2 results in both `16s-genus` and `16s-genus-v2`; the larger directory is the one used. The average across controls is taken after that choice.
+
+- Model DESeq2 panels use genus-level DESeq2 for 16S and species-level DESeq2 for shotgun. A DESeq2 table is kept only when at least half of its log2 fold changes are finite. Every such table in the session is read; repeated taxon–control pairs are removed as described above, and the controls for one taxon, cultivar, and timepoint are then averaged. Shotgun Medium stays out of this panel because the three models did not share one method.
+- Prompt 16S uses those same genus-level DESeq2 tables. Prompt shotgun uses the method that model produced at both prompts: DESeq2 for GLM-Flash, Mann–Whitney U for DeepSeek-Flash, and Wilcoxon for DeepSeek-Pro. Mann–Whitney and Wilcoxon tables are not held to the half-finite cutoff. Each method uses the same within-session average of controls. It does not keep only the single largest file.
 
 Session counts in the two method tables are replicates that entered that mean, written as *n*/3. They are smaller than the completion counts wherever a finished differential-abundance run used a table that this comparison does not include.
 
@@ -100,16 +110,14 @@ For 16S, genus-level DESeq2 meets that test in every model, so all three rows us
 
 For shotgun, no one tool was produced by every model under both prompts, so the row follows the tool that model did produce twice. GLM-Flash has species-level DESeq2 at Detailed (replicates 1 and 3) and at Medium (replicate 2). DeepSeek-Flash does not have shotgun DESeq2 at both prompts; the tool present at both is Mann–Whitney U (Detailed replicate 3 and Medium replicate 3). DeepSeek-Pro does not have shotgun DESeq2 at both prompts; the tool present at both is Wilcoxon (Detailed replicate 2 and Medium replicate 2). The three shotgun log2 fold changes are therefore different quantities. They stay on separate y axes and are not tested against each other. This is also why the shotgun replicates in `da_prompt_method_summary.tsv` are not the shotgun replicates in the between-model DESeq2 panel: DeepSeek-Flash’s DESeq2 replicates are 1 and 2, and DeepSeek-Pro’s DESeq2 replicate is 1.
 
-**How several tables inside one session become one number.** Both comparisons start the same way. A file is read only when it is the assay being compared (16S or shotgun), it is not in a superseded directory, and its name does not contain `annotated`. DESeq2 is recognized by “deseq” in the path, by a `log2FoldChange` column, or by `lfcSE` together with `baseMean`, so a DESeq2 table whose name does not contain “deseq” still counts. The effect column is `log2FoldChange`, `log2FC`, or another log2 fold-change column that is not a standard error. Rows that name a contrast are kept when that contrast refers to resistance, phenotype, HG64, HF12, or the susceptible cultivars; a table with no contrast column keeps every row. If a MaAsLin-style `model` column contains an abundance model, only those abundance rows are kept. A table is dropped when more than 20% of its taxon names are hexadecimal strings of 16 or more characters. Inside one table, repeated rows of the same taxon become their median log2 fold change.
+**How several tables inside one session become one number.** Both comparisons use the contrast rule above. A file is read only when it is the assay being compared (16S or shotgun), it is not in a superseded directory, and its name does not contain `annotated`. DESeq2 is recognized by “deseq” in the path, by a `log2FoldChange` column, or by `lfcSE` together with `baseMean`, so a DESeq2 table whose name does not contain “deseq” still counts. The effect column is `log2FoldChange`, `log2FC`, `log2FC_approx`, a paired `lfc_vs_A57` or `lfc_vs_HG70` column, or a MaAsLin `coef`. A standard-error column is not an effect. Rows that name a contrast are kept when that contrast refers to resistance, phenotype, HG64, HF12, or the susceptible cultivars; a table with no contrast column keeps every row. A DESeq2 table is kept only when at least half of its log2 fold changes are finite.
 
-The comparisons then part company, because a session often wrote either one pooled table or a pile of single-contrast tables.
+- Between-model DESeq2 reads every genus or species DESeq2 table in the session. Repeated taxon–control pairs are removed as described above. The susceptible controls for one taxon, cultivar, and timepoint are then averaged, and a file is not reduced to one row per taxon before that step.
+- Between-prompt DESeq2 does the same for the genus tables. It is not limited to the largest file.
+- Between-prompt Mann–Whitney collects every shotgun species table with a U statistic (`U`, `statistic_U`, or `p_mwu`), skips paths marked genus or Welch, and keeps one value per taxon and control. These tables are not held to the half-finite cutoff. Controls for the same taxon, cultivar, and timepoint are then averaged.
+- Between-prompt Wilcoxon collects every shotgun species table whose name marks an all-comparison or a Wilcoxon result and whose columns include a U statistic. It also keeps one value per taxon and control, then averages controls for the same taxon, cultivar, and timepoint. It is not held to the half-finite cutoff, and it is not limited to the single largest file.
 
-- Between-model DESeq2 uses the pooled table when the session has one. A file whose name contains `all_comparison`, `all-result`, `all_result`, or `combined` is that pooled table, and the largest such file is kept if several exist. The pooled table is the session’s DESeq2 result, so one contrast is not asked to stand for the others. If the session has no pooled table and has more than one contrast table, the median across those tables is the session value, for the same reason. A single contrast table is used as it is. A DESeq2 table is kept only when at least half of its log2 fold changes are finite.
-- Between-prompt DESeq2 uses one table per session: the largest table that passes the rank filter and the same half-finite rule. It does not take the median across contrast files. Where a session stored only separate contrasts, this comparison therefore follows the contrast that retained the most taxa, while the between-model comparison follows the median of those contrasts.
-- Between-prompt Mann–Whitney collects every shotgun species table with a U statistic (`U`, `statistic_U`, or `p_mwu`), skips paths marked genus or Welch, and takes the median across those tables. These tables are not held to the half-finite cutoff.
-- Between-prompt Wilcoxon keeps one shotgun species table: the largest whose name marks an all-comparison or a Wilcoxon result and whose columns include a U statistic. It is not held to the half-finite cutoff either.
-
-Across sessions, the mean uses only the sessions listed for that method, and a taxon missing from one of those sessions is left missing. The between-model box then requires the taxon to be finite in all three models. The between-prompt box requires it to be finite at both prompts of that one model. Those are different intersections, which is why shotgun Detailed can be 43 species in the model panel and 14, 39, or 9 species in the prompt rows.
+Across sessions, the mean uses only the sessions listed for that method, and a point missing from one of those sessions is left missing. The between-model box then requires the taxon, cultivar, and timepoint to be present in all three models. The between-prompt box requires them at both prompts of that one model. Those are different intersections. At shotgun Detailed the three models share 228 points, one in each box. In the prompt rows both boxes contain 891 points for DeepSeek-Pro 16S, 5,108 for DeepSeek-Flash 16S, 3,984 for GLM-Flash 16S, 39 for DeepSeek-Pro shotgun, 120 for DeepSeek-Flash shotgun, and 52 for GLM-Flash shotgun.
 
 ---
 
@@ -202,7 +210,7 @@ GLM-Flash Detailed shotgun used the parent directory and `mpa_v30`. That is why,
 
 ## DESeq2 shared across models
 
-Lower row of panel b, with `da_model_method_summary.tsv`. A taxon is plotted only when all three models have a finite DESeq2 log2 fold change. Shotgun Medium is absent from the figure and is recorded as “—” in the table: the three models did not share one differential-abundance method at that prompt.
+Lower row of panel b, with `da_model_method_summary.tsv`. A point is plotted when its taxon, cultivar, and timepoint are present for all three models. Susceptible controls inside a session have already been averaged, so each model contributes one value per point. Shotgun Medium is absent from the figure and is recorded as “—” in the table: the three models did not share one differential-abundance method at that prompt.
 
 Sessions that entered the mean:
 
@@ -223,31 +231,29 @@ Replicates behind those counts:
 
 GLM-Flash Detailed shotgun is 2/3 here for the same reason it is 2/3 on the heatmap: replicate 2 has no shotgun result. The other gaps are runs that finished a differential-abundance task with a table this DESeq2 comparison does not use. The genus comparison omits ASV-only DESeq2 tables; DeepSeek-Flash Detailed replicate 3 is the 16S run left out by that rule, even though the heatmap marks its 16S differential-abundance task complete.
 
-Taxa reported by each model before the three-model intersection, then the number that enter the box:
+Points in each model after the within-session average of controls, before the three-model intersection, then the number that enter the box.
 
-| Comparison | GLM-Flash taxa | DeepSeek-Flash taxa | DeepSeek-Pro taxa | Taxa in the box |
+| Comparison | GLM-Flash before / in box | DeepSeek-Flash before / in box | DeepSeek-Pro before / in box | Points in the box |
 |---|---:|---:|---:|---:|
-| 16S genus, Detailed | 1,012 | 1,124 | 545 | 216 |
-| 16S genus, Medium | 508 | 852 | 431 | 332 |
-| Shotgun species, Detailed | 43 | 144 | 148 | 43 |
+| 16S genus, Detailed | 9,388 / 1,724 | 7,017 / 1,724 | 4,966 / 1,724 | 1,724 |
+| 16S genus, Medium | 4,904 / 2,659 | 6,171 / 2,659 | 3,290 / 2,659 | 2,659 |
+| Shotgun species, Detailed | 247 / 228 | 486 / 228 | 499 / 228 | 228 |
 
-On shotgun Detailed, GLM-Flash reports 43 species and the shared set is 43, so every species in that box is one GLM-Flash also reported.
+Plotted medians and tests. Each pair has the same *n* on both sides.
 
-Plotted medians and tests. All nine brackets are n.s.
+| Comparison | Pair | *n* | Medians | *U* | Raw *P* | Holm *P* | Bracket |
+|---|---|---:|---|---:|---:|---:|---|
+| 16S genus, Detailed | GLM-Flash vs DeepSeek-Flash | 1,724 | 0 vs 0.0334 | 1,466,277 | 0.498 | 0.498 | n.s. |
+| 16S genus, Detailed | GLM-Flash vs DeepSeek-Pro | 1,724 | 0 vs −0.0926 | 1,527,128 | 0.160 | 0.321 | n.s. |
+| 16S genus, Detailed | DeepSeek-Flash vs DeepSeek-Pro | 1,724 | 0.0334 vs −0.0926 | 1,554,332 | 0.0195 | 0.0586 | n.s. |
+| 16S genus, Medium | GLM-Flash vs DeepSeek-Flash | 2,659 | 0 vs −0.0208 | 3,562,084 | 0.630 | 0.701 | n.s. |
+| 16S genus, Medium | GLM-Flash vs DeepSeek-Pro | 2,659 | 0 vs −0.0375 | 3,616,219 | 0.148 | 0.443 | n.s. |
+| 16S genus, Medium | DeepSeek-Flash vs DeepSeek-Pro | 2,659 | −0.0208 vs −0.0375 | 3,587,389 | 0.351 | 0.701 | n.s. |
+| Shotgun species, Detailed | GLM-Flash vs DeepSeek-Flash | 228 | −0.201 vs −0.200 | 24,301 | 0.230 | 0.459 | n.s. |
+| Shotgun species, Detailed | GLM-Flash vs DeepSeek-Pro | 228 | −0.201 vs −0.242 | 26,828 | 0.553 | 0.553 | n.s. |
+| Shotgun species, Detailed | DeepSeek-Flash vs DeepSeek-Pro | 228 | −0.200 vs −0.242 | 28,824 | 0.0442 | 0.133 | n.s. |
 
-| Comparison | *n* | GLM-Flash median | DeepSeek-Flash median | DeepSeek-Pro median | Pair | *U* | Raw *P* | Holm *P* |
-|---|---:|---:|---:|---:|---|---:|---:|---:|
-| 16S genus, Detailed | 216 | −0.0494 | −0.0517 | −0.202 | GLM-Flash vs DeepSeek-Flash | 22,969 | 0.782 | 0.782 |
-| 16S genus, Detailed | 216 | −0.0494 | −0.0517 | −0.202 | GLM-Flash vs DeepSeek-Pro | 24,568 | 0.339 | 0.679 |
-| 16S genus, Detailed | 216 | −0.0494 | −0.0517 | −0.202 | DeepSeek-Flash vs DeepSeek-Pro | 25,531 | 0.0896 | 0.269 |
-| 16S genus, Medium | 332 | −0.0923 | −0.153 | −0.0452 | GLM-Flash vs DeepSeek-Flash | 56,555 | 0.559 | 1 |
-| 16S genus, Medium | 332 | −0.0923 | −0.153 | −0.0452 | GLM-Flash vs DeepSeek-Pro | 55,695 | 0.814 | 1 |
-| 16S genus, Medium | 332 | −0.0923 | −0.153 | −0.0452 | DeepSeek-Flash vs DeepSeek-Pro | 54,342 | 0.756 | 1 |
-| Shotgun species, Detailed | 43 | 0.156 | −0.382 | −1.053 | GLM-Flash vs DeepSeek-Flash | 960 | 0.762 | 0.762 |
-| Shotgun species, Detailed | 43 | 0.156 | −0.382 | −1.053 | GLM-Flash vs DeepSeek-Pro | 1,050 | 0.280 | 0.561 |
-| Shotgun species, Detailed | 43 | 0.156 | −0.382 | −1.053 | DeepSeek-Flash vs DeepSeek-Pro | 1,103 | 0.124 | 0.373 |
-
-DeepSeek-Pro’s shotgun Detailed median (−1.053) is the lowest of the three, and its 16S Detailed median (−0.202) is lower than the other two models’ medians near −0.05. Neither separation remains after Holm adjustment.
+All nine brackets are n.s. At 16S Detailed, DeepSeek-Flash vs DeepSeek-Pro has raw *P* = 0.0195 and Holm *P* = 0.0586. At shotgun Detailed, that same pair has raw *P* = 0.0442 and Holm *P* = 0.133. These brackets compare the reported log2 fold changes. They are not a new biological differential-abundance test.
 
 ---
 
@@ -309,38 +315,40 @@ DeepSeek-Pro’s three shotgun medians are 0.208, 0.208, and 0.213. DeepSeek-Fla
 
 ### Differential abundance across Detailed and Medium
 
-`da_prompt_method_summary.tsv`. Simple is not in this table and is not a box in these two columns. Each row has one pair, so Holm *P* equals raw *P*. The *n* is the number of taxa finite in both prompts for that model.
+`da_prompt_method_summary.tsv`. Simple is not in this table and is not a box in these two columns. Each tested row has one pair, so Holm *P* equals raw *P*. The count is the number of taxon–cultivar–timepoint points present under both prompts. Controls inside a session are already averaged, so Detailed and Medium have the same count.
 
-| Analysis | Model | Method | Detailed sessions | Medium sessions | Taxa in both prompts |
-|---|---|---|---|---|---|
-| 16S rRNA gene, genus | DeepSeek-Pro | DESeq2 | 1/3 | 1/3 | 111 |
-| 16S rRNA gene, genus | DeepSeek-Flash | DESeq2 | 2/3 | 2/3 | 668 |
-| 16S rRNA gene, genus | GLM-Flash | DESeq2 | 3/3 | 1/3 | 413 |
-| Shotgun metagenome, species | DeepSeek-Pro | Wilcoxon | 1/3 | 1/3 | 14 |
-| Shotgun metagenome, species | DeepSeek-Flash | Mann–Whitney U | 1/3 | 1/3 | 39 |
-| Shotgun metagenome, species | GLM-Flash | DESeq2 | 2/3 | 1/3 | 9 |
+| Analysis | Model | Method | Detailed sessions | Medium sessions | Points in each box |
+|---|---|---|---|---|---:|
+| 16S rRNA gene, genus | DeepSeek-Pro | DESeq2 | 1/3 | 1/3 | 891 |
+| 16S rRNA gene, genus | DeepSeek-Flash | DESeq2 | 2/3 | 2/3 | 5,108 |
+| 16S rRNA gene, genus | GLM-Flash | DESeq2 | 3/3 | 1/3 | 3,984 |
+| Shotgun metagenome, species | DeepSeek-Pro | Wilcoxon | 1/3 | 1/3 | 39 |
+| Shotgun metagenome, species | DeepSeek-Flash | Mann–Whitney U | 1/3 | 1/3 | 120 |
+| Shotgun metagenome, species | GLM-Flash | DESeq2 | 2/3 | 1/3 | 52 |
 
 The 16S session counts match the between-model DESeq2 table, because both use the same genus-level DESeq2 replicates. The shotgun session counts do not match that table. Here each model is held to the method it used at both prompts. DeepSeek-Pro is Wilcoxon (replicates: Detailed 2, Medium 2). DeepSeek-Flash is Mann–Whitney U (replicates: Detailed 3, Medium 3). GLM-Flash is DESeq2 (replicates: Detailed 1 and 3, Medium 2). The between-model shotgun panel instead keeps DESeq2 only, so DeepSeek-Flash there is replicates 1 and 2 and DeepSeek-Pro there is replicate 1.
+
+DeepSeek-Pro 16S Detailed compares HF12 or HG64 with the pooled susceptible group, and its Medium compares those cultivars with A57. DeepSeek-Pro shotgun Wilcoxon has that same split. Each session’s controls are averaged before the two prompts are compared, so a point can combine different controls. The 16S boxes contain the 891 genus–cultivar–timepoint points present under both prompts. The shotgun Wilcoxon boxes contain the 39 species–cultivar–timepoint points present under both prompts. LEfSe LDA from the other Medium replicate stays out, because it is not a log2 fold change.
 
 16S genus, DESeq2 log2 fold change:
 
 | Model | *n* | Detailed median | Medium median | *U* | *P* | Bracket |
 |---|---:|---:|---:|---:|---:|---|
-| DeepSeek-Pro | 111 | 0.309 | 0.00474 | 7,335 | 0.0141 | \* |
-| DeepSeek-Flash | 668 | −0.262 | −0.366 | 230,106 | 0.321 | n.s. |
-| GLM-Flash | 413 | −0.136 | −0.127 | 81,598 | 0.282 | n.s. |
+| DeepSeek-Pro | 891 | 0.0120 | 0.00474 | 403,545 | 0.543 | n.s. |
+| DeepSeek-Flash | 5,108 | −0.130 | −0.144 | 13,146,380 | 0.500 | n.s. |
+| GLM-Flash | 3,984 | −0.0867 | −0.00950 | 7,779,290 | 0.127 | n.s. |
 
-DeepSeek-Pro is the only 16S row whose Detailed and Medium log2 fold-change distributions are separated. Its Detailed median is 0.309 and its Medium median is 0.00474.
+None of the three 16S rows is separated.
 
 Shotgun species. The y-axis label is the method for that row, and the three rows are not the same statistic.
 
 | Model | Method | *n* | Detailed median | Medium median | *U* | *P* | Bracket |
 |---|---|---:|---:|---:|---:|---:|---|
-| DeepSeek-Pro | Wilcoxon | 14 | −0.0764 | 0.220 | 67 | 0.161 | n.s. |
-| DeepSeek-Flash | Mann–Whitney U | 39 | 0.274 | 0.169 | 796 | 0.727 | n.s. |
-| GLM-Flash | DESeq2 | 9 | 1.066 | −0.541 | 54 | 0.251 | n.s. |
+| DeepSeek-Pro | Wilcoxon | 39 | 0.0713 | 0.124 | 704 | 0.576 | n.s. |
+| DeepSeek-Flash | Mann–Whitney U | 120 | 0.0181 | 0.508 | 6,570 | 0.242 | n.s. |
+| GLM-Flash | DESeq2 | 52 | 0.883 | −1.256 | 1,637 | 0.0644 | n.s. |
 
-All three shotgun brackets are n.s. GLM-Flash’s medians have opposite signs (1.066 and −0.541) on nine species; the test does not separate them. These nine species are the within-GLM Detailed∩Medium intersection. They are a different set from the 43 species shared by the three models on the DESeq2 Detailed panel.
+None of the three shotgun rows is separated. GLM-Flash’s 52 points are the within-GLM Detailed and Medium intersection. They are a different set from the 228 points shared by the three models on the DESeq2 Detailed panel.
 
 ---
 
@@ -350,7 +358,7 @@ Across models and across prompts, the 16S Shannon distributions (*n* = 60) and t
 
 Genus and species relative-abundance distributions do separate in some panels. Between models, 16S genus separates at Detailed (GLM-Flash vs each DeepSeek model) and at Medium (DeepSeek-Pro vs each of the other two). Shotgun species separates at Medium and at Simple for GLM-Flash vs each DeepSeek model. DeepSeek-Flash vs DeepSeek-Pro stays n.s. at both of those prompts. Within models, DeepSeek-Pro 16S genus separates on all three prompt pairs. DeepSeek-Flash 16S genus separates for Detailed vs Simple only. GLM-Flash shotgun species separates for Detailed vs Medium and Detailed vs Simple. GLM-Flash’s 16S genus prompt comparison, DeepSeek-Flash’s shotgun species prompt comparison, and DeepSeek-Pro’s shotgun species prompt comparison stay n.s. on every pair. 16S genus at Simple, and shotgun species at Detailed, also stay n.s. for every between-model pair. The sessions behind the abundance separations are under “Why the relative-abundance distributions separate”: a SILVA 138.2 V4 classifier, one 16S genus table collapsed by row position, and MetaPhlAn runs whose database directory was the index folder, with `--unknown_estimation` present or absent.
 
-Where all three models ran DESeq2, the log2 fold-change distributions are not separated: 216 genera at Detailed, 332 genera at Medium, and 43 species at shotgun Detailed. Within a model, Detailed vs Medium separates only DeepSeek-Pro’s 16S DESeq2 comparison (111 genera, *P* = 0.0141). The other five within-model differential-abundance comparisons are n.s., including all three shotgun comparisons, whose methods and taxon counts differ by model (14, 39, and 9).
+Where all three models ran DESeq2, each box has one value per taxon, cultivar, and timepoint, after susceptible controls inside a session are averaged. All nine brackets are n.s.: 1,724 points at 16S Detailed, 2,659 at 16S Medium, and 228 at shotgun Detailed. The closest pair is DeepSeek-Flash vs DeepSeek-Pro at 16S Detailed (raw *P* = 0.0195, Holm *P* = 0.0586). Within a model, Detailed versus Medium is n.s. in all six rows: DeepSeek-Pro 16S (891), DeepSeek-Flash 16S (5,108), GLM-Flash 16S (3,984), DeepSeek-Pro shotgun Wilcoxon (39), DeepSeek-Flash shotgun Mann–Whitney (120), and GLM-Flash shotgun DESeq2 (52).
 
 Task completion is 3/3 everywhere except GLM-Flash Detailed shotgun taxonomy and shotgun differential abundance (2/3, replicate 2).
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Compare models on DESeq2 log2 fold changes where every model used DESeq2.
 
-Within one prompt, a taxon’s value is the median log2 fold change inside a
-session table, then the mean across sessions that ran genus-level (16S) or
-species-level (shotgun) DESeq2. A box contains only taxa present for all three
-models. The brackets are pairwise two-sided Mann–Whitney U tests, Holm-adjusted
-within that prompt. Taxa from one experiment are not independent replicates.
+Within one prompt, a point is one taxon, one focal cultivar, and one
+timepoint. Susceptible controls for that point are averaged inside each
+session, then those session values are averaged. A box contains the points
+present for all three models. The brackets are pairwise two-sided
+Mann–Whitney U tests, Holm-adjusted within that prompt. Taxa and contrasts
+from one experiment are not independent replicates.
 
 Shotgun medium has no method shared by all three models, so that group is not
 drawn.
@@ -64,15 +65,9 @@ PANELS = (
 )
 
 
-def _is_summary(path: Path) -> bool:
-    name = path.name.lower()
-    return any(token in name for token in ("all_comparison", "all-result", "all_result", "combined"))
-
-
 def _session_effect(analysis: Path, rank: str, shotgun: bool) -> pd.Series:
-    """One log2 fold change per taxon in one session."""
+    """One log2 fold change per taxon and contrast in one session."""
     tables = []
-    summaries = []
     for path in comp.da_candidates(analysis):
         rel = str(path.relative_to(analysis)).lower()
         if "superseded" in rel or "annotated" in path.name.lower():
@@ -83,20 +78,9 @@ def _session_effect(analysis: Path, rank: str, shotgun: bool) -> pd.Series:
         if not da._is_deseq2(path, da._header(path)):
             continue
         collapsed = da._collapsed(path, rank, 0.5)
-        if collapsed is None:
-            continue
-        tables.append(collapsed)
-        if _is_summary(path):
-            summaries.append(collapsed)
-    if summaries:
-        best = max(summaries, key=len)
-        return best.set_index("taxon")["log2fc"]
-    if not tables:
-        return pd.Series(dtype=float)
-    if len(tables) == 1:
-        return tables[0].set_index("taxon")["log2fc"]
-    combined = pd.concat(tables, ignore_index=True)
-    return combined.groupby("taxon")["log2fc"].median()
+        if collapsed is not None:
+            tables.append(collapsed)
+    return da._series_from_frames(tables)
 
 
 def _model_series(session_map: dict, model: str, level: str, rank: str, shotgun: bool) -> tuple[pd.Series, int]:
@@ -119,9 +103,16 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
                 by_model[model] = series
                 n_sessions[model] = n_used
             present = [model for model in models.MODEL_ORDER if len(by_model[model])]
-            shared = set.intersection(*(set(by_model[model].index) for model in present)) if len(present) == 3 else set()
-            print(f"{assay} {level}: sessions={ {m: n_sessions[m] for m in models.MODEL_ORDER} } shared_taxa={len(shared)}", flush=True)
+            kept = comp.on_shared_slots({model: by_model[model] for model in present}, min_groups=3)
+            n_slots = 0
+            if kept:
+                n_slots = len({comp.slot_of_unit(str(idx)) for idx in next(iter(kept.values())).index})
+            print(
+                f"{assay} {level}: sessions={ {m: n_sessions[m] for m in models.MODEL_ORDER} } shared_slots={n_slots}",
+                flush=True,
+            )
             for model in models.MODEL_ORDER:
+                plotted = kept.get(model, pd.Series(dtype=float))
                 coverage_rows.append(
                     {
                         "assay": assay,
@@ -130,12 +121,10 @@ def extract() -> tuple[pd.DataFrame, pd.DataFrame]:
                         "method": "DESeq2" if n_sessions[model] else "",
                         "sessions_used": n_sessions[model],
                         "taxa_in_model": int(len(by_model[model])),
-                        "taxa_shared": int(len(shared)),
+                        "taxa_shared": int(len(plotted)),
                     }
                 )
-                if not shared:
-                    continue
-                for taxon, value in by_model[model].loc[sorted(shared)].items():
+                for taxon, value in plotted.items():
                     value_rows.append(
                         {
                             "task": assay,

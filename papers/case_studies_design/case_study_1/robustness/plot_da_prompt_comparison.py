@@ -2,18 +2,19 @@
 """Prompt comparison of differential-abundance effect sizes.
 
 Separate from by_prompt_models.png. Each figure has one row per model and
-compares Detailed with Medium only. A point is one taxon present under both
-prompts. Within a prompt, a taxon’s value is the median log2 fold change
-inside a result table, then the mean across sessions that ran the chosen
-method. Simple-prompt sessions are excluded.
+compares Detailed with Medium only. A point is one taxon, one focal
+cultivar, and one timepoint. Within a session, susceptible controls for that
+point are averaged. Sessions of the same prompt are then averaged. The box
+keeps points present under both prompts. Simple-prompt sessions are excluded.
 
 16S uses genus-level DESeq2 log2FoldChange for every model. Shotgun cannot:
 glm5.3-flash uses DESeq2, deepseek-v4-flash uses the log2FC reported with
 Mann-Whitney, and deepseek-v4-pro uses the log2FC reported with Wilcoxon.
 Those three log2FC definitions are not the same quantity.
 
-The bracket is one two-sided Mann-Whitney U test on the two taxon-level
-distributions. Taxa from one experiment are not independent replicates.
+The bracket is one two-sided Mann-Whitney U test on the two distributions
+of contrast-level effects. Taxa and contrasts from one experiment are not
+independent replicates.
 """
 
 from __future__ import annotations
@@ -119,20 +120,34 @@ def _is_deseq2(path: Path, header: str) -> bool:
 
 
 def _collapsed(path: Path, rank: str, min_finite_fraction: float) -> pd.DataFrame | None:
-    parsed = comp.parse_lfc_table(path)
+    parsed = comp.effect_rows(path)
     if parsed is None:
         return None
     parsed = parsed.loc[parsed["rank"] == rank]
     if parsed.empty:
         return None
-    hash_like = parsed["taxon"].str.fullmatch(r"[0-9a-f]{16,}").mean()
-    if hash_like > 0.2:
-        return None
     if float(parsed["finite_fraction"].iloc[0]) < min_finite_fraction:
         return None
-    collapsed = parsed.groupby("taxon", as_index=False)["log2fc"].median()
-    collapsed["source"] = str(path)
+    collapsed = parsed.loc[:, ["taxon", "contrast", "log2fc"]].copy()
+    collapsed["source_rows"] = int(len(collapsed))
     return collapsed
+
+
+def _series_from_frames(frames: list[pd.DataFrame]) -> pd.Series:
+    """Keep one value per taxon and contrast. The larger table wins ties."""
+    if not frames:
+        return pd.Series(dtype=float)
+    combined = pd.concat(frames, ignore_index=True)
+    combined = combined.sort_values("source_rows", ascending=False, kind="mergesort")
+    duplicated = combined.duplicated(["taxon", "contrast"], keep=False)
+    if duplicated.any():
+        disagree = combined.loc[duplicated].groupby(["taxon", "contrast"])["log2fc"].nunique()
+        n_disagree = int((disagree > 1).sum())
+        if n_disagree:
+            print(f"same contrast, different log2FC, kept the larger table: {n_disagree}", flush=True)
+    combined = combined.drop_duplicates(["taxon", "contrast"], keep="first")
+    series = combined.set_index(combined["taxon"] + "|" + combined["contrast"])["log2fc"]
+    return comp.collapse_controls(series)
 
 
 def _has_rank_statistic(header: str) -> bool:
@@ -141,8 +156,7 @@ def _has_rank_statistic(header: str) -> bool:
 
 
 def _best_deseq(analysis: Path, rank: str, shotgun: bool) -> pd.Series:
-    best = None
-    best_n = 0
+    frames = []
     for path in comp.da_candidates(analysis):
         rel = str(path.relative_to(analysis)).lower()
         if "superseded" in rel or "annotated" in path.name.lower():
@@ -153,13 +167,9 @@ def _best_deseq(analysis: Path, rank: str, shotgun: bool) -> pd.Series:
         if not _is_deseq2(path, _header(path)):
             continue
         collapsed = _collapsed(path, rank, 0.5)
-        if collapsed is None or len(collapsed) <= best_n:
-            continue
-        best_n = len(collapsed)
-        best = collapsed
-    if best is None:
-        return pd.Series(dtype=float)
-    return best.set_index("taxon")["log2fc"]
+        if collapsed is not None:
+            frames.append(collapsed)
+    return _series_from_frames(frames)
 
 
 def _mann_whitney_species(analysis: Path) -> pd.Series:
@@ -175,10 +185,7 @@ def _mann_whitney_species(analysis: Path) -> pd.Series:
         collapsed = _collapsed(path, "species", 0.0)
         if collapsed is not None:
             frames.append(collapsed)
-    if not frames:
-        return pd.Series(dtype=float)
-    combined = pd.concat(frames, ignore_index=True)
-    return combined.groupby("taxon")["log2fc"].median()
+    return _series_from_frames(frames)
 
 
 def _wilcoxon_species(analysis: Path) -> pd.Series:
@@ -195,10 +202,7 @@ def _wilcoxon_species(analysis: Path) -> pd.Series:
         collapsed = _collapsed(path, "species", 0.0)
         if collapsed is not None:
             chosen.append(collapsed)
-    if not chosen:
-        return pd.Series(dtype=float)
-    best = max(chosen, key=len)
-    return best.set_index("taxon")["log2fc"]
+    return _series_from_frames(chosen)
 
 
 def _mean_sessions(series_list: list[pd.Series]) -> pd.Series:
@@ -209,17 +213,16 @@ def _mean_sessions(series_list: list[pd.Series]) -> pd.Series:
 
 
 def _shared_prompts(by_level: dict[str, pd.Series]) -> dict[str, np.ndarray]:
-    detailed = by_level.get("detailed", pd.Series(dtype=float))
-    medium = by_level.get("medium", pd.Series(dtype=float))
-    if not len(detailed) or not len(medium):
+    kept = comp.on_shared_slots(
+        {
+            "detailed": by_level.get("detailed", pd.Series(dtype=float)),
+            "medium": by_level.get("medium", pd.Series(dtype=float)),
+        },
+        min_groups=2,
+    )
+    if set(kept) != {"detailed", "medium"}:
         return {}
-    shared = sorted(set(detailed.index) & set(medium.index))
-    if not shared:
-        return {}
-    return {
-        "detailed": detailed.loc[shared].to_numpy(dtype=float),
-        "medium": medium.loc[shared].to_numpy(dtype=float),
-    }
+    return {level: kept[level].to_numpy(dtype=float) for level in ("detailed", "medium")}
 
 
 def _prompt_test(values: dict[str, np.ndarray]) -> pd.DataFrame:
@@ -339,6 +342,17 @@ def _draw(panels: dict, ylabels: dict[str, str], title: str, stem_name: str) -> 
                 medianprops={"color": "#222222", "linewidth": 0.6},
             )
         ax.set_xlim(-0.55, 1.55)
+        if not present:
+            ax.text(
+                0.5,
+                0.5,
+                "No shared\ncontrast",
+                transform=ax.transAxes,
+                ha="center",
+                va="center",
+                fontsize=7,
+                clip_on=True,
+            )
         ax.set_xticks([0, 1])
         ax.set_xticklabels([PROMPT_LABEL[level] for level in PROMPT_ORDER])
         ax.tick_params(axis="x", labelbottom=ax is axes[-1], length=0)
@@ -400,7 +414,8 @@ def _method_summary(analysis: str, methods: dict[str, str], rows: pd.DataFrame, 
                 "method": "Mann-Whitney U" if methods[model] == "Mann-Whitney" else methods[model],
                 "detailed_sessions": _session_cell(rows, model, "detailed"),
                 "medium_sessions": _session_cell(rows, model, "medium"),
-                "taxa_compared": len(panels[model].get("detailed", [])),
+                "detailed_values": len(panels[model].get("detailed", [])),
+                "medium_values": len(panels[model].get("medium", [])),
             }
         )
     return pd.DataFrame.from_records(records)

@@ -168,6 +168,17 @@ def _draw_panels(
         )
         ax.tick_params(axis="x", labelbottom=show_xlabels, length=0, pad=18 if not horizontal else 8)
         ax.set_xlim(-0.55, max(len(present) - 1, 0) + 0.55)
+        if not present:
+            ax.text(
+                0.5,
+                0.5,
+                "No shared\ncontrast",
+                transform=ax.transAxes,
+                ha="center",
+                va="center",
+                fontsize=7,
+                clip_on=True,
+            )
         if len(present) >= 2:
             comp._add_significance_brackets(
                 ax,
@@ -190,7 +201,7 @@ def _draw_panels(
 
 def _match_column_limits(axes) -> None:
     """Give the three models one y scale within each task."""
-    for col, (task, _ylabel, _title, log_y) in enumerate(PANELS):
+    for col, (task, _ylabel, _title, log_y) in enumerate(PANELS + DA_PANELS):
         column = [axes[row, col] for row in range(axes.shape[0])]
         if log_y and task in comp.ABUNDANCE_FLOOR:
             ymins, ymaxs = [], []
@@ -307,18 +318,13 @@ def _load_da(model: str):
         by_level = {}
         for level, sub in frame.groupby("level"):
             by_level[str(level)] = sub.groupby("taxon")["log2fc"].mean()
-        populated = [item for item in by_level.values() if len(item)]
-        shared = set.intersection(*(set(item.index) for item in populated)) if populated else set()
-        series[task] = {
-            level: item.loc[sorted(shared)].to_numpy(dtype=float)
-            for level, item in by_level.items()
-            if len(item) and shared
-        }
+        kept = comp.on_shared_slots(by_level, min_groups=2)
+        series[task] = {level: item.to_numpy(dtype=float) for level, item in kept.items()}
         panel_tests = pd.read_csv(TABLES / tests_name, sep="\t")
         panel_tests = panel_tests.loc[panel_tests["model"] == model].copy()
         panel_tests["task"] = task
         frames.append(panel_tests)
-        print(f"{model} {task}: shared_taxa={len(shared)}", flush=True)
+        print(f"{model} {task}: " + ", ".join(f"{level}={len(item)}" for level, item in series[task].items()), flush=True)
     shotgun_label = {
         key: f"{da.SHOTGUN_METHOD[key]} log2 fold change" for key in da.SHOTGUN_METHOD
     }
