@@ -10,15 +10,14 @@ frozen.
 | `datasets-and-analysis-scope` | Dataset accessions, biological samples, sequencing libraries, groups, data volumes, requested analyses and completed stages for all three case studies | Case-study overview |
 | `case1-16s-statistics` | Case 1 alpha/beta-diversity tests, PERMANOVA/PERMDISP results, differential-abundance effect sizes and adjusted P values | Case study 1 |
 | `case1-metaphlan-version-sensitivity` | MetaPhlAn2 versus MetaPhlAn3 database builds, detection prevalence, abundance, effect sizes and adjusted P values for *P. putida* and *Sphingopyxis unclassified* | Case study 1 |
-| `case3-species-and-function-tests` | CRC species, gene-family and KO differential-analysis results | Case study 2 |
-| `case3-classifier-folds` | Features, nested cross-validation splits, fold-level metrics, pooled metrics and confidence intervals | Case study 2 |
-| `case4-mag-catalogue` | MAG quality, dereplication clusters, GTDB taxonomy and abundance by enrichment | Case study 3 |
-| `case4-functional-annotations` | Focal MAG identifiers, annotation database versions, matched genes and module-level CDS counts | Case study 3 |
+| `case2-species-and-function-tests` | CRC species, gene-family and KO differential-analysis results | Case study 2 |
+| `case2-classifier-folds` | Features, nested cross-validation splits, fold-level metrics, pooled metrics and confidence intervals | Case study 2 |
+| `case3-mag-catalogue` | MAG quality, dereplication clusters, GTDB taxonomy and abundance by enrichment | Case study 3 |
+| `case3-functional-annotations` | Focal MAG identifiers, annotation database versions, matched genes and module-level CDS counts | Case study 3 |
 | `robustness-session-results` | All 27 sessions: model, prompt granularity, run, job ID, completion rubric, interventions, runtime and failure mode | Robustness |
-| `robustness-output-concordance` | Pairwise Shannon correlations, Mantel tests, Procrustes comparisons and analytical choices across repeats | Robustness |
 | `hitl-intervention-log` | Timestamped user feedback, interaction mode, affected pending steps, plan revisions and transcript evidence | Human-in-the-loop evaluation |
 | `hitl-operational-outcomes` | Compute preservation, feedback incorporation, automatic resumption, revised-plan fidelity, exactly-once execution and latency for every session | Human-in-the-loop evaluation |
-| `ablation-session-results` | Full, no-patch, no-skills and no-coding session-level completion and process metrics | Ablation |
+| `ablation-session-results` | Full and no-patch session-level output completion, method adherence, model and tool calls, background-process polling, session-yield calls and token consumption | Ablation |
 | `software-and-reference-versions` | Tool, environment, reference database, build/release, command and case-study use | Methods and all Results sections |
 
 ## Main-text placeholder convention

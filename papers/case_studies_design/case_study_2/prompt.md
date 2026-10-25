@@ -1,27 +1,45 @@
-You are provided with clinical cohort data from patients and controls.
+Design and execute a complete downstream analysis workflow for colorectal cancer (CRC) versus controls based on metagenomic data.
 
-Your task is to independently analyze the dataset and identify biological patterns associated with disease status. Please perform a comprehensive exploratory analysis.
+## Microbial Composition and Diversity
 
-## Data characterization
+- Characterize microbial community composition and species-level abundance, including:
+  - Dominant species
+  - Alpha diversity
+  - Beta diversity
+- Perform PCA/PCoA and clustering based on species abundance to evaluate global microbiome structure differences between CRC and control groups.
+- Visualize composition and diversity using stacked bar plots, alpha-diversity boxplots, and PCoA/PCA ordination plots colored by group.
 
-- Describe available variables and data structure.
-- Assess data quality and potential confounding factors.
-- Visualize missingness, variable distributions, and group balance using summary plots.
+## Differential Species and Clinical Association Analyses
 
-## Disease-associated feature discovery
+- Compare species-level abundance between CRC and control groups, with multiple-testing correction.
+- Assess associations between species abundance and clinical variables, including:
+  - CRC status
+  - Disease stage
+  - Age
+  - Sex
+  - Other potential confounders
+- Develop a CRC classification model based on species abundance, and evaluate it using ROC curves, AUC, sensitivity, and specificity.
+- Visualize differential species with volcano plots and heatmaps; show key clinical associations and classifier performance with regression plots and ROC curves.
 
-- Identify microbial features that differ between disease and control groups.
-- Rank candidate microbial biomarkers according to statistical significance and effect size.
-- Visualize differential features with a volcano plot and a clustered abundance heatmap.
+## Functional Gene, KO, and Marker Panel Analyses
 
-## Association with clinical phenotypes
+- Perform differential-abundance analysis of CRC-associated functional features using both:
+  - HUMAnN gene-family abundance profiles
+  - KEGG Orthology (KO) abundance profiles
+- Apply multiple-testing correction and rank candidate gene families and KOs by statistical significance and effect size.
+- Annotate significant KOs to their corresponding KEGG pathways, modules, and biological functions to identify CRC-associated functional alterations.
+- Assess associations of gene-family and KO abundance with clinical variables, including CRC status, disease stage, age, sex, and other potential confounders.
+- Evaluate the relationship between CRC-associated microbial species and functional features, including gene families and KOs, to identify potential microbial contributors to altered functions.
+- Remove redundant candidate features using correlation-based filtering and perform feature selection (e.g., mRMR) to construct:
+  - A gene-family marker panel
+  - A KO-based marker panel
+  - An integrated functional marker panel combining gene families and KOs
+- Perform PCA and clustering based on candidate functional markers, develop a composite CRC functional score/index, and evaluate its diagnostic performance using ROC curves, AUC, sensitivity, and specificity.
+- Examine associations between functional markers and CRC stage by comparing early-stage CRC (stages I–II), late-stage CRC (stages III–IV), and controls.
+- Visualize differential functional features with volcano plots and heatmaps; summarize species–function associations with correlation heatmaps and marker performance with ROC curves.
 
-- Evaluate relationships between microbial features and clinical measurements.
-- Identify microorganisms most strongly associated with disease severity-related phenotypes.
-- Visualize key microbe–phenotype associations using regression scatterplots and a correlation heatmap.
+## Microbial Co-occurrence Network Analysis
 
-## Metabolite analysis
-
-- Identify metabolites associated with disease status.
-- Evaluate relationships between metabolites, microbial features, and clinical phenotypes.
-- Visualize disease-associated metabolites with a volcano plot and summarize microbe–metabolite–phenotype links in a correlation heatmap or network.
+- Perform Spearman correlation analysis of CRC-associated species.
+- Construct a species co-occurrence network to identify key microbial taxa with coordinated abundance changes.
+- Visualize significant species correlations as a co-occurrence network, highlighting hub taxa and positive/negative associations.

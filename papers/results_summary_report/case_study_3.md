@@ -1,21 +1,43 @@
-# Case study 3 — colorectal-cancer faecal metagenomes
+# Case study 4 — LMWPE, C30 and C40 enrichment cultures
 
-Cohort: 128 faecal metagenomes, 74 colorectal cancer (CRC; 36 early, stages I–II; 38 late, stages III–IV) and 54 controls. Species profiles are MetaPhlAn relative abundances. Functional panels use HUMAnN UniRef90 gene-family abundances and KEGG Orthology (KO) abundances, where each KO is the sum of the UniRef90 RPKs mapped to it.
+Six single-end ONT long-read metagenomes from two inocula (S1, S2), each grown on LMWPE, C30 or C40. Each enrichment is one metagenome.
 
-Figure: `case_studies/case_study_3/20260904-121722-user-requested-job-setup-f828dd01/.cursor/Case-study-3-Fig_composite.png` (Fig1_crc_case_study).
+Pipeline behind the figure. Assembly used Aviary (myloasm); binning used Aviary recover (MetaBAT2, Rosella, SemiBin and VAMB, refined with DASTool and CheckM2), giving 372 bins. High-quality (HQ; completeness ≥ 90%, contamination ≤ 5%) and medium-quality (MQ; ≥ 50%, ≤ 10%) MAGs were collected by MIMAG criteria (153 MAGs: 100 HQ + 53 MQ) and dereplicated with skani (ANI ≥ 95%, aligned fraction ≥ 30%) into 75 non-redundant representatives (50 HQ + 25 MQ). Taxonomy is GTDB-Tk release 232, which places the former *Pseudomonas* MAGs in *Aquipseudomonas*. Abundance is CoverM genome cross-mapping (RPKM). Functional annotation of the focal MAGs used Prodigal + EggNOG-mapper (emapper 2.1.13). Panel d counts genes annotated to each module in one representative MAG per focal taxon; the number is the count of annotated genes (copies), not the number of distinct functional types, and not transcript abundance.
 
-## Species-level beta diversity
+Figure: `case_studies/case_study_4/20260902-131309-new-analysis-job-aef3bea3/.cursor/nature/Case-study-4-Fig_composite.png` (Fig_composite).
 
-Fig. 1a is classical PCoA of species-level Bray–Curtis distances; ellipses are 95% covariance ellipses. Fig. 1b shows Bray–Curtis PERMANOVA F statistics for each metadata variable. Controls, early CRC and late CRC did not form discrete clusters (PC1 11.3%, PC2 9.2%). PERMANOVA nevertheless detected a community difference by CRC status (F = 2.32, P = 0.002, n = 128) and by disease stage (F = 1.65, P = 0.009). Sex (P = 0.88), age (P = 0.13) and BMI (P = 0.31; n = 127) were not significant.
+## MAG recovery
 
-## Differential species and co-occurrence
+| Enrichment | Recovered HQ / MQ | ANI 95% HQ / MQ |
+|---|---|---|
+| S1 LMWPE | 15 / 4 | 9 / 3 |
+| S1 C30 | 18 / 9 | 9 / 4 |
+| S1 C40 | 11 / 6 | 4 / 2 |
+| S2 LMWPE | 17 / 11 | 8 / 4 |
+| S2 C30 | 22 / 15 | 13 / 9 |
+| S2 C40 | 17 / 8 | 7 / 3 |
 
-Fig. 1c shows two-sided Wilcoxon rank-sum tests of species relative abundance (CRC versus control) with Benjamini–Hochberg q values. Eight species were CRC-enriched and two control-enriched at q < 0.05. Among the labelled taxa, *Parvimonas micra* (q = 4 × 10⁻⁶), *Peptostreptococcus stomatis* (q = 5 × 10⁻⁵), *Fusobacterium nucleatum* (q = 0.003) and *Solobacterium moorei* (q = 0.020) were CRC-enriched. *Eubacterium ventriosum* was control-enriched (q = 0.015).
+S2 C30 yielded the most MAGs before and after dereplication (37 recovered, 22 representatives). S1 C40 yielded the fewest (17 recovered, 6 representatives).
 
-Fig. 1d is the Spearman co-occurrence network of the ten species with q < 0.05. Edges require |ρ| ≥ 0.4 and BH q < 0.05; all 16 edges were positive. *P. micra* was the highest-degree hub (degree 6). Annotated edges were *P. micra*–*F. nucleatum* (ρ = 0.49) and *P. micra*–*S. moorei* (ρ = 0.53). *E. ventriosum* and *F. saccharivorans* had no edges at this threshold.
+## Taxonomic composition
 
-## Functional marker panels
+*Acinetobacter guillouiae* dominated the two S1 short-chain enrichments: 64% of CoverM abundance in S1 LMWPE and 67% in S1 C30. S1 C40 was instead dominated by *Aquipseudomonas* (66% at genus level; *Aquipseudomonas* sp002980155 42% and *Aquipseudomonas* sp036884845 23% at species level).
 
-The classifier is an L2-regularized logistic regression on standardized abundances (StandardScaler + `LogisticRegression(penalty="l2", class_weight="balanced")`). Features were selected per training fold: the 150 most significant Wilcoxon features were taken as the candidate pool, pairwise-correlation filtering removed redundancy (|ρ| > 0.8, keeping at most 30), and mRMR (maximum-relevance minimum-redundancy, Spearman-based) selected 15 features. Performance was estimated by nested 5-fold cross-validation: feature selection and tuning of C over {0.01, 0.03, 0.1, 0.3, 1.0} were done in the inner loop, and the ROC in Fig. 1f pools the outer-fold out-of-fold probabilities.
+S2 communities were not *Acinetobacter*-dominated. The most abundant MAG species were *Aquipseudomonas* sp003050835 in S2 LMWPE (42%), *Mesorhizobium_M* sp900116595 and *Aquipseudomonas moorei* in S2 C30 (16% each), and *Mesorhizobium_M* sp900116595 (27%) with *Aquipseudomonas fluorescens_BJ* (25%) in S2 C40. S2 C30 and S2 C40 also had a large unmapped fraction.
 
-The gene-family panel had a pooled AUROC of 0.902 (outer-fold AUROCs 0.86–0.96; Youden sensitivity 0.82, specificity 0.89). The KO panel had a pooled AUROC of 0.632 (outer-fold AUROCs 0.59–0.72; Youden sensitivity 0.41, specificity 0.87). Most selected coefficients were positive (higher abundance in CRC) in both panels.
+## Genes annotated to three metabolic modules
+
+| MAG | Quality | Alkane terminal oxidation | 2-ketone / oxidized derivatives | β-oxidation (M00087) |
+|---|---|---:|---:|---:|
+| *Acinetobacter guillouiae* | HQ | 4 | 10 | 7 |
+| *Aeromonas aquatica* | HQ | 0 | 3 | 3 |
+| *Achromobacter* sp. | HQ | 4 | 10 | 9 |
+| *Achromobacter kerstersii* | HQ | 2 | 9 | 7 |
+| *Aquipseudomonas putida_R* | MQ | 4 | 3 | 8 |
+| *Aquipseudomonas fluorescens_BJ* | MQ | 5 | 11 | 5 |
+| *Aquipseudomonas veronii* | HQ | 9 | 14 | 6 |
+| *Aquipseudomonas* sp002029345 | HQ | 4 | 17 | 10 |
+| *Aquipseudomonas* sp. | HQ | 11 | 19 | 8 |
+| *Kaistella soli* | MQ | 0 | 6 | 0 |
+
+Eight of the ten focal MAGs had annotated genes in all three modules. *Aeromonas aquatica* had no alkane-terminal-oxidation genes (0 / 3 / 3). *Kaistella soli* had no alkane-terminal-oxidation genes and no M00087 β-oxidation genes (0 / 6 / 0). The *Aquipseudomonas* sp. representative had the highest counts in alkane terminal oxidation (11) and 2-ketone / oxidized-derivative degradation (19).

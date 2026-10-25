@@ -50,14 +50,16 @@ alkane and oxidized-derivative degradation in focal MAGs.
 The reanalyses identified biological patterns
 consistent with the original studies, with differences in statistical support
 and taxon detection across analytical methods and reference databases.
-The system also retains the analysis context
-across long-running operations, allowing pending work to be revised and
-execution to continue after tool completion.  These applications demonstrate
-that MicroBioAgent can carry out upstream processing and downstream analysis
-across different microbiome study designs without requiring a fixed
-end-to-end workflow template.
-% TODO: add aggregate robustness and component-ablation findings only after
-% the planned experiments have been completed and scored.
+In robustness evaluations across 27 independent sessions spanning three
+language models and three levels of prompt detail, MicroBioAgent completed
+98.8\% of analytical tasks with consistent diversity and
+differential-abundance outputs.  Ablation of the runtime patch showed that pausing the
+conversation turn during background execution reduced mean token consumption
+by more than half compared with repeated status checks, while enabling
+mid-run plan revision and automatic continuation upon task completion.
+These applications demonstrate that MicroBioAgent can carry out upstream
+processing and downstream analysis across different microbiome study designs
+without requiring a fixed end-to-end workflow template.
 \end{abstract}
 
 %% ====================================================================
@@ -138,13 +140,14 @@ after the background task finishes.  We evaluated its analytical capabilities
 through reanalyses of three published datasets comprising 230 sequencing
 libraries, examining completion of the requested analyses and recovery of
 reported biological patterns despite differences in methods and databases.
-We also designed robustness experiments across three language models, three
-levels of prompt detail, and three repeats per combination (27 sessions),
-together with component ablations assessing task completion, method adherence,
-and token consumption.  Within the ablation experiments, a comparison with
-and without the runtime patch specifically examined whether users could
-revise pending analyses while a background task was running and whether the
-agent automatically resumed analysis after the task finished.
+To assess robustness, we evaluated task completion and output consistency
+across three language models and three levels of prompt detail (three
+replicates per combination; 27 independent sessions).  In addition, ablation
+experiments comparing the system with and without the runtime patch assessed
+end-to-end task completion, method adherence, and token consumption, as well
+as whether users could revise pending analyses while a background task was
+running and whether the agent automatically resumed analysis after the task
+finished.
 MicroBioAgent aims to make microbiome analysis more accessible to researchers 
 without specialist bioinformatics training by reducing manual coding, tool 
 integration, and supervision of long-running computation while preserving 
@@ -419,14 +422,14 @@ classifier achieved a pooled out-of-fold AUROC of 0.902, compared with
 gene-family features.  At thresholds selected using Youden's index,
 the gene-family classifier achieved a sensitivity of 0.82 and specificity
 of 0.89, compared with 0.41 and 0.87 for the KO classifier.
-% SUPPLEMENTARY PLACEHOLDER: case3-species-and-function-tests
-% SUPPLEMENTARY PLACEHOLDER: case3-classifier-folds
+% SUPPLEMENTARY PLACEHOLDER: case2-species-and-function-tests
+% SUPPLEMENTARY PLACEHOLDER: case2-classifier-folds
 % Outer-fold AUROC ranges: gene-family 0.86--0.96, KO 0.59--0.72.
 % Include these values and per-fold results in the supplementary classifier table.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-3-Fig_composite.png}
+  \includegraphics[width=0.94\linewidth]{Case-study-2-Fig_composite.png}
   \caption{Reference-based analysis of CRC faecal metagenomes.  Species-level
     beta diversity, disease-associated taxa, co-occurrence of the
     differentially abundant species, functional features, and nested
@@ -484,16 +487,16 @@ contained genes assigned to the $\beta$-oxidation module M00087.
 Eight MAGs contained annotations spanning all three categories,
 indicating that the corresponding genetic potential was distributed
 across multiple taxa of interest.
-% SUPPLEMENTARY PLACEHOLDER: case4-mag-catalogue
-% SUPPLEMENTARY PLACEHOLDER: case4-functional-annotations
-% SUPPLEMENTARY PLACEHOLDER: case4-mag-taxonomy (Table~\ref{tab:mag-taxonomy})
+% SUPPLEMENTARY PLACEHOLDER: case3-mag-catalogue
+% SUPPLEMENTARY PLACEHOLDER: case3-functional-annotations
+% SUPPLEMENTARY PLACEHOLDER: case3-mag-taxonomy (Table~\ref{tab:mag-taxonomy})
 % Populate with MAG identifiers and current GTDB assignments from the annotation
 % export. Confirm whether it covers all 153 quality-filtered MAGs or only the
 % 75 dereplicated representatives before specifying the table's MAG count.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-4-Fig_composite.png}
+  \includegraphics[width=0.94\linewidth]{Case-study-3-Fig_composite.png}
   \caption{Assembly-based analysis of enrichment metagenomes.  (a) Numbers of
     high- and medium-quality MAGs, grouped by completeness and contamination
     thresholds defined in Methods, before and after 95\% ANI dereplication.
@@ -511,149 +514,216 @@ across multiple taxa of interest.
 \subsection{Robustness across models and prompt granularity}
 \label{sec:robustness}
 
-We evaluated completion and output stability on the frozen Case~1 inputs
-with the complete system.  Three models, DeepSeek-Pro, DeepSeek-Flash and
-GLM-Flash, were crossed with detailed, medium and simple prompts, and each
-cell contained three sessions.  Six analyses were scored: 16S alpha
-diversity, 16S beta diversity, 16S taxonomic profiling, 16S differential
-abundance, shotgun species-level taxonomic profiling and shotgun
-differential abundance (Supplementary Figure~\ref{fig:robustness-models}a).
-Every 16S analysis was completed in three of three sessions.  Shotgun
-taxonomic profiling and shotgun differential abundance were likewise
-completed in three of three sessions, except under the GLM-Flash detailed
-prompt (2/3), where one session contained no shotgun reads.
+To assess whether MicroBioAgent maintains reliable execution and consistent
+analytical outputs across language models and levels of user guidance, we
+crossed three models---DeepSeek-Pro (\texttt{deepseek-v4-pro}),
+DeepSeek-Flash (\texttt{deepseek-v4-flash}) and GLM-Flash
+(\texttt{glm5.3-flash})---with detailed, medium and simple prompts on the
+preprocessed Case~1 dataset ($3 \times 3 \times 3 = 27$ independent sessions).  Across six
+core analyses (16S alpha diversity, 16S beta diversity, 16S genus-level
+taxonomic profiling, 16S differential abundance, shotgun species-level
+taxonomic profiling and shotgun differential abundance), MicroBioAgent
+completed 160 of 162 evaluations (98.8\%; Supplementary
+Figure~\ref{fig:robustness-models}a).  DeepSeek-Pro and DeepSeek-Flash
+completed all six analyses in three of three sessions under every prompt
+level, and GLM-Flash completed all 16S analyses (9/9 sessions) and 8 of 9
+shotgun sessions, with one session under the detailed prompt not analysing
+the shotgun libraries.
 
-Shannon index, pairwise weighted UniFrac distance and DESeq2 log$_2$ fold
-change did not differ among models (Supplementary
-Figure~\ref{fig:robustness-models}b).  For both diversity summaries, every
-model pair had a Holm-adjusted $P = 1$ within each prompt.  DESeq2
-comparisons used only sessions that ran DESeq2 and only taxa shared across
-those sessions (Supplementary Table~\ref{tab:da-model-methods}): 216 genera
-for the detailed 16S prompt, 332 genera for the medium 16S prompt and 43
-species for the detailed shotgun prompt.  No model pair differed after Holm
-correction.  The medium shotgun prompt yielded no DESeq2 results that could
-be compared across models, and DeepSeek-Pro contributed one of three
-sessions to each DESeq2 comparison.  Relative abundance of shared genera
-and species differed among models in some prompt conditions.
+Quantitative outputs for community diversity and differential abundance were
+consistent across both models and prompt levels (Supplementary
+Figures~\ref{fig:robustness-models}b and \ref{fig:robustness-prompts}).
+Per-sample 16S Shannon indices (median $9.59\text{--}9.83$) and pairwise
+weighted UniFrac distances (median $0.301\text{--}0.303$) did not differ
+between any pair of models under any prompt level or across prompt levels
+within any model (all Holm-adjusted $P = 1$, two-sided Mann--Whitney $U$
+test).  For differential abundance, because none of the prompts specified a
+statistical test, individual sessions chose among DESeq2, MaAsLin~3,
+Wilcoxon rank-sum tests, Mann--Whitney $U$ tests and LEfSe (Supplementary
+Tables~\ref{tab:da-model-methods} and \ref{tab:da-prompt-methods}).  Because
+different tests define effect sizes on different scales, we compared
+$\log_2$ fold-change distributions across sessions that used the same test.
+Across models within each prompt level, DESeq2 was used by all three models
+for 16S analyses under the detailed and medium prompts and for shotgun
+analyses under the detailed prompt, and its $\log_2$ fold-change
+distributions did not differ between any pair of models (all Holm-adjusted
+$P \ge 0.059$; under the medium prompt in shotgun analyses, no single test
+was used by all three models).  Between the detailed and medium prompts
+within each model, $\log_2$ fold-change distributions also did not differ for
+any model in either 16S analyses using DESeq2 (DeepSeek-Pro, $P = 0.54$;
+DeepSeek-Flash, $P = 0.50$; GLM-Flash, $P = 0.13$) or shotgun analyses using
+the test shared within each model (DeepSeek-Pro, Wilcoxon rank-sum test,
+$P = 0.58$; DeepSeek-Flash, Mann--Whitney $U$ test, $P = 0.24$; GLM-Flash,
+DESeq2, $P = 0.064$).
 
-Within each model, prompt level left the Shannon index and weighted UniFrac
-distance unchanged (Supplementary Figure~\ref{fig:robustness-prompts}).
-Relative abundance differed between some prompt levels.  Detailed and medium
-16S analyses both used DESeq2.  Their genus-level log$_2$ fold changes
-differed for DeepSeek-Pro (111 shared genera, $P = 0.014$) and did not
-differ for DeepSeek-Flash (668 genera, $P = 0.32$) or GLM-Flash (413 genera,
-$P = 0.28$).  Shotgun detailed-versus-medium contrasts were not significant
-within any model ($P = 0.16$, $0.73$ and $0.25$ for DeepSeek-Pro,
-DeepSeek-Flash and GLM-Flash).  These shotgun values are not the same
-estimand: DeepSeek-Pro reported a Wilcoxon log$_2$ fold change,
-DeepSeek-Flash a Mann--Whitney $U$ log$_2$ fold change and GLM-Flash a
-DESeq2 log$_2$ fold change (Supplementary Table~\ref{tab:da-prompt-methods}).
-They were therefore not compared across models.
-
-The rank tests compare distributions of magnitudes.  Samples, sample pairs
-and taxa come from this one experiment and are not independent replicates.
-The comparisons do not establish that community structure was preserved or
-that the same taxa were called as differentially abundant.
+For taxonomic profiling, relative abundances were more sensitive to model and
+prompt choices (Supplementary Figures~\ref{fig:robustness-models}b and
+\ref{fig:robustness-prompts}).  Across models, relative-abundance
+distributions did not differ in 16S analyses under the simple prompt or in
+shotgun analyses under the detailed prompt (all Holm-adjusted $P = 1$), but
+differed in the remaining prompt settings (Holm-adjusted $P \le 0.05$).
+Across prompt levels within each model, distributions were consistent across
+all three prompts for GLM-Flash in 16S analyses and for both DeepSeek-Pro
+and DeepSeek-Flash in shotgun analyses (all Holm-adjusted $P = 1$), whereas
+differences occurred in the remaining comparisons (Holm-adjusted
+$P \le 0.025$).  Inspecting the session logs showed three causes of these differences:
+(1)~some sessions applied a V4 rather than a V3--V4 classifier during 16S
+taxonomic classification; (2)~an occasional script misaligned feature
+identifiers when merging sample profiles into a taxonomic abundance table; and
+(3)~without prompt constraints on MetaPhlAn parameters, sessions differed in
+whether \texttt{--unknown\_estimation} was enabled, changing whether species
+relative abundances were normalized to total reads or only classified reads.
+Overall, MicroBioAgent maintained high task completion and consistent
+diversity and differential-abundance outputs across models and prompt levels,
+with remaining differences largely reflecting choices of analytical tools and
+software parameters.
 
 \FloatBarrier
 
-\subsection{Evaluating component contributions and asynchronous guidance}
+\subsection{Evaluating asynchronous execution and guidance}
 \label{sec:ablation}
 
-\subsubsection{Component contributions to end-to-end analysis}
+\subsubsection{End-to-end execution and token consumption}
 
-We compared the complete system with removal of the shipped microbiome skills
-and with removal of the coding and long-execution instructions
-(\cref{fig:component-ablation}).  The session-runtime extension was left in
-place.  Every condition used the detailed Case~1 prompt, the frozen
-preprocessed inputs, and one model, with no user message after the initial
-plan confirmation.  The complete-system sessions are the three detailed-prompt
-\texttt{deepseek-v4-pro} sessions.  Each ablated condition was scored from
-three archived sessions.
+To evaluate how background-execution coordination affects end-to-end
+analysis, we compared the complete system (\texttt{full}) against an ablated
+configuration without the runtime patch (\texttt{no-patch};
+\cref{tab:e2e-ablation,sec:asynchronous-execution}).  Both conditions used
+\texttt{deepseek-v4-pro}, the detailed Case~1 prompt, and the preprocessed
+Case~1 dataset across three independent sessions, with no user messages after
+initial plan confirmation.
 
-All nine requested outputs were present in each complete-system session.
-Without skills, one session did not contain an analysis report (26 of 27
-output checks).  Without coding guidance, one session did not retain analysis
-scripts (26 of 27 output checks); the other requested outputs were present.
-All eight methods named in the detailed prompt were used in every session.
-Token totals were not present in the archived job records.
+Across the three sessions, the complete system produced all 27 requested
+outputs (9 of 9 per session) and followed all 24 prespecified methodological
+requirements (8 of 8 per session).  The \texttt{no-patch} configuration
+followed all 24 methodological requirements and produced 26 of 27 requested
+outputs, with one session omitting archived analysis scripts.  Removing
+asynchronous execution coordination therefore did not prevent the model from
+completing the prespecified downstream workflow when the prompt explicitly
+named the required methods, but it substantially altered how long-running
+commands were managed.
 
-This comparison asks whether those components were required to finish the
-prespecified downstream analysis when the prompt already named the methods.
-It does not test upstream read processing, other models, or less specific
-prompts.
+In the complete system, once a long-running command was moved to the
+background, the agent paused its conversation turn (via the
+\texttt{sessions\_yield} tool, mean $11.7$ calls per session, range
+$5\text{--}17$) to await automatic notification upon command completion, and
+rarely queried whether the background process had finished (via the
+\texttt{process} tool, mean $7.3$ calls, range $0\text{--}21$, with two
+sessions making at most one call).  In \texttt{no-patch}, by contrast, the
+agent never paused to await completion notifications ($0$
+\texttt{sessions\_yield} calls across all three sessions) and instead
+repeatedly queried the status of running commands with \texttt{process} (mean
+$155.0$ calls per session, range $102\text{--}227$).  Because each status
+check required a new model call that re-read the growing conversation history,
+total model calls increased from a mean of $133.3$ (range $124\text{--}150$)
+in \texttt{full} to $286.3$ (range $211\text{--}403$) in \texttt{no-patch},
+and mean total token consumption rose by $141.5\%$ ($2.4$-fold), from
+$14.53 \times 10^6$ (range $12.92\text{--}15.84 \times 10^6$) to
+$35.08 \times 10^6$ (range $23.77\text{--}49.32 \times 10^6$) tokens per
+session (\cref{tab:e2e-ablation}).
 
-\begin{figure}[htbp]
+\begin{table}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{component_ablation.pdf}
-  \caption{Component contributions to end-to-end Case~1 analysis.
-    (a)~Nine requested outputs.
-    (b)~Eight methods named in the detailed prompt: sequencing-depth
-    normalization, Shannon diversity, weighted UniFrac, unweighted UniFrac,
-    Bray--Curtis distance, weighted-UniFrac PCoA, PERMANOVA, and PERMDISP.
-    Each row is one independent session.
-    A cell is filled when that output or method was present in the archived
-    job and marked when it was not.
-    Full is the complete system, $-$Skills removes the microbiome domain
-    skills, and $-$Exec guidance removes the coding and long-execution
-    instructions.
-    Each condition contains three sessions.
-    Completion records whether a usable artifact was produced.
-    It is not a test of agreement with the original study.}
-  \label{fig:component-ablation}
-\end{figure}
+  \caption{End-to-end execution and token consumption with and without the
+    runtime patch.}
+  \label{tab:e2e-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{2pt}
+  \renewcommand{\arraystretch}{1.18}
+  \resizebox{\linewidth}{!}{%
+  \begin{tabular}{@{}ll*{7}{c}@{}}
+    \toprule
+    Condition & Session
+      & \shortstack{Outputs\\(of 9)}
+      & \shortstack{Methods\\(of 8)}
+      & \shortstack{Model\\calls}
+      & \shortstack{\texttt{exec}\\calls}
+      & \shortstack{\texttt{process}\\polls}
+      & \shortstack{\texttt{yield}\\calls}
+      & \shortstack{Total tokens\\($\times 10^6$)} \\
+    \midrule
+    \texttt{full}     & Replicate 1 & 9/9 & 8/8 & 150 & 91  & 1  & 17 & 12.92 \\
+    \texttt{full}     & Replicate 2 & 9/9 & 8/8 & 124 & 74  & 21 & 5  & 14.81 \\
+    \texttt{full}     & Replicate 3 & 9/9 & 8/8 & 126 & 82  & 0  & 13 & 15.84 \\
+    \texttt{full}     & Mean / sum  & 27/27 & 24/24 & 133.3 & 82.3 & 7.3 & 11.7 & 14.53 \\
+    \addlinespace
+    \texttt{no-patch} & Replicate 1 & 8/9 & 8/8 & 211 & 77  & 102 & 0  & 23.77 \\
+    \texttt{no-patch} & Replicate 2 & 9/9 & 8/8 & 403 & 142 & 227 & 0  & 49.32 \\
+    \texttt{no-patch} & Replicate 3 & 9/9 & 8/8 & 245 & 99  & 136 & 0  & 32.15 \\
+    \texttt{no-patch} & Mean / sum  & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 \\
+    \bottomrule
+  \end{tabular}}
+  \vspace{0.35em}
 
-\subsubsection{Runtime ablation for analysis continuity}
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} \texttt{full} denotes the complete system with the runtime
+    patch, and \texttt{no-patch} denotes the ablated configuration without the
+    patch.  All sessions used \texttt{deepseek-v4-pro}, the detailed
+    Case~1 prompt, and the preprocessed Case~1 dataset.  Outputs and methods
+    in the summary rows are pooled counts across the three sessions; call
+    counts and token values in the summary rows are per-session means.  Total
+    tokens equal input plus output tokens (including reasoning tokens).
+  \end{minipage}
+\end{table}
 
-We tested asynchronous guidance with a real, minutes-scale Case~1 QIIME~2
-taxonomy-classification task.  After the command was confirmed running, the
-user instructed the agent to replace a pooled resistant-versus-susceptible
-comparison with separate T1, T2C, and T2 comparisons and to add a
-significant-genera heatmap.  No subsequent ``continue'' message was sent.
+\subsubsection{Asynchronous human guidance during active computation}
 
-With the extended runtime, the agent yielded while the command continued,
-updated the pending plan during execution, and resumed automatically after
-command completion in all three sessions (\cref{tab:hitl-ablation}).  With
-the standard runtime in the tested configuration, neither plan revision during
-active computation nor automatic session resumption after tool exit was
-observed in any of the three sessions.
-These observations support plan revision and automatic continuation for the
-tested command and runtime configuration.  The two endpoints assess session
-interaction.  They do not separately establish that every requested change was
-correctly reflected in the final analytical outputs.
-% TODO: score final-output adherence to the revised plan from archived runs.
+We next tested whether the user could revise the pending analysis plan while
+a minutes-scale Case~1 QIIME~2 taxonomy-classification command was running in
+the background.  Once the classification process was confirmed active, the
+user sent an instruction to keep the running classification command and
+update the pending plan to use DESeq2 for the subsequent
+differential-abundance analysis and generate a heatmap of significant genera.
+
+In the complete system (\texttt{full}), after starting the classification
+task, the agent paused its conversation turn via \texttt{sessions\_\-yield}
+and updated the pending plan in response to the user's instruction while the
+task was still running ($3/3$ sessions; \cref{tab:hitl-ablation}).  Once the
+classification task finished, the session was automatically reactivated to
+continue the analysis without additional user input or repeated
+\texttt{process} checks ($3/3$ sessions).  In \texttt{no-patch}, by contrast,
+because the agent did not pause its turn via \texttt{sessions\_\-yield} and
+instead kept the conversation occupied with repeated \texttt{process} calls to
+check whether the task had completed, neither mid-run plan revision nor
+automatic session reactivation upon command completion was achieved in any of
+the three sessions ($0/3$).
 % SUPPLEMENTARY PLACEHOLDER: hitl-intervention-logs
 
 \begin{table}[htbp]
   \centering
-  \caption{Runtime-extension ablation assessing asynchronous human guidance
-    during active computation.  Each runtime was evaluated in three independent
-    sessions.}
+  \caption{Ablation of asynchronous human guidance and automatic session
+    reactivation during active computation.  Each condition was evaluated in
+    three independent sessions.}
   \label{tab:hitl-ablation}
   \scriptsize
   \setlength{\tabcolsep}{6pt}
   \renewcommand{\arraystretch}{1.18}
   \begin{tabularx}{\linewidth}{@{}l*{2}{>{\centering\arraybackslash}X}@{}}
     \toprule
-    System
-      & \shortstack{Plan updated\\during execution}
-      & \shortstack{Automatic continuation\\after tool exit} \\
+    Condition
+      & \shortstack{Plan updated while\\command running}
+      & \shortstack{Automatic reactivation\\upon command completion} \\
     \midrule
-    Extended runtime & (3/3) & (3/3) \\
-    Standard runtime & (0/3) & (0/3) \\
+    \texttt{full}     & 3/3 & 3/3 \\
+    \texttt{no-patch} & 0/3 & 0/3 \\
     \bottomrule
   \end{tabularx}
   \vspace{0.35em}
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} The two conditions differ only in the session-runtime
-    extension described in \cref{sec:asynchronous-execution}.
-    Plan updated during execution requires the agent
-    to yield while the tool continues in the background and to incorporate the
-    user's message into the pending plan before tool completion.  Automatic
-    continuation requires tool exit to reactivate the session without another user
-    message.  Results are reported as successful sessions out of three.
+    \textit{Notes:} The two conditions compare the complete system
+    (\texttt{full}) with the ablated configuration without the runtime patch
+    (\texttt{no-patch}; \cref{sec:asynchronous-execution}).  Plan updated
+    while command running requires the agent to incorporate the user's mid-run
+    instruction into the pending analysis plan while the classification task is
+    still running in the background.  Automatic reactivation upon command completion
+    requires completion of the background classification command to
+    automatically reactivate the waiting session so that the agent continues
+    with the revised plan without additional user messages or repeated
+    \texttt{process} calls to check whether the command has completed.
+    Results are reported as successful sessions out of three.
   \end{minipage}
 \end{table}
 
@@ -664,82 +734,113 @@ correctly reflected in the final analytical outputs.
 \label{sec:discussion}
 %% ====================================================================
 
-MicroBioAgent connects biological objectives to established microbiome
-methods through an analysis process that researchers can inspect and revise.
-The three reanalyses illustrate complementary uses of this approach: relating
-amplicon and shotgun profiles to resistance phenotypes, extending disease
-profiles into functional and predictive analyses, and linking taxonomically
-assigned MAGs to metabolic potential.  Their common contribution is the composition
-of existing methods around a study question.  The underlying algorithms and
-reference resources remain responsible for the primary biological estimates.
+MicroBioAgent combines modular domain skills, local execution environments,
+and asynchronous human-in-the-loop interaction to translate biological
+research questions into executable microbiome analyses.  This framework is
+supported by three complementary lines of evidence: (1)~three case studies
+across plant, human, and environmental microbiomes demonstrating flexible
+composition across amplicon, shotgun metagenomic, and genome-resolved
+workflows; (2)~27 independent sessions across three language models and
+three prompt granularities establishing execution robustness and quantitative
+output consistency; and (3)~ablation experiments demonstrating that the
+runtime patch substantially reduces token overhead while enabling mid-run
+plan revision and automatic continuation.  By coordinating established
+bioinformatics tools within an inspectable and interactive workflow,
+MicroBioAgent allows researchers to transparently steer complex analyses
+without manual coding or fixed pipeline constraints.
 
-The reported capabilities of related agents provide context for these
-results (Supplementary Table~\ref{tab:agent-capabilities}). Biomni combines
-resource retrieval with code-based execution to compose analyses across
-biomedical domains \parencite{huang2025biomni}. MicroBioAgent focuses on connecting microbiome methods across upstream
-and downstream tasks through explicit method guidance and configured
-software and reference databases. MetaClaw also integrates these stages, using
-registered FlowHub workflows for upstream processing and customizable skills
-for downstream analysis \parencite{zhang2026metaclaw}. MicroBioAgent instead
-organizes both stages around individual analytical skills and executes them
-on the user's workstation or server. This design allows method choices to
-be revised at individual stages and accommodates studies that require
-upstream processing on user-controlled infrastructure. Both systems support
-extension through skills and resource configuration, but differ in how
-upstream methods are organized and where they execute.
+The three case studies demonstrate how MicroBioAgent adapts to distinct
+research questions, spanning cultivar-associated marker discovery in paired
+amplicon and shotgun libraries, disease-predictive modeling from functional
+profiles, and genome-resolved metabolic reconstruction.  At the same time,
+these reanalyses show that biological findings remain sensitive to statistical
+thresholds, tool configurations, and reference database versions.  In the
+tomato rhizosphere study, initial profiling with MetaPhlAn3 detected only one
+of the two reported species markers, whereas repeating the analysis with
+MetaPhlAn2, the version used in the original study, recovered both.  By
+preserving commands, parameters, and intermediate tables within the session
+context, MicroBioAgent makes these analytical choices explicit, allowing
+researchers to inspect the results and adjust the workflow when needed.
 
-Organizing domain knowledge at the level of individual procedures provides a
-practical basis for this composition.  Method requirements and expected
-products remain explicit while their arrangement can vary between studies.
-The case studies also show why interpretation must retain the context of
-these choices.  A nominal association may not survive multiple-testing
-correction, a taxon may be represented differently across reference databases,
-and a predicted gene repertoire does not establish metabolic activity.
-Maintaining commands, parameters, and outputs within the analysis context
-supports review of such distinctions, although their correct interpretation
-still requires scientific judgment.
+MicroBioAgent occupies a distinct position within the growing landscape of AI
+agents and workflow tools for biomedical research (Supplementary
+Table~\ref{tab:agent-capabilities}).  General-purpose biomedical agents, such
+as Biomni, combine tool retrieval with code-based execution across diverse
+domains \parencite{huang2025biomni}, but lack domain-specific skill guidance
+and configured reference databases required for end-to-end microbiome analyses
+beginning from raw sequencing reads.  Within the microbiome domain, MetaClaw
+spans upstream and downstream analyses by coupling predefined FlowHub
+workflows with customizable downstream skills \parencite{zhang2026metaclaw}.
+In contrast, MicroBioAgent unifies both upstream processing and downstream
+analysis into modular skills that run entirely on the user's local
+infrastructure.  This on-premises architecture keeps raw sequencing data secure,
+eliminates dependencies on external computing platforms, and allows method
+choices to be inspected and adjusted at any stage.  Such an interactive approach
+complements workflow managers such as Nextflow or Snakemake rather than
+replacing them.  While traditional workflow engines excel at large-scale,
+deterministic execution of static pipelines, MicroBioAgent is tailored for
+exploratory and iterative analyses where plans could be guided and refined in
+response to intermediate results.
 
-The current evidence establishes feasibility across the selected cases.
-The robustness experiment has not yet established aggregate completion rates
-or model dependence.  The component comparison
-(\cref{fig:component-ablation}) is limited to one model, a detailed prompt,
-and preprocessed inputs, so it does not show that skills or coding guidance
-are dispensable for other tasks.  Comparisons with a general
-agent given the same software and resources would further quantify the value
-of the integrated system.  Agreement between repeated analyses should be
-assessed alongside method correctness and independently checked results,
-since consistent outputs can still be incorrect.  User studies are also
-needed to determine whether the conversational interface reduces training,
-manual intervention, or time spent organizing an analysis.
+The cross-model and cross-prompt benchmark illustrates the effectiveness of
+MicroBioAgent in automating complex microbiome workflows.  By generating custom
+scripts, switching software environments, and coordinating input--output
+handoffs across tools, the system achieved high overall task completion (98.8\%)
+and consistent diversity and differential-abundance distributions across
+models and prompt granularities on the preprocessed Case~1 dataset.
+Nevertheless, occasional inaccuracies in model reasoning also occurred,
+including misidentifying the V3--V4 amplicon region as V4, altering MetaPhlAn
+normalization flags (\texttt{--unknown\_estimation}), and merging feature
+tables by row position rather than matching identifiers.  As foundation model
+capabilities continue to advance, such procedural inconsistencies are expected
+to diminish.  More fundamentally, these findings highlight the practical value
+of MicroBioAgent's transparent architecture.  By automating end-to-end
+computational execution while keeping intermediate commands, parameters, and
+outputs fully inspectable, the system enables researchers to readily verify
+analytical decisions and refine workflows without constructing them manually.
 
-Human confirmation of the initial plan and expert review of analytical choices
-remain part of the operating model.  Procedure-specific output checks do not
-guarantee statistical validity or prevent unsupported interpretations.  Local
-execution retains the compute, software-maintenance, and reference-database
-requirements of the underlying tools.  Workflow managers remain well suited
-to repeated execution of a specified analysis at scale.  MicroBioAgent focuses
-on defining and revising study-specific analyses through interaction.
+The ablation experiments evaluate the operational contribution of the runtime
+patch during long-running microbiome computations (\cref{tab:e2e-ablation,tab:hitl-ablation}).
+In conventional agent setups without the patch, monitoring an active process
+occupies the conversational turn with repeated status checks, which increased
+mean model calls from 133.3 to 286.3 and inflated total token consumption by
+2.4-fold (from $14.53 \times 10^6$ to $35.08 \times 10^6$ tokens per session)
+due to continuous re-reading of the expanding conversation history.  More
+importantly, keeping the session busy with status polling blocks user
+interaction, preventing researchers from providing timely guidance while
+computations are underway. By
+pausing the conversation turn and relying on completion events to reactivate
+the session, the runtime patch eliminates status-polling overhead while
+enabling reliable mid-run plan revision and automatic continuation.  
+This capability is especially valuable for
+multi-step microbiome analyses, where heavy operations such as sequence
+denoising, taxonomic classification, and metagenomic assembly often run for
+hours while researchers review intermediate findings and refine downstream
+hypotheses.
 
-Interaction during computation is a separate consideration from the range
-of analyses an agent supports. For MicroBioAgent, ending the conversational
-turn while a command continues in the background allows users to revise
-pending work without stopping that computation. Command-completion events
-then reactivate the conversation without another user message. The targeted
-comparison with unmodified OpenClaw supported both behaviours in the tested
-configuration (\cref{tab:hitl-ablation}). This experiment isolates the role
-of the execution changes within MicroBioAgent, while comparisons under
-matched conditions would be needed to assess the same behaviours across
-other agents. Reliability across longer jobs and more complex revisions,
-and the fidelity of final outputs to revised instructions, require further
-evaluation.
-
-MicroBioAgent organizes established microbiome methods into study-specific
-analyses guided by biological questions.  The three published-data reanalyses
-demonstrate paths through amplicon profiling, reference-based metagenomics,
-and MAG construction with taxonomic and functional characterization.
-By connecting modular domain procedures, local computational resources, and
-intermediate results within a common analysis context, the system provides a
-basis for question-driven analysis across microbiome workflows.
+While the case studies and benchmarks show that MicroBioAgent can support
+interactive microbiome analyses, several practical limits remain.  First, our
+robustness and ablation experiments used the preprocessed Case~1 dataset, and
+mid-run guidance was tested on a minutes-scale 16S taxonomic classification step
+across three replicates per condition.  Testing the system on multi-hour
+assembly pipelines, broader command failures, and more detailed plan changes
+remains an important next step.  Second, automated execution checks do not
+guarantee that biological findings are correctly interpreted, so researchers
+still need to inspect intermediate tables and confirm overall analysis plans.
+Third, running analyses locally protects sensitive sequencing data, but users
+must still install and maintain the required tools, Conda environments, and
+reference databases on their own machines.  Future work should include direct
+benchmark comparisons with a general coding agent to isolate the practical
+contribution of preconfigured domain skills and runtime setups.  In addition,
+formal user studies will be valuable to assess whether this conversational
+framework measurably reduces operational time and cognitive burden for life
+scientists.  Finally, while this study focused on amplicon and metagenomic data,
+the core architecture of combining modular skills, local environments, and
+background execution can be extended to other areas, such as transcriptomics or
+metabolomics, by adding new skill guides and software environments.  Overall,
+MicroBioAgent is not intended to replace human expertise, but to provide a
+transparent assistant that handles repetitive bioinformatics execution while
+leaving researchers in full control of analytical decisions.
 
 %% ====================================================================
 \section{Methods}
@@ -781,7 +882,7 @@ remaining analysis.
 
 Analytical methods are organized into skills covering 16S amplicon processing, 
 reference-based metagenomic profiling, assembly-based genome reconstruction, 
-and downstream statistical analysis, annotation and visualization (\cref{tab}). 
+and downstream statistical analysis, annotation and visualization (\cref{tab:skills}).
 Each skill contains a \texttt{SKILL.md} document describing its purpose, required 
 inputs, software dependencies, reference resources, analytical procedures and 
 expected outputs. Some skills also include reference scripts that can be adapted 
@@ -867,7 +968,7 @@ conversation and support automatic continuation upon task completion.
 
 Three published datasets spanning plant, human, and environmental microbiomes 
 were selected to evaluate the multi-modal analytical capabilities of 
-MicroBioAgent (Supplementary Table~\ref{tab}). These cases spanned 16S rRNA 
+MicroBioAgent (Supplementary Table~\ref{tab:cases-overview}). These cases spanned 16S rRNA
 amplicon and shotgun metagenomic profiling, disease-associated taxonomic and 
 functional analyses, and genome-resolved metagenomics. The case studies were 
 designed to assess whether the agent could autonomously execute study-specific 
@@ -957,9 +1058,9 @@ ablation experiments were conducted using preprocessed data from Case 1.
 The 16S dataset comprised the ASV table, representative sequences, a rooted
 phylogenetic tree, denoising statistics, and sample metadata. For shotgun
 sequencing, 36 QC-filtered and host-cleared libraries were used, each
-subsampled to 20\% of its original read depth. These normalized inputs were
-consistently applied across all experimental conditions, with each session
-executing downstream analyses independently from scratch.
+subsampled to 20\% of its original read depth. These preprocessed inputs were
+used across all experimental conditions, with each session running the
+analyses independently.
 
 \subsubsection{Robustness across models and prompt granularity}
 
@@ -967,32 +1068,30 @@ Robustness was evaluated across three large language models
 (\texttt{glm5.3-flash}, \texttt{deepseek-v4-flash}, and
 \texttt{deepseek-v4-pro}) and three levels of prompt detail. Each
 model--prompt combination was executed in three independent replicates,
-yielding a total of 27 experimental sessions. All prompts focused on
-identifying resistance-associated microbiome patterns in the Case~1 datasets,
-but varied in their level of analytical specificity.
+yielding a total of 27 experimental sessions. All three prompts requested
+joint 16S and shotgun metagenomic analyses of the Case~1 study, differing in
+how explicitly they specified the analytical steps and methods:
 
 \begin{itemize}
-  \item \textbf{Detailed prompt:} Specified exact tasks and analytical
-    requirements. It encompassed initial data characterization (sample
-    metadata, experimental design, sequencing depth, and quality control
-    summaries), 16S workflows (alpha- and beta-diversity analysis, taxonomic
-    classification, community profiling, and differential abundance), and
-    shotgun species-level profiling with differential abundance testing. For
-    both datasets, it explicitly requested comparing each resistant cultivar
-    against the susceptible group across individual timepoints and identifying
-    taxa consistently enriched in both HG64 and HF12 at T1, T2C, and T2. It
-    further mandated specific methods, such as sequencing-depth normalization
-    prior to calculating Shannon diversity, weighted and unweighted UniFrac,
-    Bray--Curtis dissimilarity, weighted-UniFrac PCoA, PERMANOVA, and PERMDISP,
-    along with precise visualization targets.
-  \item \textbf{Medium prompt:} Retained the core analytical scope (data
-    characterization, 16S and shotgun analyses, cultivar comparisons, and
-    shared enriched taxa detection), but omitted specific metric names and
-    statistical tests, leaving method selection and visualization formats to
-    the LLM agent.
-  \item \textbf{Simple prompt:} Outlined only the high-level biological
-    objective, identifying microbiome patterns associated with wilt resistance,
-    without prescribing specific analytical steps or methodologies.
+  \item \textbf{Detailed prompt:} Specified exact analytical tasks and
+    diversity methods, covering dataset characterization, 16S alpha diversity
+    (Shannon index after sequencing-depth normalization), 16S beta diversity
+    (weighted and unweighted UniFrac and Bray--Curtis distances,
+    weighted-UniFrac PCoA, PERMANOVA, and PERMDISP), 16S taxonomic and
+    differential-abundance profiling, and shotgun species-level taxonomic and
+    differential-abundance profiling.  For both datasets, it requested
+    comparing each resistant cultivar against the susceptible group at each
+    sampling timepoint and identifying taxa enriched in both HG64 and HF12
+    within each of T1, T2C, and T2.
+  \item \textbf{Medium prompt:} Retained the same analytical scope (dataset
+    characterization, 16S diversity, 16S and shotgun taxonomic profiling,
+    cultivar comparisons at each timepoint, and shared enriched taxa
+    detection), but omitted specific diversity metrics and statistical tests,
+    leaving method selection to the agent.
+  \item \textbf{Simple prompt:} Stated only the high-level biological
+    objective of identifying microbiome patterns associated with
+    bacterial-wilt resistance across the 16S and shotgun datasets, without
+    prescribing specific analytical steps or methods.
 \end{itemize}
 
 System configurations, analytical software, reference databases, and
@@ -1000,87 +1099,97 @@ preprocessed inputs were held constant across all runs. Each replicate was
 initialized in a clean conversation session without further methodological
 guidance following initial plan confirmation.
 
-To evaluate model performance across these conditions, task completion was
-systematically evaluated across six distinct analytical tasks: (1) 16S alpha
-diversity, (2) 16S beta diversity, (3) 16S taxonomic profiling, (4) 16S
-differential abundance analysis, (5) shotgun species-level taxonomic profiling,
-and (6) shotgun differential abundance analysis. Across all model--prompt
-combinations, each task was evaluated using task-specific criteria. A task was
-counted as completed when its required outputs were present and fulfilled the
-corresponding analytical objective; otherwise, it was marked as incomplete.
-The task completion rate was then calculated as the proportion of successful
-replicates out of the three independent sessions for each task. This assessment
-quantified the task coverage achieved under each prompt condition, reflecting
-how effectively the model executed the required pipeline with varying levels of
-guidance.
+To evaluate system performance across these conditions, task completion was
+systematically evaluated across six distinct analytical tasks: (1)~16S alpha
+diversity, (2)~16S beta diversity, (3)~16S genus-level taxonomic profiling,
+(4)~16S differential abundance, (5)~shotgun species-level taxonomic
+profiling, and (6)~shotgun differential abundance.  A task was scored as
+completed when the session produced the corresponding quantitative output,
+such as a per-sample Shannon diversity table, a between-sample distance
+matrix, a genus- or species-level taxonomic abundance table, or a
+differential-abundance result table.  For each model--prompt combination, the
+task completion rate was calculated as the proportion of completed runs out of
+the three independent sessions.
 
-Adherence to explicit methodological requirements was evaluated exclusively
-under the detailed prompt condition. Each session was assessed against eight
-predefined requirements: (1) sequencing-depth normalization prior to diversity
-calculations, (2) Shannon diversity calculation, (3) weighted UniFrac distance
-calculation, (4) unweighted UniFrac distance calculation, (5) Bray--Curtis
-dissimilarity calculation, (6) weighted-UniFrac PCoA ordination, (7) PERMANOVA
-testing, and (8) PERMDISP testing. Each requirement was assigned a binary score
-(satisfied versus unsatisfied) based on inspection of analysis scripts and
-generated outputs. The adherence rate for each model--prompt combination was
-calculated as the average proportion of requirements satisfied across the three
-independent replicates. This evaluation was omitted for the medium and simple
-prompt conditions, where method selection was entirely unconstrained.
+To evaluate output stability across models and prompt levels, quantitative
+results were averaged across completed replicate sessions within each
+model--prompt combination and compared across entries shared by the compared
+groups using two-sided Mann--Whitney $U$ tests with Holm correction.  For
+diversity analyses, per-sample Shannon indices ($n = 60$ samples)
+and pairwise weighted UniFrac distances ($n = 1{,}770$ unordered sample
+pairs) were averaged across replicates.  For taxonomic profiling, abundance
+tables reported as percentages or raw counts were converted to per-sample
+relative abundances before removing unclassified or unnamed entries, with taxa
+absent from a replicate that included the sample entered as zero.  Because
+microbial relative-abundance tables are highly right-skewed and contain many
+near-zero entries near the detection limit, minor numerical fluctuations in
+the low-abundance tail can disproportionately affect rank-based tests despite
+negligible differences in absolute abundance.  To prevent these near-zero
+entries from dominating the comparison of taxonomic abundance tables,
+relative-abundance distributions were compared across shared sample and taxon
+entries with a session-mean relative abundance of at least 5\% in every
+compared group, whereas all shared taxa (including low-abundance taxa) were
+included without an abundance threshold in the differential-abundance
+comparisons below.
 
-Repeatability is evaluated through pairwise comparisons of the three sessions
-within each model--prompt combination. Per-sample Shannon values are compared
-using Pearson correlation, distance matrices calculated with the same metric
-are compared using Mantel correlation, and corresponding ordinations are
-compared using Procrustes analysis. Samples are matched by identifier before
-comparison. Analyses with missing outputs or incompatible metrics are recorded
-as unavailable comparisons, and the number of comparisons contributing to each
-summary is reported.
+For differential abundance, because the prompts did not prescribe a specific
+statistical test, sessions selected different methods (including DESeq2,
+MaAsLin~3, Wilcoxon rank-sum test, Mann--Whitney $U$ test and LEfSe).
+Because different methods report differently defined effect sizes, $\log_2$
+fold-change distributions were compared only across sessions that used the
+same statistical test.  Cross-model comparisons within each prompt level used sessions that ran
+DESeq2 (Supplementary Table~\ref{tab:da-model-methods}), and within-model
+comparisons across prompt levels were conducted between the detailed and
+medium prompts, which specified the same comparisons between resistant and
+susceptible cultivars at each timepoint, using the statistical test shared by
+both prompts for each model (Supplementary
+Table~\ref{tab:da-prompt-methods}).  In both comparisons, each data point
+represented the $\log_2$ fold change of a taxon for a given resistant
+cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
+control (averaging across susceptible controls within a session when A57 and
+HG70 were reported separately).  Values were averaged across replicate
+sessions without imputing missing entries as zero, and entries shared across
+all compared groups were retained.
 
-\subsubsection{Component-ablation design}
+\subsubsection{Ablation of asynchronous execution and human guidance}
 
-The component ablation used the detailed robustness prompt, the same frozen
-inputs, and one fixed model.  Three conditions were evaluated: the complete
-system, removal of the microbiome domain procedures, and removal of the coding
-and long-execution guidance.  The session-runtime extension was held constant;
-its effect during a running command is tested separately below.  No feedback
-was introduced while a session was running.  All other workspace instructions,
-software resources, and reference resources were held constant wherever they
-were not the component under test.  Each condition contains three archived
-sessions.
+To evaluate the role of the runtime patch for asynchronous execution and
+automatic continuation (\cref{sec:asynchronous-execution}), we compared the
+complete system (\texttt{full}) with an ablated configuration without the
+runtime patch (\texttt{no-patch}) using \texttt{deepseek-v4-pro}, the
+detailed Case~1 prompt, and the preprocessed Case~1 dataset across three
+independent sessions per condition.  All other system components, including
+microbiome domain skills, software environments, and reference databases,
+were held constant across both conditions.
 
-Task completion was scored with nine binary items: 16S alpha diversity, 16S
-beta diversity, a 16S taxonomic table, 16S differential abundance, a
-MetaPhlAn table, shotgun differential abundance, figures, analysis scripts,
-and an analysis report.  An item was counted only when the corresponding
-artifact existed and was usable.  A genus-level 16S table was accepted when it
-contained genus labels, or a level-6 collapsed table, for at least 30 samples.
-Method adherence was scored against eight requirements in the detailed prompt:
-sequencing-depth normalization, Shannon diversity, weighted UniFrac,
-unweighted UniFrac, Bray--Curtis, weighted-UniFrac PCoA, PERMANOVA, and
-PERMDISP.  A method was counted when the corresponding matrix, ordination, or
-test result was present, including PERMDISP output stored under a misspelled
-filename.  Token totals were not available in the archived job records and are
-not reported.
+In the end-to-end execution experiment, sessions were run with no user input
+after initial plan confirmation.  Task completion was scored across nine
+required outputs (16S alpha diversity, 16S beta diversity, 16S genus-level
+taxonomic table, 16S differential abundance, shotgun species-level taxonomic
+table, shotgun differential abundance, figures, analysis scripts, and an
+analysis report), and method adherence was scored against the eight diversity
+and statistical requirements specified in the detailed prompt
+(sequencing-depth normalization, Shannon diversity, weighted UniFrac,
+unweighted UniFrac, Bray--Curtis dissimilarity, weighted-UniFrac PCoA,
+PERMANOVA, and PERMDISP).  For each session, model call counts, tool
+invocations (\texttt{exec}, \texttt{process}, and \texttt{sessions\_yield}),
+and total token consumption (input and output tokens, including reasoning
+tokens) were recorded from the session transcript.
 
-\subsubsection{Runtime-extension experiment}
-
-Asynchronous intervention was evaluated with a Case~1 QIIME~2
-taxonomy-classification command selected in a pilot to run for several minutes
-without artificial delay.  The extended runtime and the standard runtime
-at the same OpenClaw version were each evaluated in three new sessions.
-The two conditions differed only in the session-runtime extension.  All other
-configuration and workspace instructions were held fixed.  While classification
-was confirmed to be running, the same user instruction requested replacement of a pooled
-resistant-versus-susceptible comparison with separate T1, T2C, and T2
-comparisons and addition of a significant-genera heatmap.  No subsequent user
-message was sent.
-
-A plan-update success required the message to be processed and the pending
-plan to be revised before the classification command exited.  Success for
-automatic continuation required command exit to reactivate the same session within five
-minutes without another user message.  A run in which classification ended
-before the intervention was delivered did not test in-run feedback and was
-repeated with its exclusion reason retained.
+In the asynchronous human-guidance experiment, we tested mid-run plan
+revision while the Case~1 QIIME~2 taxonomy-classification command was running
+in the background.  Once the classification process was confirmed active, the
+user sent a standardized instruction to keep the running classification
+command and update the pending plan to use DESeq2 for the subsequent
+differential-abundance analysis and generate a heatmap of significant genera,
+with no further user input thereafter.  Each session was evaluated on two
+outcomes: (1)~whether the agent processed the user's message and updated the
+pending analysis plan while the classification command was still running; and
+(2)~whether, once the background classification command finished, the system
+automatically reactivated the waiting session so that the agent inspected the
+classification output and continued with the revised plan, without requiring
+additional user messages or repeated \texttt{process} calls to check whether
+the command had completed.
 
 %% ====================================================================
 \section*{Data availability}
@@ -1262,19 +1371,19 @@ included in the accompanying archive.
     Model & Method
       & \shortstack{Detailed\\sessions}
       & \shortstack{Medium\\sessions}
-      & \shortstack{Taxa\\compared} \\
+      & \shortstack{Entries\\compared} \\
     \midrule
     \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
     \addlinespace
-    DeepSeek-Pro   & DESeq2            & 1/3 & 1/3 & 111 \\
-    DeepSeek-Flash & DESeq2            & 2/3 & 2/3 & 668 \\
-    GLM-Flash      & DESeq2            & 3/3 & 1/3 & 413 \\
+    DeepSeek-Pro   & DESeq2            & 1/3 & 1/3 & 891 \\
+    DeepSeek-Flash & DESeq2            & 2/3 & 2/3 & 5,108 \\
+    GLM-Flash      & DESeq2            & 3/3 & 1/3 & 3,984 \\
     \addlinespace
     \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
     \addlinespace
-    DeepSeek-Pro   & Wilcoxon          & 1/3 & 1/3 & 14 \\
-    DeepSeek-Flash & Mann--Whitney $U$ & 1/3 & 1/3 & 39 \\
-    GLM-Flash      & DESeq2            & 2/3 & 1/3 & 9 \\
+    DeepSeek-Pro   & Wilcoxon          & 1/3 & 1/3 & 39 \\
+    DeepSeek-Flash & Mann--Whitney $U$ & 1/3 & 1/3 & 120 \\
+    GLM-Flash      & DESeq2            & 2/3 & 1/3 & 52 \\
     \bottomrule
   \end{tabular}
   \vspace{0.35em}
@@ -1283,11 +1392,13 @@ included in the accompanying archive.
     \footnotesize
     \textit{Notes:} The simple prompt was not included.  Display names
     correspond to \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, and
-    \texttt{glm5.3-flash}.  Within a replicate, the median log$_2$ fold change
-    of each taxon was retained.  Those values were then averaged across the
-    included replicates; a taxon missing from a replicate was not imputed as
-    zero.  A taxon was compared only when both prompts produced a finite
-    value.  DESeq2 values are negative-binomial log$_2$ fold changes.
+    \texttt{glm5.3-flash}.  Each entry represents the log$_2$ fold change of a
+    taxon for a given resistant cultivar (HG64 or HF12) and sampling timepoint
+    relative to the susceptible control (averaged across susceptible controls
+    within a session when A57 and HG70 were reported separately).  Values were
+    averaged across the included replicates without imputing missing entries
+    as zero, and entries reported under both prompts were compared.
+    DESeq2 values are negative-binomial log$_2$ fold changes.
     Wilcoxon and Mann--Whitney $U$ values are log$_2$ ratios of group means
     reported with the rank test, not the rank statistic.  One DeepSeek-Flash
     detailed replicate reported only ASV-level DESeq2 results and was excluded
@@ -1311,20 +1422,20 @@ included in the accompanying archive.
     Model
       & \shortstack{Detailed\\sessions}
       & \shortstack{Medium\\sessions}
-      & \shortstack{Detailed\\taxa shared}
-      & \shortstack{Medium\\taxa shared} \\
+      & \shortstack{Detailed\\entries shared}
+      & \shortstack{Medium\\entries shared} \\
     \midrule
     \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
     \addlinespace
-    DeepSeek-Pro   & 1/3 & 1/3 & 216 & 332 \\
-    DeepSeek-Flash & 2/3 & 2/3 & 216 & 332 \\
-    GLM-Flash      & 3/3 & 1/3 & 216 & 332 \\
+    DeepSeek-Pro   & 1/3 & 1/3 & 1,724 & 2,659 \\
+    DeepSeek-Flash & 2/3 & 2/3 & 1,724 & 2,659 \\
+    GLM-Flash      & 3/3 & 1/3 & 1,724 & 2,659 \\
     \addlinespace
     \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
     \addlinespace
-    DeepSeek-Pro   & 1/3 & \textemdash & 43 & \textemdash \\
-    DeepSeek-Flash & 2/3 & \textemdash & 43 & \textemdash \\
-    GLM-Flash      & 2/3 & \textemdash & 43 & \textemdash \\
+    DeepSeek-Pro   & 1/3 & \textemdash & 228 & \textemdash \\
+    DeepSeek-Flash & 2/3 & \textemdash & 228 & \textemdash \\
+    GLM-Flash      & 2/3 & \textemdash & 228 & \textemdash \\
     \bottomrule
   \end{tabular}
   \vspace{0.35em}
@@ -1332,43 +1443,48 @@ included in the accompanying archive.
   \begin{minipage}{\linewidth}
     \footnotesize
     \textit{Notes:} Display names correspond to \texttt{deepseek-v4-pro},
-    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}.  A taxon was
-    shared when every included session reported a finite DESeq2 log$_2$ fold
-    change for it, so the shared count is the same in each row of a block.
-    Within a session, the value for a taxon is that session's DESeq2
-    coefficient; values were then averaged across the included sessions.
-    One GLM-Flash detailed replicate did not analyse shotgun libraries.
+    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}.  Each entry
+    represents the DESeq2 log$_2$ fold change of a taxon for a given resistant
+    cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
+    control (averaged across susceptible controls within a session when A57
+    and HG70 were reported separately).  Values were averaged across the
+    included sessions without imputing missing entries as zero.  An entry was
+    shared when it was reported across all three models, so the shared count
+    is the same in each row of a block.  One GLM-Flash detailed replicate did
+    not analyse shotgun libraries.
   \end{minipage}
 \end{table}
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=\linewidth]{case1_completion_models.png}
-  \caption{Task completion and cross-model comparisons on the frozen Case~1
-    inputs.  (a)~Completion of six requested analyses.  Each cell is the
+  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
+  \caption{Overall task completion and differences in analytical outputs across
+    models within each prompt level.  (a)~Completion of six requested analyses.  Each cell is the
     number of sessions, out of three, in which the analysis was completed.
     The GLM-Flash detailed shotgun cells are 2/3 because one session
-    contained no shotgun reads.  (b)~Shannon index, pairwise weighted
+    did not analyse the shotgun libraries.  (b)~Shannon index, pairwise weighted
     UniFrac distance, relative abundance and DESeq2 log$_2$ fold change
     compared among models within each prompt.  Shannon points are
     session means of per-sample indexes.  UniFrac points are session means
     of distances between unordered sample pairs ($n = 1{,}770$).
-    Relative-abundance points are session means for taxa whose mean was at
-    least 5\% in every compared group.  DESeq2 points are means across
-    sessions that ran DESeq2, for taxa shared by the compared models
+    Relative-abundance points are session means for sample and taxon entries
+    whose mean was at least 5\% in every compared group.  DESeq2 points are
+    means across sessions that ran DESeq2, for taxon, cultivar and timepoint
+    entries shared by the compared models
     (Supplementary Table~\ref{tab:da-model-methods}); the medium shotgun
     prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
     tests with Holm correction within each set of three pairs.  n.s.,
     Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
-    $P < 0.001$.  Samples, sample pairs and taxa come from one experiment
-    and are not independent replicates.}
+    $P < 0.001$.  Samples, sample pairs, taxa and contrasts come from one
+    experiment and are not independent replicates.}
   \label{fig:robustness-models}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{by_prompt_models.png}
-  \caption{Within-model comparisons across prompt levels.  Rows are
+  \caption{Differences in analytical outputs across prompt levels within each
+    model.  Rows are
     DeepSeek-Pro, DeepSeek-Flash and GLM-Flash.  The first four columns
     follow the point definitions in Supplementary
     Figure~\ref{fig:robustness-models}.  The differential-abundance columns
@@ -1380,8 +1496,8 @@ included in the accompanying archive.
     are two-sided Mann--Whitney $U$ tests with Holm correction within each
     set of three prompt pairs.  Each differential-abundance bracket is a
     single pair.  n.s., adjusted $P \geq 0.05$; *, $P < 0.05$; **,
-    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs and taxa come from
-    one experiment and are not independent replicates.}
+    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs, taxa and contrasts
+    come from one experiment and are not independent replicates.}
   \label{fig:robustness-prompts}
 \end{figure}
 
