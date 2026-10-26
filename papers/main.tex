@@ -956,24 +956,21 @@ conversation and support automatic continuation upon task completion.
 \subsection{Case study design}
 \label{sec:case-design}
 
-Three published datasets spanning plant, human, and environmental microbiomes 
-were selected to evaluate the multi-modal analytical capabilities of 
-MicroBioAgent (Supplementary Table~\ref{tab:cases-overview}). These cases spanned 16S rRNA
-amplicon and shotgun metagenomic profiling, disease-associated taxonomic and 
-functional analyses, and genome-resolved metagenomics. The case studies were 
-designed to assess whether the agent could autonomously execute study-specific 
-workflows and recapitulate the primary biological findings reported in the original 
-publications, while permitting analytical tools and reference databases to naturally 
-deviate from the source studies.
-
-The agent's capabilities were evaluated across all three cases using
-\texttt{deepseek-v4-pro} accessed via the Volcano Engine API. The agent was provided with input data, sample 
-metadata, and natural-language research objectives. When specific analytical metrics 
-or domain-standard software were explicitly requested in the prompt, the agent 
-incorporated them accordingly; all unspecified tools, parameters, and analytical 
-strategies were determined autonomously using its available skills and configured 
-environment. The specific workflows and evaluation tasks for each case are detailed 
-below.
+To assess MicroBioAgent across diverse microbiome workflows, we evaluated
+the system on three published datasets spanning plant, human, and environmental
+ecosystems (Supplementary Table~\ref{tab:cases-overview}), covering 16S rRNA
+amplicon profiling, reference-based shotgun metagenomics, and assembly-based
+genome reconstruction.  Across all three cases, the agent was powered by
+\texttt{deepseek-v4-pro} and provided with sequencing reads, sample metadata,
+and natural-language research goals without pre-written analysis scripts.
+The evaluation tested whether the agent could autonomously compose end-to-end
+workflows and recapitulate the primary biological conclusions of the original
+studies using its configured software environments and reference databases.
+When specific metrics or domain-standard tools were explicitly requested in
+the prompt, the agent applied them; otherwise, all analytical procedures,
+software environments, and command parameters were determined autonomously
+using its available skills.  The specific workflows and evaluation tasks for
+each case study are detailed below.
 
 \subsubsection{Case 1 --- Tomato rhizosphere 16S and metagenomic analysis}
 \label{sec:methods-tomato}
