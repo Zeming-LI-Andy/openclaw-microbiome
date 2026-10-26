@@ -347,9 +347,7 @@ profiles.  Following investigator review, MicroBioAgent repeated the shotgun
 profiling using MetaPhlAn2, the version used in the original study, and
 identified both \textit{Pseudomonas putida} and \textit{Sphingopyxis unclassified}
 as enriched in resistant cultivars, recovering both reported taxonomic
-associations.
-% SUPPLEMENTARY PLACEHOLDER: case1-metaphlan-version-sensitivity
-% SUPPLEMENTARY PLACEHOLDER: case1-16s-statistics
+associations. 
 
 \begin{figure}[htbp]
   \centering
@@ -422,10 +420,6 @@ classifier achieved a pooled out-of-fold AUROC of 0.902, compared with
 gene-family features.  At thresholds selected using Youden's index,
 the gene-family classifier achieved a sensitivity of 0.82 and specificity
 of 0.89, compared with 0.41 and 0.87 for the KO classifier.
-% SUPPLEMENTARY PLACEHOLDER: case2-species-and-function-tests
-% SUPPLEMENTARY PLACEHOLDER: case2-classifier-folds
-% Outer-fold AUROC ranges: gene-family 0.86--0.96, KO 0.59--0.72.
-% Include these values and per-fold results in the supplementary classifier table.
 
 \begin{figure}[htbp]
   \centering
@@ -470,7 +464,7 @@ S2 C30 (16\% each).  In S2 C40, \textit{Mesorhizobium\_M} sp900116595
 and \textit{Aquipseudomonas fluorescens\_BJ} predominated at 27\% and
 25\%, respectively.  Taxonomic annotation identified the ten taxonomic groups of particular
 interest in the original study
-(Supplementary Table~\ref{tab:mag-taxonomy}).  The groups reported as
+(Supplementary Data~1).  The groups reported as
 \textit{Pseudomonas} in the original study were classified as
 \textit{Aquipseudomonas} in the present analysis due to differences
 in the reference taxonomy.
@@ -487,12 +481,6 @@ contained genes assigned to the $\beta$-oxidation module M00087.
 Eight MAGs contained annotations spanning all three categories,
 indicating that the corresponding genetic potential was distributed
 across multiple taxa of interest.
-% SUPPLEMENTARY PLACEHOLDER: case3-mag-catalogue
-% SUPPLEMENTARY PLACEHOLDER: case3-functional-annotations
-% SUPPLEMENTARY PLACEHOLDER: case3-mag-taxonomy (Table~\ref{tab:mag-taxonomy})
-% Populate with MAG identifiers and current GTDB assignments from the annotation
-% export. Confirm whether it covers all 153 quality-filtered MAGs or only the
-% 75 dereplicated representatives before specifying the table's MAG count.
 
 \begin{figure}[htbp]
   \centering
@@ -516,17 +504,18 @@ across multiple taxa of interest.
 
 To assess whether MicroBioAgent maintains reliable execution and consistent
 analytical outputs across language models and levels of user guidance, we
-crossed three models---DeepSeek-Pro (\texttt{deepseek-v4-pro}),
-DeepSeek-Flash (\texttt{deepseek-v4-flash}) and GLM-Flash
-(\texttt{glm5.3-flash})---with detailed, medium and simple prompts on the
+crossed three models---\texttt{deepseek-v4-pro},
+\texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}---with detailed,
+medium and simple prompts on the
 preprocessed Case~1 dataset ($3 \times 3 \times 3 = 27$ independent sessions).  Across six
 core analyses (16S alpha diversity, 16S beta diversity, 16S genus-level
 taxonomic profiling, 16S differential abundance, shotgun species-level
 taxonomic profiling and shotgun differential abundance), MicroBioAgent
 completed 160 of 162 evaluations (98.8\%; Supplementary
-Figure~\ref{fig:robustness-models}a).  DeepSeek-Pro and DeepSeek-Flash
-completed all six analyses in three of three sessions under every prompt
-level, and GLM-Flash completed all 16S analyses (9/9 sessions) and 8 of 9
+Figure~\ref{fig:robustness-models}a).  \texttt{deepseek-v4-pro} and
+\texttt{deepseek-v4-flash} completed all six analyses in three of three
+sessions under every prompt level, and \texttt{glm5.3-flash} completed all
+16S analyses (9/9 sessions) and 8 of 9
 shotgun sessions, with one session under the detailed prompt not analysing
 the shotgun libraries.
 
@@ -540,7 +529,7 @@ within any model (all Holm-adjusted $P = 1$, two-sided Mann--Whitney $U$
 test).  For differential abundance, because none of the prompts specified a
 statistical test, individual sessions chose among DESeq2, MaAsLin~3,
 Wilcoxon rank-sum tests, Mann--Whitney $U$ tests and LEfSe (Supplementary
-Tables~\ref{tab:da-model-methods} and \ref{tab:da-prompt-methods}).  Because
+Table~\ref{tab:robustness-methods}, panels~a and~b).  Because
 different tests define effect sizes on different scales, we compared
 $\log_2$ fold-change distributions across sessions that used the same test.
 Across models within each prompt level, DESeq2 was used by all three models
@@ -550,11 +539,12 @@ distributions did not differ between any pair of models (all Holm-adjusted
 $P \ge 0.059$; under the medium prompt in shotgun analyses, no single test
 was used by all three models).  Between the detailed and medium prompts
 within each model, $\log_2$ fold-change distributions also did not differ for
-any model in either 16S analyses using DESeq2 (DeepSeek-Pro, $P = 0.54$;
-DeepSeek-Flash, $P = 0.50$; GLM-Flash, $P = 0.13$) or shotgun analyses using
-the test shared within each model (DeepSeek-Pro, Wilcoxon rank-sum test,
-$P = 0.58$; DeepSeek-Flash, Mann--Whitney $U$ test, $P = 0.24$; GLM-Flash,
-DESeq2, $P = 0.064$).
+any model in either 16S analyses using DESeq2 (\texttt{deepseek-v4-pro},
+$P = 0.54$; \texttt{deepseek-v4-flash}, $P = 0.50$; \texttt{glm5.3-flash},
+$P = 0.13$) or shotgun analyses using the test shared within each model
+(\texttt{deepseek-v4-pro}, Wilcoxon rank-sum test, $P = 0.58$;
+\texttt{deepseek-v4-flash}, Mann--Whitney $U$ test, $P = 0.24$;
+\texttt{glm5.3-flash}, DESeq2, $P = 0.064$).
 
 For taxonomic profiling, relative abundances were more sensitive to model and
 prompt choices (Supplementary Figures~\ref{fig:robustness-models}b and
@@ -563,8 +553,9 @@ distributions did not differ in 16S analyses under the simple prompt or in
 shotgun analyses under the detailed prompt (all Holm-adjusted $P = 1$), but
 differed in the remaining prompt settings (Holm-adjusted $P \le 0.05$).
 Across prompt levels within each model, distributions were consistent across
-all three prompts for GLM-Flash in 16S analyses and for both DeepSeek-Pro
-and DeepSeek-Flash in shotgun analyses (all Holm-adjusted $P = 1$), whereas
+all three prompts for \texttt{glm5.3-flash} in 16S analyses and for both
+\texttt{deepseek-v4-pro} and \texttt{deepseek-v4-flash} in shotgun analyses
+(all Holm-adjusted $P = 1$), whereas
 differences occurred in the remaining comparisons (Holm-adjusted
 $P \le 0.025$).  Inspecting the session logs showed three causes of these differences:
 (1)~some sessions applied a V4 rather than a V3--V4 classifier during 16S
@@ -688,7 +679,6 @@ instead kept the conversation occupied with repeated \texttt{process} calls to
 check whether the task had completed, neither mid-run plan revision nor
 automatic session reactivation upon command completion was achieved in any of
 the three sessions ($0/3$).
-% SUPPLEMENTARY PLACEHOLDER: hitl-intervention-logs
 
 \begin{table}[htbp]
   \centering
@@ -976,8 +966,8 @@ workflows and recapitulate the primary biological findings reported in the origi
 publications, while permitting analytical tools and reference databases to naturally 
 deviate from the source studies.
 
-The agent's capabilities were evaluated across all three cases using DeepSeek-V4-Pro 
-accessed via the Volcano Engine API. The agent was provided with input data, sample 
+The agent's capabilities were evaluated across all three cases using
+\texttt{deepseek-v4-pro} accessed via the Volcano Engine API. The agent was provided with input data, sample 
 metadata, and natural-language research objectives. When specific analytical metrics 
 or domain-standard software were explicitly requested in the prompt, the agent 
 incorporated them accordingly; all unspecified tools, parameters, and analytical 
@@ -1138,12 +1128,12 @@ MaAsLin~3, Wilcoxon rank-sum test, Mann--Whitney $U$ test and LEfSe).
 Because different methods report differently defined effect sizes, $\log_2$
 fold-change distributions were compared only across sessions that used the
 same statistical test.  Cross-model comparisons within each prompt level used sessions that ran
-DESeq2 (Supplementary Table~\ref{tab:da-model-methods}), and within-model
+DESeq2 (Supplementary Table~\ref{tab:robustness-methods}, panel~a), and within-model
 comparisons across prompt levels were conducted between the detailed and
 medium prompts, which specified the same comparisons between resistant and
 susceptible cultivars at each timepoint, using the statistical test shared by
 both prompts for each model (Supplementary
-Table~\ref{tab:da-prompt-methods}).  In both comparisons, each data point
+Table~\ref{tab:robustness-methods}, panel~b).  In both comparisons, each data point
 represented the $\log_2$ fold change of a taxon for a given resistant
 cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
 control (averaging across susceptible controls within a session when A57 and
@@ -1196,13 +1186,12 @@ the command had completed.
 %% ====================================================================
 
 Raw sequencing data are available from the public repositories associated
-with the three source studies.  Accession identifiers and sample-level mapping
-will be listed in the Supplementary Information.  Processed abundance tables,
-metadata, numerical data underlying the figures, MAG annotations, and
-session-level robustness and ablation scores will be deposited with the
-article archive.  Raw sequencing files and large reference databases will not
-be redistributed.  Their sources and releases will be documented.
-% TODO: add repository/archive DOI and complete accession table.
+with the three source studies.  Sample-level accession mapping and the
+case-study statistics are provided in Supplementary Data~1.  Session-level
+robustness and ablation scores will be deposited with the article archive.
+Raw sequencing files and large reference databases will not be redistributed.
+Their sources and releases will be documented.
+% TODO: add repository/archive DOI.
 
 %% ====================================================================
 \section*{Code availability}
@@ -1233,6 +1222,70 @@ included in the accompanying archive.
 
 % Add supplementary tables and figures here; numbering is independent of
 % the main text. Cite them as Supplementary Table/Figure~\ref{...}.
+% Supplementary Data 1 is the case-study workbook in this directory.
+
+Case-study accessions and statistics are provided in Supplementary Data~1.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
+  \caption{Differentially enriched genera in the resistant tomato parent HG64
+    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
+    susceptible cultivars at each sampling point.  Shared enrichment denotes a
+    positive coefficient and $P<0.05$ in both contrasts.}
+  \label{fig:tomato-enrichment}
+\end{figure}
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
+  \caption{Overall task completion and differences in analytical outputs across
+    models within each prompt level.  (a)~Completion of six requested analyses.  Each cell is the
+    number of sessions, out of three, in which the analysis was completed.
+    The \texttt{glm5.3-flash} detailed shotgun cells are 2/3 because one session
+    did not analyse the shotgun libraries.  (b)~Shannon index, pairwise weighted
+    UniFrac distance, relative abundance and DESeq2 log$_2$ fold change
+    compared among models within each prompt.  Shannon points are
+    session means of per-sample indexes.  UniFrac points are session means
+    of distances between unordered sample pairs ($n = 1{,}770$).
+    Relative-abundance points are session means for sample and taxon entries
+    whose mean was at least 5\% in every compared group.  DESeq2 points are
+    means across sessions that ran DESeq2, for taxon, cultivar and timepoint
+    entries shared by the compared models
+    (Supplementary Table~\ref{tab:robustness-methods}, panel~a); the medium shotgun
+    prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
+    tests with Holm correction within each set of three pairs.  n.s.,
+    Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
+    $P < 0.001$.  Samples, sample pairs, taxa and contrasts come from one
+    experiment and are not independent replicates.}
+  \label{fig:robustness-models}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{by_prompt_models.png}
+  \caption{Differences in analytical outputs across prompt levels within each
+    model.  Rows are \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}
+    and \texttt{glm5.3-flash}.  The first four columns
+    follow the point definitions in Supplementary
+    Figure~\ref{fig:robustness-models}.  The differential-abundance columns
+    compare the detailed and medium prompts only.  16S values are DESeq2
+    log$_2$ fold changes.  Shotgun values are Wilcoxon, Mann--Whitney $U$
+    and DESeq2 log$_2$ fold changes for \texttt{deepseek-v4-pro},
+    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}, respectively
+    (Supplementary Table~\ref{tab:robustness-methods},
+    panel~b),
+    and are not compared across rows.  Brackets in the first four columns
+    are two-sided Mann--Whitney $U$ tests with Holm correction within each
+    set of three prompt pairs.  Each differential-abundance bracket is a
+    single pair.  n.s., adjusted $P \geq 0.05$; *, $P < 0.05$; **,
+    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs, taxa and contrasts
+    come from one experiment and are not independent replicates.}
+  \label{fig:robustness-prompts}
+\end{figure}
+
+\FloatBarrier
+\clearpage
 
 \begin{table}[htbp]
   \centering
@@ -1242,56 +1295,90 @@ included in the accompanying archive.
   \scriptsize
   \setlength{\tabcolsep}{3pt}
   \renewcommand{\arraystretch}{1.18}
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
     \toprule
-    Case & Sequencing libraries & Analysis route & Primary evaluation target \\
+    Case & BioProject & Sequencing libraries & Analysis route & Primary evaluation target \\
     \midrule
     Tomato rhizosphere
+      & PRJNA777724
       & 60 16S; 36 matched shotgun
       & 16S diversity, taxonomy, differential abundance; MetaPhlAn profiling
       & Recovery of inoculation- and resistance-associated community signals \\
     CRC faecal metagenomes
+      & PRJEB10878
       & 128 shotgun
       & MetaPhlAn3, HUMAnN3, differential analysis, nested-CV classification
       & Taxonomic and functional case--control analysis from reads \\
     Enrichment metagenomes
+      & PRJEB97175
       & 6 shotgun
       & MAG construction, dereplication, taxonomic assignment, abundance, eggNOG annotation
       & Genome-resolved taxonomic and functional characterization \\
     \bottomrule
   \end{tabularx}
+  \vspace{0.35em}
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} Sample-level run accessions are listed in Supplementary Data~1.
+  \end{minipage}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{MAG identifiers and taxonomic assignments for the enrichment
-    metagenomes.  Taxonomic assignments follow GTDB release R232.}
-  \label{tab:mag-taxonomy}
-  \small
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\raggedright\arraybackslash}X@{}}
+  \caption{Software and reference versions recorded for the case-study analyses.}
+  \label{tab:software-versions}
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}@{}}
     \toprule
-    MAG identifier & Taxonomic assignment \\
+    Software or database & Version or release & Conda environment & Case \\
     \midrule
-    \multicolumn{2}{c}{\textit{Annotation records to be supplied.}} \\
+    MetaPhlAn
+      & 3; \texttt{mpa\_v30\_CHOCOPhlAn\_201901}
+      & \texttt{biobakery3}
+      & Cases 1 and 2 \\
+    HUMAnN
+      & 3; build not recorded
+      & \textemdash
+      & Case 2 \\
+    MaAsLin3
+      & 1.2.0
+      & \textemdash
+      & Case 1 \\
+    SILVA
+      & 138.2, V3--V4
+      & \textemdash
+      & Case 1 \\
+    CheckM2
+      & 1.1.0
+      & \textemdash
+      & Case 3 \\
+    CoverM
+      & 0.7.0
+      & \textemdash
+      & Case 3 \\
+    GTDB-Tk
+      & 2.7.2; database R232
+      & \textemdash
+      & Case 3 \\
+    eggNOG-mapper
+      & 2.1.13; eggNOG 5.0
+      & \texttt{eggnog\_mapper}
+      & Case 3 \\
     \bottomrule
   \end{tabularx}
-  % TODO: insert the annotation export and specify whether the table contains
-  % 153 quality-filtered MAGs or 75 dereplicated representatives.
+  \vspace{0.35em}
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} Versions are those written in the archived analysis outputs.
+    An em dash means the conda environment was not recorded.
+    MetaPhlAn2 profiles were not present in the archive, so no MetaPhlAn2
+    database release is listed.  The MetaPhlAn row is the MetaPhlAn3 run
+    recorded in the profile headers.
+  \end{minipage}
 \end{table}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
-  \caption{Differentially enriched genera in the resistant tomato parent HG64
-    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
-    susceptible cultivars at each sampling point.  Shared enrichment denotes a
-    positive coefficient and nominal $P<0.05$ in both contrasts.}
-  \label{fig:tomato-enrichment}
-\end{figure}
-
-\FloatBarrier
-
-% TODO: complete the release-specific evidence record for all comparison cells.
 \begin{table}[htbp]
   \centering
   \caption{Reported capabilities of bioinformatics agents relevant to end-to-end
@@ -1352,71 +1439,34 @@ included in the accompanying archive.
     MetaClaw reports assembly and genome-resolved binning through FlowHub
     \parencite{zhang2026metaclaw}. Its partial on-premises designation reflects
     the use of FlowHub for upstream metagenomic processing and local containers
-    for downstream analysis.     This scope comparison is not a performance benchmark.
+    for downstream analysis. This scope comparison is not a performance benchmark.
   \end{minipage}
 \end{table}
 
-\begin{table}[htbp]
-  \centering
-  \caption{Differential-abundance methods and replicates averaged in the
+\FloatBarrier
+\refstepcounter{table}
+\label{tab:robustness-methods}
+\label{tab:da-model-methods}
+\label{tab:da-prompt-methods}
+\begin{center}
+  \begin{minipage}{\linewidth}
+    \tablename~\thetable: Robustness comparisons of differential-abundance outputs.
+    (a)~DESeq2 sessions included in the cross-model comparison of
+    differential-abundance effect sizes.  Each row is one model.
+    Session counts are the replicates, out of three, whose DESeq2 result
+    entered the comparison.  The medium shotgun prompt produced no DESeq2
+    results.
+    (b)~Differential-abundance methods and replicates averaged in the
     detailed-versus-medium prompt comparison.  Each row is one comparison.
     Session counts are the replicates, out of three, whose result for that
-    method entered the average.}
-  \label{tab:da-prompt-methods}
-  \scriptsize
-  \setlength{\tabcolsep}{4pt}
-  \renewcommand{\arraystretch}{1.18}
-  \begin{tabular}{@{}llccc@{}}
-    \toprule
-    Model & Method
-      & \shortstack{Detailed\\sessions}
-      & \shortstack{Medium\\sessions}
-      & \shortstack{Entries\\compared} \\
-    \midrule
-    \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
-    \addlinespace
-    DeepSeek-Pro   & DESeq2            & 1/3 & 1/3 & 891 \\
-    DeepSeek-Flash & DESeq2            & 2/3 & 2/3 & 5,108 \\
-    GLM-Flash      & DESeq2            & 3/3 & 1/3 & 3,984 \\
-    \addlinespace
-    \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
-    \addlinespace
-    DeepSeek-Pro   & Wilcoxon          & 1/3 & 1/3 & 39 \\
-    DeepSeek-Flash & Mann--Whitney $U$ & 1/3 & 1/3 & 120 \\
-    GLM-Flash      & DESeq2            & 2/3 & 1/3 & 52 \\
-    \bottomrule
-  \end{tabular}
-  \vspace{0.35em}
-
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} The simple prompt was not included.  Display names
-    correspond to \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, and
-    \texttt{glm5.3-flash}.  Each entry represents the log$_2$ fold change of a
-    taxon for a given resistant cultivar (HG64 or HF12) and sampling timepoint
-    relative to the susceptible control (averaged across susceptible controls
-    within a session when A57 and HG70 were reported separately).  Values were
-    averaged across the included replicates without imputing missing entries
-    as zero, and entries reported under both prompts were compared.
-    DESeq2 values are negative-binomial log$_2$ fold changes.
-    Wilcoxon and Mann--Whitney $U$ values are log$_2$ ratios of group means
-    reported with the rank test, not the rank statistic.  One DeepSeek-Flash
-    detailed replicate reported only ASV-level DESeq2 results and was excluded
-    from the genus comparison.  One GLM-Flash detailed replicate did not
-    analyse shotgun libraries.
+    method entered the average.
   \end{minipage}
-\end{table}
-
-\begin{table}[htbp]
-  \centering
-  \caption{DESeq2 sessions included in the cross-model comparison of
-    differential-abundance effect sizes.  Each row is one model.  Session
-    counts are the replicates, out of three, whose DESeq2 result entered the
-    comparison.  The medium shotgun prompt produced no DESeq2 results.}
-  \label{tab:da-model-methods}
-  \scriptsize
+  \par\vspace{0.6em}
+  {\scriptsize
   \setlength{\tabcolsep}{4pt}
   \renewcommand{\arraystretch}{1.18}
+
+  \textbf{(a)}\par\vspace{0.4em}
   \begin{tabular}{@{}lcccc@{}}
     \toprule
     Model
@@ -1427,79 +1477,75 @@ included in the accompanying archive.
     \midrule
     \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
     \addlinespace
-    DeepSeek-Pro   & 1/3 & 1/3 & 1,724 & 2,659 \\
-    DeepSeek-Flash & 2/3 & 2/3 & 1,724 & 2,659 \\
-    GLM-Flash      & 3/3 & 1/3 & 1,724 & 2,659 \\
+    \texttt{deepseek-v4-pro}   & 1/3 & 1/3 & 1,724 & 2,659 \\
+    \texttt{deepseek-v4-flash} & 2/3 & 2/3 & 1,724 & 2,659 \\
+    \texttt{glm5.3-flash}      & 3/3 & 1/3 & 1,724 & 2,659 \\
     \addlinespace
     \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
     \addlinespace
-    DeepSeek-Pro   & 1/3 & \textemdash & 228 & \textemdash \\
-    DeepSeek-Flash & 2/3 & \textemdash & 228 & \textemdash \\
-    GLM-Flash      & 2/3 & \textemdash & 228 & \textemdash \\
+    \texttt{deepseek-v4-pro}   & 1/3 & \textemdash & 228 & \textemdash \\
+    \texttt{deepseek-v4-flash} & 2/3 & \textemdash & 228 & \textemdash \\
+    \texttt{glm5.3-flash}      & 2/3 & \textemdash & 228 & \textemdash \\
     \bottomrule
   \end{tabular}
   \vspace{0.35em}
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} Display names correspond to \texttt{deepseek-v4-pro},
-    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}.  Each entry
+    \textit{Notes:} Each entry
     represents the DESeq2 log$_2$ fold change of a taxon for a given resistant
     cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
     control (averaged across susceptible controls within a session when A57
     and HG70 were reported separately).  Values were averaged across the
     included sessions without imputing missing entries as zero.  An entry was
     shared when it was reported across all three models, so the shared count
-    is the same in each row of a block.  One GLM-Flash detailed replicate did
+    is the same in each row of a block.  One \texttt{glm5.3-flash} detailed replicate did
     not analyse shotgun libraries.
   \end{minipage}
-\end{table}
 
-\begin{figure}[p]
-  \centering
-  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
-  \caption{Overall task completion and differences in analytical outputs across
-    models within each prompt level.  (a)~Completion of six requested analyses.  Each cell is the
-    number of sessions, out of three, in which the analysis was completed.
-    The GLM-Flash detailed shotgun cells are 2/3 because one session
-    did not analyse the shotgun libraries.  (b)~Shannon index, pairwise weighted
-    UniFrac distance, relative abundance and DESeq2 log$_2$ fold change
-    compared among models within each prompt.  Shannon points are
-    session means of per-sample indexes.  UniFrac points are session means
-    of distances between unordered sample pairs ($n = 1{,}770$).
-    Relative-abundance points are session means for sample and taxon entries
-    whose mean was at least 5\% in every compared group.  DESeq2 points are
-    means across sessions that ran DESeq2, for taxon, cultivar and timepoint
-    entries shared by the compared models
-    (Supplementary Table~\ref{tab:da-model-methods}); the medium shotgun
-    prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
-    tests with Holm correction within each set of three pairs.  n.s.,
-    Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
-    $P < 0.001$.  Samples, sample pairs, taxa and contrasts come from one
-    experiment and are not independent replicates.}
-  \label{fig:robustness-models}
-\end{figure}
+  \vspace{0.9em}
+  \textbf{(b)}\par\vspace{0.4em}
+  \begin{tabular}{@{}llccc@{}}
+    \toprule
+    Model & Method
+      & \shortstack{Detailed\\sessions}
+      & \shortstack{Medium\\sessions}
+      & \shortstack{Entries\\compared} \\
+    \midrule
+    \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
+    \addlinespace
+    \texttt{deepseek-v4-pro}   & DESeq2            & 1/3 & 1/3 & 891 \\
+    \texttt{deepseek-v4-flash} & DESeq2            & 2/3 & 2/3 & 5,108 \\
+    \texttt{glm5.3-flash}      & DESeq2            & 3/3 & 1/3 & 3,984 \\
+    \addlinespace
+    \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
+    \addlinespace
+    \texttt{deepseek-v4-pro}   & Wilcoxon          & 1/3 & 1/3 & 39 \\
+    \texttt{deepseek-v4-flash} & Mann--Whitney $U$ & 1/3 & 1/3 & 120 \\
+    \texttt{glm5.3-flash}      & DESeq2            & 2/3 & 1/3 & 52 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.35em}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{by_prompt_models.png}
-  \caption{Differences in analytical outputs across prompt levels within each
-    model.  Rows are
-    DeepSeek-Pro, DeepSeek-Flash and GLM-Flash.  The first four columns
-    follow the point definitions in Supplementary
-    Figure~\ref{fig:robustness-models}.  The differential-abundance columns
-    compare the detailed and medium prompts only.  16S values are DESeq2
-    log$_2$ fold changes.  Shotgun values are Wilcoxon, Mann--Whitney $U$
-    and DESeq2 log$_2$ fold changes for DeepSeek-Pro, DeepSeek-Flash and
-    GLM-Flash, respectively (Supplementary Table~\ref{tab:da-prompt-methods}),
-    and are not compared across rows.  Brackets in the first four columns
-    are two-sided Mann--Whitney $U$ tests with Holm correction within each
-    set of three prompt pairs.  Each differential-abundance bracket is a
-    single pair.  n.s., adjusted $P \geq 0.05$; *, $P < 0.05$; **,
-    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs, taxa and contrasts
-    come from one experiment and are not independent replicates.}
-  \label{fig:robustness-prompts}
-\end{figure}
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} The simple prompt was not included.  Each entry represents
+    the log$_2$ fold change of a
+    taxon for a given resistant cultivar (HG64 or HF12) and sampling timepoint
+    relative to the susceptible control (averaged across susceptible controls
+    within a session when A57 and HG70 were reported separately).  Values were
+    averaged across the included replicates without imputing missing entries
+    as zero, and entries reported under both prompts were compared.
+    DESeq2 values are negative-binomial log$_2$ fold changes.
+    Wilcoxon and Mann--Whitney $U$ values are log$_2$ ratios of group means
+    reported with the rank test, not the rank statistic.  One
+    \texttt{deepseek-v4-flash} detailed replicate reported only ASV-level
+    DESeq2 results and was excluded from the genus comparison.  One
+    \texttt{glm5.3-flash} detailed replicate did not
+    analyse shotgun libraries.
+  \end{minipage}
+  }
+\end{center}
 
 \FloatBarrier
 

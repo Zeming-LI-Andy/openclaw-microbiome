@@ -2,7 +2,7 @@
 
 Cohort: 128 faecal metagenomes, 74 colorectal cancer (CRC; 36 early, stages I–II; 38 late, stages III–IV) and 54 controls. Species profiles are MetaPhlAn relative abundances. Functional panels use HUMAnN UniRef90 gene-family abundances and KEGG Orthology (KO) abundances, where each KO is the sum of the UniRef90 RPKs mapped to it.
 
-Figure: `case_studies/case_study_3/20260904-121722-user-requested-job-setup-f828dd01/.cursor/Case-study-3-Fig_composite.png` (Fig1_crc_case_study).
+Figure: `case_studies/case_study_2/20260904-121722-user-requested-job-setup-f828dd01/.cursor/Case-study-2-Fig_composite.png` (Fig1_crc_case_study).
 
 ## Species-level beta diversity
 

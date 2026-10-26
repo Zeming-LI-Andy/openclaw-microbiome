@@ -4,7 +4,7 @@ Six single-end ONT long-read metagenomes from two inocula (S1, S2), each grown o
 
 Pipeline behind the figure. Assembly used Aviary (myloasm); binning used Aviary recover (MetaBAT2, Rosella, SemiBin and VAMB, refined with DASTool and CheckM2), giving 372 bins. High-quality (HQ; completeness ≥ 90%, contamination ≤ 5%) and medium-quality (MQ; ≥ 50%, ≤ 10%) MAGs were collected by MIMAG criteria (153 MAGs: 100 HQ + 53 MQ) and dereplicated with skani (ANI ≥ 95%, aligned fraction ≥ 30%) into 75 non-redundant representatives (50 HQ + 25 MQ). Taxonomy is GTDB-Tk release 232, which places the former *Pseudomonas* MAGs in *Aquipseudomonas*. Abundance is CoverM genome cross-mapping (RPKM). Functional annotation of the focal MAGs used Prodigal + EggNOG-mapper (emapper 2.1.13). Panel d counts genes annotated to each module in one representative MAG per focal taxon; the number is the count of annotated genes (copies), not the number of distinct functional types, and not transcript abundance.
 
-Figure: `case_studies/case_study_4/20260902-131309-new-analysis-job-aef3bea3/.cursor/nature/Case-study-4-Fig_composite.png` (Fig_composite).
+Figure: `case_studies/case_study_3/20260902-131309-new-analysis-job-aef3bea3/.cursor/nature/Case-study-3-Fig_composite.png` (Fig_composite).
 
 ## MAG recovery
 
