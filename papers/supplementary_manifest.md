@@ -49,12 +49,14 @@ source-data package for the robustness and ablation experiments.
 | `case1_metaphlan_versions` | Recorded MetaPhlAn2/3 evidence for the two species highlighted in the source study | Case 1 profiler-version follow-up |
 | `case1_16s_differential` | Genus-level resistant-versus-susceptible differential results | Case 1 results; Supplementary Figure S1 |
 | `case1_shotgun_differential` | Species-level resistant-versus-susceptible differential results | Case 1 results |
+| `case2_community_statistics` | Bray–Curtis PERMANOVA for CRC status, disease stage, sex, age and BMI | Case 2 results |
 | `case2_species_tests` | CRC species-association direction and adjusted significance | Case 2 results |
+| `case2_cooccurrence_edges` | Spearman correlations among the ten differentially abundant species, with raw P, BH q, and the reported-network flag | Case 2 co-occurrence network |
 | `case2_function_tests` | Gene-family and KO significance results | Case 2 functional analysis |
 | `case2_classifier_folds` | Fold-level performance, pooled performance and selected classifier features | Case 2 classifier results |
 | `case3_mag_catalogue` | Dereplicated MAG quality, taxonomy, cluster membership and focal-taxon mapping | Case 3 results |
 | `case3_mag_abundance` | Abundances of MAGs assigned to the focal taxa across enrichment cultures | Case 3 abundance analysis |
-| `case3_functional_annotations` | Gene counts for the three functional categories in the ten selected MAGs | Case 3 functional analysis |
+| `case3_functional_annotations` | Gene counts for the three functional categories in the 11 annotated 95% ANI representative MAGs | Case 3 functional analysis |
 
 ### Open checks before submission
 
@@ -63,11 +65,9 @@ source-data package for the robustness and ablation experiments.
    whereas the Results state that the follow-up recovered both reported taxa.
 2. Regenerate `case3_mag_catalogue`: every value in `source_sample` currently
    contains a serialized pandas method rather than a sample identifier.
-3. Reconcile the functional-analysis MAG identifiers with the representative
-   MAG terminology used in the Results and Methods.
-4. Explain why ten focal taxonomic groups correspond to eleven rows in
+3. Explain why ten focal taxonomic groups correspond to eleven rows in
    `case3_mag_abundance` (two MAGs are assigned to `Achromobacter sp.`).
-5. Add a workbook README/data dictionary defining fields, missing values,
+4. Add a workbook README/data dictionary defining fields, missing values,
    statistical adjustment and the distinction between raw `P` and adjusted
    `q` values.
 
