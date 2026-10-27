@@ -299,55 +299,52 @@ degradation-associated genes in focal genomes.
 
 We applied MicroBioAgent to a published study of tomato rhizosphere
 microbiomes associated with resistance to bacterial wilt
-\parencite{yin2022tomato}.  This case evaluated its ability to connect
-amplicon and shotgun analyses to examine resistance-associated community
-changes and identify the species markers reported in that study.
-The input comprised 60 16S V3--V4 amplicon
-libraries and 36 matched shotgun libraries from two susceptible cultivars
-(A57 and HG70), a resistant parent (HG64), and a resistant F1 hybrid (HF12).
-The amplicon data covered five sampling conditions with three biological
-replicates per cultivar, including before inoculation (T1), and inoculated and
-uninoculated plants at day 5 (T2 and T2C) and day 10 (T3 and T3C).
-The matched shotgun libraries covered T1, T2C, and T2.
-Starting from sequencing reads, MicroBioAgent performed quality control,
-DADA2 denoising and taxonomic classification against the SILVA database for
-the amplicon data, and quality control, host-read removal and MetaPhlAn3
-taxonomic profiling for the shotgun data.  The resulting profiles supported
-community-level comparisons using 16S data and species-level marker analysis
-using shotgun data.
+\parencite{yin2022tomato}.  This case evaluated whether MicroBioAgent could
+integrate amplicon and shotgun workflows to capture resistance-associated
+community changes and recover the species markers reported in the original
+study.  The input comprised 60 16S V3--V4 amplicon libraries and 36 matched
+shotgun libraries from two susceptible cultivars (A57 and HG70), a resistant
+parent (HG64), and a resistant F1 hybrid (HF12).  The amplicon data comprised
+five sampling conditions with three biological replicates per cultivar:
+pre-inoculation baseline (T1), and inoculated and uninoculated plants at day~5
+(T2 and T2C) and day~10 (T3 and T3C).  The matched shotgun libraries covered
+T1, T2C, and T2.  Starting from raw sequencing reads, MicroBioAgent carried out
+quality control, DADA2 denoising, and taxonomic assignment against the SILVA
+database for the amplicon libraries, alongside host filtering and MetaPhlAn3
+profiling for the shotgun libraries.
 
-For the 16S amplicon data, MicroBioAgent examined how pathogen inoculation
-and cultivar resistance were reflected in microbial diversity and community
-composition.  Following \textit{Ralstonia} inoculation, Shannon diversity
-declined in susceptible cultivars and remained higher in resistant cultivars
-at both day 5 ($P=0.002$) and day 10 ($P=0.004$,
-\cref{fig:tomato-diversity}a).  Community composition also differed between inoculated and uninoculated
-samples, which separated along the first weighted-UniFrac PCoA axis
-(56.3\% of variance).  Resistant and susceptible samples showed a less
-pronounced separation along the second axis (12.2\%), with overlap between
-the two groups (\cref{fig:tomato-diversity}b).  Genus-level profiles linked these community
-changes to an expansion of \textit{Ralstonia}, most pronounced in the
-susceptible cultivars A57 and HG70 (\cref{fig:tomato-diversity}c).
-These patterns were consistent with the inoculation-associated community
-changes and higher post-inoculation diversity in resistant cultivars
-reported in the source study.
+For the 16S amplicon data, MicroBioAgent examined how pathogen inoculation and
+cultivar resistance shaped microbial diversity and community composition.
+Following \textit{Ralstonia} inoculation, Shannon diversity declined in
+susceptible cultivars but remained higher in resistant cultivars at both
+day~5 ($P=0.002$) and day~10 ($P=0.004$, \cref{fig:tomato-diversity}a).
+Community composition also separated clearly by inoculation treatment along
+the first weighted-UniFrac PCoA axis (56.3\% of variance;
+\cref{fig:tomato-diversity}b).  Separation between resistant and susceptible
+cultivars was less pronounced along the second axis (12.2\%), with partial
+overlap between groups.  Genus-level profiles linked these community shifts to
+an expansion of \textit{Ralstonia}, which was most pronounced in the
+susceptible cultivars A57 and HG70 (\cref{fig:tomato-diversity}c).  These
+patterns were consistent with the inoculation-induced diversity drops and
+higher post-inoculation diversity in resistant cultivars reported in the
+original study.
 
-To examine the taxa underlying these resistance-associated differences,
+To identify taxa underlying these resistance-associated differences,
 MicroBioAgent compared each resistant cultivar with the pooled susceptible
-cultivars using MaAsLin~3.  In the 16S profiles, the number of genera
-enriched in both HG64 and HF12 ranged from 6 to 15 across sampling
-conditions, with different genera contributing to these shared enrichments
-(Supplementary Figure~\ref{fig:tomato-enrichment}).  The matched shotgun data provided species-level
-comparisons of the markers highlighted in the source study.  MetaPhlAn3
-profiles showed enrichment of the \textit{Pseudomonas putida} group in both
-the resistant parent HG64 ($P=0.013$) and the resistant hybrid HF12
-($P=0.009$) at T1.  The other reported marker,
-\textit{Sphingopyxis unclassified}, was not identified in the MetaPhlAn3
-profiles.  Following investigator review, MicroBioAgent repeated the shotgun
-profiling using MetaPhlAn2, the version used in the original study, and
-identified both \textit{Pseudomonas putida} and \textit{Sphingopyxis unclassified}
-as enriched in resistant cultivars, recovering both reported taxonomic
-associations. 
+cultivars using MaAsLin~3.  In the 16S data, between 6 and 15 genera were
+consistently enriched in both resistant cultivars (HG64 and HF12) across
+individual sampling conditions (Supplementary Figure~\ref{fig:tomato-enrichment}).
+To resolve resistance-associated taxa at the species level, MicroBioAgent
+next analyzed the matched shotgun metagenomic libraries to examine the
+biomarkers identified in the source study.  MetaPhlAn3 profiles showed
+enrichment of the \textit{Pseudomonas putida} group in both the resistant
+parent HG64 ($P=0.013$) and the resistant hybrid HF12 ($P=0.009$) at T1, but
+did not detect the other reported marker, \textit{Sphingopyxis unclassified}.
+Prompted by this difference, the investigator instructed MicroBioAgent to
+repeat the profiling using MetaPhlAn~2, the version used in the original study.
+This reanalysis identified both \textit{P.~putida} and
+\textit{Sphingopyxis unclassified} as enriched in the resistant cultivars,
+fully recovering the published taxonomic associations.
 
 \begin{figure}[htbp]
   \centering
@@ -369,57 +366,51 @@ associations.
 \subsubsection{A colorectal cancer faecal metagenomic biomarker study}
 \label{sec:case-crc}
 
-The colorectal cancer (CRC) case evaluated whether MicroBioAgent could
-connect taxonomic and functional profiling to disease-associated species
-analysis, co-occurrence networks and predictive modelling.
-The dataset comprised 128 faecal metagenomes from the Hong Kong
-C1 cohort reported by Yu \textit{et al.}, including 74 patients with CRC
-and 54 controls \parencite{yu2017crc}.  MicroBioAgent performed species-level
-profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KEGG
-Orthology (KO) abundances with HUMAnN3 for downstream association analysis
-and classification (\cref{fig:crc}).  Reported species associations and
-co-occurrence patterns provided biological reference points, while
-cross-validation assessed the predictive performance of the functional
-features.
+We next evaluated whether MicroBioAgent could integrate taxonomic and functional
+profiling with downstream biomarker identification, co-occurrence networks, and
+disease-predictive modeling.  The evaluation used a published colorectal cancer
+(CRC) dataset comprising 128 faecal metagenomes from the Hong Kong C1 cohort,
+including 74 patients with CRC and 54 controls \parencite{yu2017crc}.
+Starting from sequencing data, MicroBioAgent carried out species-level
+profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KEGG Orthology
+(KO) abundances using HUMAnN3 (\cref{fig:crc}).  These profiles served as inputs
+for downstream community comparisons, biomarker discovery, and cross-validated
+classification.
 
-PCoA based on Bray--Curtis dissimilarities calculated from MetaPhlAn3
-species-level relative abundance profiles showed no clear separation
-among controls, early-stage CRC cases ($n=36$) and late-stage CRC cases
-($n=38$).  PERMANOVA nevertheless detected differences in community
-composition associated with CRC status ($F=2.32$, $P=0.002$) and disease
-stage ($F=1.65$, $P=0.009$).  Separate tests for sex, age and BMI were
-not significant.
+Principal coordinates analysis of Bray--Curtis dissimilarities derived from
+species relative abundances showed no distinct separation among controls,
+early-stage CRC cases ($n=36$), and late-stage CRC cases ($n=38$).  PERMANOVA
+nevertheless detected significant differences in community composition
+associated with CRC status ($F=2.32$, $P=0.002$) and disease stage ($F=1.65$,
+$P=0.009$).  Potential confounding factors, including sex, age, and BMI, showed
+no significant associations with community structure.
 
-Comparisons of species abundances between cases and controls identified
-eight CRC-enriched and two control-enriched taxa after Benjamini--Hochberg
-correction ($q<0.05$).  Four CRC-enriched species,
-\textit{Parvimonas micra}, \textit{Peptostreptococcus stomatis},
-\textit{Fusobacterium nucleatum} and \textit{Solobacterium moorei}, showed
-the same direction of association as in the original study.  Enrichment
-of \textit{Eubacterium ventriosum} in controls also agreed with the
-reported association.  To examine whether these disease-associated species
-also varied together across samples, Spearman co-occurrence analysis was
-performed on the ten differentially abundant species.  The network contained
-16 positive correlations ($|\rho|\geq0.4$, BH-adjusted $q<0.05$), with
-\textit{Parvimonas micra} connected to six other species.
-Its positive correlations with \textit{Fusobacterium nucleatum}
-($\rho=0.49$) and \textit{Solobacterium moorei} ($\rho=0.53$) were
-consistent with the co-occurrence relationships emphasized in the original
-study \parencite{yu2017crc}.
+Differential abundance analysis between cases and controls identified eight
+CRC-enriched and two control-enriched species (Benjamini--Hochberg adjusted
+$q<0.05$).  Four key CRC-enriched species---\textit{Parvimonas micra},
+\textit{Peptostreptococcus stomatis}, \textit{Fusobacterium nucleatum}, and
+\textit{Solobacterium moorei}---and one control-enriched species,
+\textit{Eubacterium ventriosum}, showed the same direction of association
+reported in the original study.  To determine whether these disease-associated
+taxa co-occurred across samples, MicroBioAgent constructed a Spearman
+correlation network from the ten differentially abundant species.  The resulting
+network comprised 16 positive correlations ($|\rho|\geq0.4$, $q<0.05$), with
+\textit{P.~micra} acting as a central hub connected to six other species.  In
+particular, its positive correlations with \textit{F.~nucleatum} ($\rho=0.49$)
+and \textit{S.~moorei} ($\rho=0.53$) recapitulated key co-occurrence patterns
+highlighted in the source study \parencite{yu2017crc}.
 
-The analysis then extended from identifying disease-associated taxa to
-testing whether functional differences could distinguish CRC cases from
-controls.  MicroBioAgent selected differentially abundant features and
-trained separate gene-family and KO classifiers to compare the predictive
-performance of these two functional representations.  Within each training fold,
-mRMR selection yielded 15 gene-family features or 15 KO features for
-logistic-regression modelling.  Performance was evaluated by nested
-fivefold cross-validation within the C1 cohort.  The gene-family
-classifier achieved a pooled out-of-fold AUROC of 0.902, compared with
-0.632 for the KO classifier, indicating stronger discrimination using
-gene-family features.  At thresholds selected using Youden's index,
-the gene-family classifier achieved a sensitivity of 0.82 and specificity
-of 0.89, compared with 0.41 and 0.87 for the KO classifier.
+Beyond taxonomic markers, MicroBioAgent evaluated whether functional profiles
+could accurately distinguish CRC cases from controls.  Using minimum redundancy
+maximum relevance (mRMR) feature selection within a nested fivefold
+cross-validation framework, the agent trained logistic regression classifiers
+on the top 15 gene-family or top 15 KO features per fold.  The gene-family
+classifier achieved a pooled out-of-fold AUROC of 0.902, substantially
+outperforming the KO classifier (AUROC 0.632).  At decision thresholds chosen by
+Youden's index, the gene-family model achieved a sensitivity of 0.82 and a
+specificity of 0.89, compared with 0.41 and 0.87 for the KO model, confirming
+that fine-grained gene-family abundances provided superior diagnostic
+discrimination.
 
 \begin{figure}[htbp]
   \centering
@@ -436,50 +427,43 @@ of 0.89, compared with 0.41 and 0.87 for the KO classifier.
 \subsubsection{A polyethylene-enrichment genome-resolved metagenomic study}
 \label{sec:case-mag}
 
-We next evaluated whether MicroBioAgent could reconstruct genomes from
-enrichment metagenomes and use them to identify microorganisms and annotate
-genes associated with alkane and oxidized-derivative metabolism.
-The dataset comprised six Oxford Nanopore long-read metagenomes from two
-soil inocula (S1 and S2), each enriched on low-molecular-weight polyethylene
-(LMWPE), triacontane (C30) or tetracontane (C40)
-\parencite{sandholm2025polyethylene}.  Assembly and binning generated
-372 bins, of which 153 passed completeness and contamination filtering
-(100 high-quality and 53 medium-quality MAGs).
-Dereplication at 95\% average nucleotide identity retained 75 representative
-genomes (50 high quality and 25 medium quality, \cref{fig:mag}a).
-These genomes were classified using GTDB-Tk with GTDB release R232,
-and their abundances across the enrichment cultures were estimated by
-read mapping with CoverM to identify the predominant microorganisms in
-each enrichment culture.
+We next evaluated whether MicroBioAgent could reconstruct metagenome-assembled
+genomes (MAGs) from enrichment cultures, quantify their community abundances,
+and annotate metabolic pathways for alkane and oxidized-derivative degradation.
+The dataset comprised six Oxford Nanopore long-read metagenomes from two soil
+inocula (S1 and S2), each enriched on low-molecular-weight polyethylene (LMWPE),
+triacontane (C30), or tetracontane (C40) \parencite{sandholm2025polyethylene}.
+Starting from long-read data, automated assembly and binning yielded 372 bins,
+of which 153 met quality standards for completeness and contamination (100
+high-quality and 53 medium-quality MAGs).  Dereplication at 95\% average
+nucleotide identity (ANI) retained 75 non-redundant representative genomes (50
+high quality and 25 medium quality; \cref{fig:mag}a).  MicroBioAgent assigned
+taxonomic classifications using GTDB-Tk (release R232) and estimated MAG
+relative abundances across the six cultures via CoverM read mapping.
 
-MAG abundance profiles showed different dominant taxa across the enrichment
-cultures.  \textit{Acinetobacter guillouiae} dominated S1 LMWPE and S1 C30,
-accounting for 64\% and 67\% of the reported abundance, respectively.
-S1 C40 was instead dominated by \textit{Aquipseudomonas}, which accounted
-for 66\% at the genus level (\cref{fig:mag}b,c).  The S2 cultures showed
-a different composition.  \textit{Aquipseudomonas} sp003050835 was most
-abundant in S2 LMWPE (42\%), while \textit{Mesorhizobium\_M} sp900116595
-and \textit{Aquipseudomonas moorei} were the most abundant species in
-S2 C30 (16\% each).  In S2 C40, \textit{Mesorhizobium\_M} sp900116595
-and \textit{Aquipseudomonas fluorescens\_BJ} predominated at 27\% and
-25\%, respectively.  Taxonomic annotation identified the ten taxonomic groups of particular
-interest in the original study
-(Supplementary Data~1).  The groups reported as
-\textit{Pseudomonas} in the original study were classified as
-\textit{Aquipseudomonas} in the present analysis due to differences
-in the reference taxonomy.
+MAG abundance profiles revealed distinct dominant taxa across the enrichment
+conditions (\cref{fig:mag}b,c).  In inoculum S1, \textit{Acinetobacter guillouiae}
+predominated in LMWPE (64\%) and C30 (67\%), whereas \textit{Aquipseudomonas}
+dominated C40 (66\% genus-level abundance).  The S2 cultures displayed distinct
+profiles: \textit{Aquipseudomonas} sp003050835 was most abundant in S2 LMWPE
+(42\%), \textit{Mesorhizobium\_M} sp900116595 and \textit{Aquipseudomonas moorei}
+led in S2 C30 (16\% each), and \textit{Mesorhizobium\_M} sp900116595 and
+\textit{Aquipseudomonas fluorescens\_BJ} predominated in S2 C40 (27\% and 25\%,
+respectively).  MicroBioAgent successfully recovered all ten focal taxonomic
+groups highlighted in the source study (Supplementary Data~1).  Taxa designated
+as \textit{Pseudomonas} in the original publication were classified here as
+\textit{Aquipseudomonas}, consistent with updated GTDB taxonomic boundaries.
 
-To examine the metabolic potential of the ten taxonomic groups emphasized
-in the original study, functional annotation was performed on the
-95\% ANI representative genome of each recovered group.  \textit{Achromobacter} sp.\
-formed two ANI clusters, so both representatives were annotated
-(11 MAGs; \cref{fig:mag}d).
-Genes associated with alkane terminal oxidation were annotated in nine of
-these MAGs.  Genes associated with 2-ketone or oxidized-derivative
-metabolism, and genes assigned to the $\beta$-oxidation module M00087,
-were detected in all 11.  Nine MAGs contained annotations spanning all
-three categories, indicating that the corresponding genetic potential was
-distributed across multiple taxa of interest.
+To characterize the metabolic capabilities of these recovered organisms,
+MicroBioAgent annotated the 95\% ANI representative genomes corresponding to
+the focal taxa.  Because \textit{Achromobacter} sp.\ formed two distinct ANI
+clusters, both representatives were included, yielding 11 analyzed MAGs
+(\cref{fig:mag}d).  Genes for alkane terminal oxidation were identified in nine
+of these MAGs, while pathways for 2-ketone or oxidized-derivative metabolism and
+the $\beta$-oxidation module were detected in all 11 genomes.
+Nine MAGs carried genes spanning all three functional categories, indicating
+that the genetic potential for complete hydrocarbon utilization was distributed
+across multiple recovered taxa.
 
 \begin{figure}[htbp]
   \centering
@@ -530,7 +514,7 @@ within any model (all Holm-adjusted $P = 1$, two-sided Mann--Whitney $U$
 test).  For differential abundance, because none of the prompts specified a
 statistical test, individual sessions chose among DESeq2, MaAsLin~3,
 Wilcoxon rank-sum tests, Mann--Whitney $U$ tests and LEfSe (Supplementary
-Table~\ref{tab:robustness-methods}, panels~a and~b).  Because
+Tables~\ref{tab:da-model-methods} and~\ref{tab:da-prompt-methods}).  Because
 different tests define effect sizes on different scales, we compared
 $\log_2$ fold-change distributions across sessions that used the same test.
 Across models within each prompt level, DESeq2 was used by all three models
@@ -1126,12 +1110,12 @@ MaAsLin~3, Wilcoxon rank-sum test, Mann--Whitney $U$ test and LEfSe).
 Because different methods report differently defined effect sizes, $\log_2$
 fold-change distributions were compared only across sessions that used the
 same statistical test.  Cross-model comparisons within each prompt level used sessions that ran
-DESeq2 (Supplementary Table~\ref{tab:robustness-methods}, panel~a), and within-model
+DESeq2 (Supplementary Table~\ref{tab:da-model-methods}), and within-model
 comparisons across prompt levels were conducted between the detailed and
 medium prompts, which specified the same comparisons between resistant and
 susceptible cultivars at each timepoint, using the statistical test shared by
 both prompts for each model (Supplementary
-Table~\ref{tab:robustness-methods}, panel~b).  In both comparisons, each data point
+Table~\ref{tab:da-prompt-methods}).  In both comparisons, each data point
 represented the $\log_2$ fold change of a taxon for a given resistant
 cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
 control (averaging across susceptible controls within a session when A57 and
@@ -1250,7 +1234,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     whose mean was at least 5\% in every compared group.  DESeq2 points are
     means across sessions that ran DESeq2, for taxon, cultivar and timepoint
     entries shared by the compared models
-    (Supplementary Table~\ref{tab:robustness-methods}, panel~a); the medium shotgun
+    (Supplementary Table~\ref{tab:da-model-methods}); the medium shotgun
     prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
     tests with Holm correction within each set of three pairs.  n.s.,
     Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
@@ -1271,8 +1255,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     log$_2$ fold changes.  Shotgun values are Wilcoxon, Mann--Whitney $U$
     and DESeq2 log$_2$ fold changes for \texttt{deepseek-v4-pro},
     \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}, respectively
-    (Supplementary Table~\ref{tab:robustness-methods},
-    panel~b),
+    (Supplementary Table~\ref{tab:da-prompt-methods}),
     and are not compared across rows.  Brackets in the first four columns
     are two-sided Mann--Whitney $U$ tests with Holm correction within each
     set of three prompt pairs.  Each differential-abundance bracket is a
@@ -1323,58 +1306,39 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 
 \begin{table}[htbp]
   \centering
-  \caption{Software and reference versions recorded for the case-study analyses.}
+  \caption{Software and reference-database versions recorded for the case-study analyses.}
   \label{tab:software-versions}
   \scriptsize
   \setlength{\tabcolsep}{4pt}
   \renewcommand{\arraystretch}{1.18}
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth}>{\raggedright\arraybackslash}X@{}}
     \toprule
-    Software or database & Version or release & Conda environment & Case \\
+    Software or reference database & Version or release \\
     \midrule
     MetaPhlAn
-      & 3; \texttt{mpa\_v30\_CHOCOPhlAn\_201901}
-      & \texttt{biobakery3}
-      & Cases 1 and 2 \\
+      & 3; \texttt{mpa\_v30\_CHOCOPhlAn\_201901} \\
     MetaPhlAn
-      & 2; \texttt{mpa\_v20\_m200}
-      & \texttt{biobakery2}
-      & Case 1 \\
+      & 2; \texttt{mpa\_v20\_m200} \\
     HUMAnN
-      & 3; build not recorded
-      & \textemdash
-      & Case 2 \\
+      & 3; build not recorded \\
     MaAsLin3
-      & 1.2.0
-      & \textemdash
-      & Case 1 \\
+      & 1.2.0 \\
     SILVA
-      & 138.2, V3--V4
-      & \textemdash
-      & Case 1 \\
+      & 138.2, V3--V4 \\
     CheckM2
-      & 1.1.0
-      & \textemdash
-      & Case 3 \\
+      & 1.1.0 \\
     CoverM
-      & 0.7.0
-      & \textemdash
-      & Case 3 \\
+      & 0.7.0 \\
     GTDB-Tk
-      & 2.7.2; database R232
-      & \textemdash
-      & Case 3 \\
+      & 2.7.2; database R232 \\
     eggNOG-mapper
-      & 2.1.13; eggNOG 5.0
-      & \texttt{eggnog\_mapper}
-      & Case 3 \\
+      & 2.1.13; eggNOG 5.0 \\
     \bottomrule
   \end{tabularx}
   \vspace{0.35em}
   \begin{minipage}{\linewidth}
     \footnotesize
     \textit{Notes:} Versions are those written in the archived analysis outputs.
-    An em dash means the conda environment was not recorded.
     The MetaPhlAn3 database is the release named in the profile headers.
     The MetaPhlAn2 database is the \texttt{mpa\_v20\_m200} index used by the archived profiling commands.
   \end{minipage}
@@ -1445,67 +1409,54 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 \end{table}
 
 \FloatBarrier
-\refstepcounter{table}
-\label{tab:robustness-methods}
-\label{tab:da-model-methods}
-\label{tab:da-prompt-methods}
-\begin{center}
-  \begin{minipage}{\linewidth}
-    \tablename~\thetable: Robustness comparisons of differential-abundance outputs.
-    (a)~DESeq2 sessions included in the cross-model comparison of
-    differential-abundance effect sizes.  Each row is one model.
-    Session counts are the replicates, out of three, whose DESeq2 result
-    entered the comparison.  The medium shotgun prompt produced no DESeq2
-    results.
-    (b)~Differential-abundance methods and replicates averaged in the
-    detailed-versus-medium prompt comparison.  Each row is one comparison.
-    Session counts are the replicates, out of three, whose result for that
-    method entered the average.
-  \end{minipage}
-  \par\vspace{0.6em}
-  {\scriptsize
+
+\begin{table}[htbp]
+  \centering
+  \caption{DESeq2 sessions and shared entries included in cross-model
+    differential-abundance comparisons.  Session counts are the replicates,
+    out of three, whose DESeq2 results entered each comparison.}
+  \label{tab:da-model-methods}
+  \scriptsize
   \setlength{\tabcolsep}{4pt}
   \renewcommand{\arraystretch}{1.18}
-
-  \textbf{(a)}\par\vspace{0.4em}
-  \begin{tabular}{@{}lcccc@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xlcccc@{}}
     \toprule
-    Model
-      & \shortstack{Detailed\\sessions}
-      & \shortstack{Medium\\sessions}
-      & \shortstack{Detailed\\entries shared}
-      & \shortstack{Medium\\entries shared} \\
+    Dataset & Prompt
+      & \shortstack{DeepSeek\\Pro}
+      & \shortstack{DeepSeek\\Flash}
+      & \shortstack{GLM\\Flash}
+      & \shortstack{Shared\\entries} \\
     \midrule
-    \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
-    \addlinespace
-    \texttt{deepseek-v4-pro}   & 1/3 & 1/3 & 1,724 & 2,659 \\
-    \texttt{deepseek-v4-flash} & 2/3 & 2/3 & 1,724 & 2,659 \\
-    \texttt{glm5.3-flash}      & 3/3 & 1/3 & 1,724 & 2,659 \\
-    \addlinespace
-    \multicolumn{5}{@{}l}{\textit{Shotgun metagenome, species}} \\
-    \addlinespace
-    \texttt{deepseek-v4-pro}   & 1/3 & \textemdash & 228 & \textemdash \\
-    \texttt{deepseek-v4-flash} & 2/3 & \textemdash & 228 & \textemdash \\
-    \texttt{glm5.3-flash}      & 2/3 & \textemdash & 228 & \textemdash \\
+    16S rRNA gene, genus       & Detailed & 1/3 & 2/3 & 3/3 & 1,724 \\
+    16S rRNA gene, genus       & Medium   & 1/3 & 2/3 & 1/3 & 2,659 \\
+    Shotgun metagenome, species & Detailed & 1/3 & 2/3 & 2/3 & 228 \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
   \vspace{0.35em}
-
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} Each entry
-    represents the DESeq2 log$_2$ fold change of a taxon for a given resistant
-    cultivar (HG64 or HF12) and sampling timepoint relative to the susceptible
-    control (averaged across susceptible controls within a session when A57
-    and HG70 were reported separately).  Values were averaged across the
-    included sessions without imputing missing entries as zero.  An entry was
-    shared when it was reported across all three models, so the shared count
-    is the same in each row of a block.  One \texttt{glm5.3-flash} detailed replicate did
-    not analyse shotgun libraries.
+    \textit{Notes:} Each entry represents the DESeq2 log$_2$ fold change of a
+    taxon for a resistant cultivar (HG64 or HF12) and sampling timepoint
+    relative to the susceptible control.  A57 and HG70 contrasts were averaged
+    within a session when reported separately.  Values were then averaged
+    across included sessions without imputing missing entries as zero, and
+    only entries reported by all three models were retained.  Shotgun results
+    under the medium prompt were not compared because no differential-abundance
+    method was shared by all three models.  One \texttt{glm5.3-flash} detailed
+    replicate did not analyse the shotgun libraries.
   \end{minipage}
+\end{table}
 
-  \vspace{0.9em}
-  \textbf{(b)}\par\vspace{0.4em}
+\begin{table}[htbp]
+  \centering
+  \caption{Methods and sessions included in detailed-versus-medium prompt
+    comparisons of differential-abundance outputs.  Session counts are the
+    replicates, out of three, whose result for the indicated method entered
+    each comparison.}
+  \label{tab:da-prompt-methods}
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
   \begin{tabular}{@{}llccc@{}}
     \toprule
     Model & Method
@@ -1527,26 +1478,22 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     \bottomrule
   \end{tabular}
   \vspace{0.35em}
-
   \begin{minipage}{\linewidth}
     \footnotesize
     \textit{Notes:} The simple prompt was not included.  Each entry represents
-    the log$_2$ fold change of a
-    taxon for a given resistant cultivar (HG64 or HF12) and sampling timepoint
-    relative to the susceptible control (averaged across susceptible controls
-    within a session when A57 and HG70 were reported separately).  Values were
-    averaged across the included replicates without imputing missing entries
-    as zero, and entries reported under both prompts were compared.
-    DESeq2 values are negative-binomial log$_2$ fold changes.
-    Wilcoxon and Mann--Whitney $U$ values are log$_2$ ratios of group means
-    reported with the rank test, not the rank statistic.  One
-    \texttt{deepseek-v4-flash} detailed replicate reported only ASV-level
-    DESeq2 results and was excluded from the genus comparison.  One
-    \texttt{glm5.3-flash} detailed replicate did not
-    analyse shotgun libraries.
+    the log$_2$ fold change of a taxon for a resistant cultivar (HG64 or HF12)
+    and sampling timepoint relative to the susceptible control.  A57 and HG70
+    contrasts were averaged within a session when reported separately.  Values
+    were then averaged across included sessions without imputing missing
+    entries as zero, and only entries reported under both prompts were retained.
+    DESeq2 values are negative-binomial log$_2$ fold changes.  Wilcoxon and
+    Mann--Whitney $U$ values are log$_2$ ratios of group means reported with
+    the rank test, not the rank statistic.  One \texttt{deepseek-v4-flash}
+    detailed replicate reported only ASV-level DESeq2 results and was excluded
+    from the genus comparison.  One \texttt{glm5.3-flash} detailed replicate
+    did not analyse the shotgun libraries.
   \end{minipage}
-  }
-\end{center}
+\end{table}
 
 \FloatBarrier
 

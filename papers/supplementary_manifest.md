@@ -28,11 +28,8 @@ records will instead accompany the article archive.
 | Supplementary Table S1 | `tab:cases-overview` | Dataset accessions, library counts, analysis routes and evaluation targets for the three case studies | Case-study overview and design |
 | Supplementary Table S2 | `tab:software-versions` | Software and reference-database versions recorded in archived case-study outputs | Case-study methods; a main-text citation still needs to be added |
 | Supplementary Table S3 | `tab:agent-capabilities` | Scope comparison of MicroBioAgent with related bioinformatics agents | Discussion |
-| Supplementary Table S4 | `tab:robustness-methods` | Differential-abundance methods, included sessions and shared entries for cross-model and cross-prompt robustness comparisons | Robustness Results, Methods and figure captions |
-
-The labels `tab:da-model-methods` and `tab:da-prompt-methods` currently point
-to Supplementary Table S4 as compatibility aliases. New citations should use
-`tab:robustness-methods`.
+| Supplementary Table S4 | `tab:da-model-methods` | DESeq2 sessions and shared entries included in cross-model differential-abundance comparisons | Robustness Results, Methods and Supplementary Figure S2 |
+| Supplementary Table S5 | `tab:da-prompt-methods` | Methods, included sessions and shared entries for detailed-versus-medium prompt comparisons | Robustness Results, Methods and Supplementary Figure S3 |
 
 ## Supplementary Data 1
 
