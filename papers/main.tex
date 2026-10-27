@@ -31,35 +31,34 @@
 \maketitle
 
 \begin{abstract}
-Microbiome studies require analytical choices that depend on the biological
-question, available assays, and intermediate findings.  Translating these
-choices into executable analyses requires connecting heterogeneous methods,
-software environments, reference resources, and intermediate outputs.
-Here we present MicroBioAgent, a domain agent that translates biological
-questions into study-specific analyses across 16S amplicon, reference-based
-shotgun, and assembly-based metagenomic workflows.  MicroBioAgent uses
-microbiome-specific skills to select and execute analytical methods in
-user-controlled computational environments.  It evaluates intermediate results
-to determine subsequent analyses in line with the biological question.
-We evaluated MicroBioAgent on three published datasets through amplicon and
-shotgun analysis of tomato rhizosphere communities, taxonomic and functional
-profiling with classifier training in a colorectal cancer cohort, and
-metagenomic assembly and MAG generation from a model polyethylene degradation
-study, followed by taxonomic profiling and annotation of genes associated with
-alkane and oxidized-derivative degradation in focal MAGs.
-The reanalyses identified biological patterns
-consistent with the original studies, with differences in statistical support
-and taxon detection across analytical methods and reference databases.
-In robustness evaluations across 27 independent sessions spanning three
-language models and three levels of prompt detail, MicroBioAgent completed
-98.8\% of analytical tasks with consistent diversity and
-differential-abundance outputs.  Ablation of the runtime patch showed that pausing the
-conversation turn during background execution reduced mean token consumption
-by more than half compared with repeated status checks, while enabling
-mid-run plan revision and automatic continuation upon task completion.
-These applications demonstrate that MicroBioAgent can carry out upstream
-processing and downstream analysis across different microbiome study designs
-without requiring a fixed end-to-end workflow template.
+Microbiome data analysis requires custom analytical workflows dictated by the
+specific biological question, sequencing assay, and intermediate results.
+However, executing these workflows requires integrating disparate computational
+environments, reference databases, and multi-step bioinformatics software.
+Here, we present MicroBioAgent, an autonomous domain-specific agent that
+translates biological questions into study-specific pipelines across 16S
+amplicon, profiling-based shotgun, and assembly-based metagenomics.
+MicroBioAgent dynamically selects and executes bioinformatics tools within
+user-controlled environments, iteratively evaluating intermediate outputs to
+adapt subsequent analysis steps.
+We evaluated MicroBioAgent across three benchmark datasets: (1)~amplicon and
+shotgun profiling of tomato rhizosphere microbiomes; (2)~taxonomic and
+functional profiling with machine-learning classification in a colorectal
+cancer cohort; and (3)~de novo metagenomic assembly, binning of
+metagenome-assembled genomes (MAGs), and metabolic pathway annotation from a
+polyethylene degradation study.  Across all benchmarks, MicroBioAgent
+successfully reproduced the primary biological conclusions of the original
+studies, with minor variations in taxon detection and statistical metrics
+driven by differences in tool selection and database versions.
+In robustness evaluations across 27 independent sessions spanning three large
+language models and three prompt complexity levels, MicroBioAgent successfully
+completed 98.8\% of analytical tasks with highly consistent diversity and
+differential-abundance estimates.  Furthermore, benchmarking our background
+execution mechanism demonstrated that asynchronous task management reduced
+token consumption by over 50\%, while supporting mid-run plan adjustments and
+automated continuation upon task completion.  Overall, MicroBioAgent
+establishes a flexible, adaptive framework for end-to-end microbiome data
+analysis without relying on rigid pipeline templates.
 \end{abstract}
 
 %% ====================================================================
@@ -164,14 +163,15 @@ flexibility in method selection and user control.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{microbioagent-architecture-image2-v7.png}
-  \caption{MicroBioAgent architecture and operating model.  A user request is
-    bound to an analysis job, from which the agent plans, selects skills, and
-    resolves local runtimes and reference resources for 16S amplicon,
-    reference-based shotgun, and assembly-based metagenomic analyses.
-    Intermediate artifacts, commands, parameters, and logs remain associated
-    with the job.  During long-running computation, a user message can update
-    pending work, whereas command completion triggers output verification and
-    continuation in the same session.}
+  \caption{MicroBioAgent architecture and workflow execution.  A natural-language
+  research request initiates an analysis workspace, where the agent formulates
+  an analytical plan, selects domain-specific skills, and links local software
+  environments and reference databases across 16S amplicon, reference-based
+  shotgun, and assembly-based metagenomic workflows.  Analysis commands,
+  parameters, intermediate tables, and logs are organized within the session
+  directory.  During background computation, users can revise pending tasks
+  without interrupting active processes, and task completion automatically
+  triggers output verification and continuation within the same session.}
   \label{fig:architecture}
 \end{figure}
 
@@ -198,11 +198,12 @@ reference databases according to their research needs.
 For upstream analysis, MicroBioAgent supports 16S amplicon processing,
 reference-based metagenomic profiling, and assembly-based metagenomic
 reconstruction (\cref{tab:skills}).  Its amplicon capabilities include sequence
-quality assessment, denoising, amplicon sequence variant inference, taxonomic
+quality assessment, denoising, amplicon sequence variant (ASV) inference, taxonomic
 classification, and phylogenetic reconstruction.  For shotgun data, it supports
 read quality control and host-read removal, taxonomic and functional profiling,
 and gene-catalogue construction.  Assembly-based capabilities include
-metagenomic assembly and binning, MAG quality assessment, dereplication,
+metagenomic assembly and binning, quality assessment of metagenome-assembled
+genomes (MAGs), dereplication,
 taxonomic assignment, and abundance estimation.
 
 MicroBioAgent supports a range of downstream analyses, such as comparisons of
@@ -241,29 +242,30 @@ and local execution, while allowing users to guide ongoing analyses.
     Task category & Supported analyses \\
     \midrule
     Amplicon characterization
-      & Read import and quality summaries, denoising and ASV inference,
-        taxonomy, phylogeny, predicted functional profiles \\
+      & Read import and quality assessment, denoising and ASV inference,
+        taxonomic classification, phylogenetic analysis and functional
+        prediction \\
     Shotgun profiling
-      & Read quality control and host depletion, species abundances,
-        gene-family and pathway profiles, nonredundant gene catalogues \\
-    MAG characterization
-      & Assembly and binning, quality assessment.  Dereplication,
-        taxonomic assignment, abundance estimation, genome annotation \\
-    Community comparisons
+      & Read quality control and host depletion, taxonomic profiling,
+        gene-family and pathway abundance profiling, and nonredundant gene
+        catalogue construction \\
+    Genome-resolved analysis
+      & Metagenomic assembly and binning, MAG quality assessment,
+        dereplication, taxonomic classification, abundance estimation and
+        genome annotation \\
+    Community analysis
       & Alpha and beta diversity, ordination, group comparisons,
-        differential abundance, covariate association testing \\
-    Functional interpretation
-      & Gene and protein annotation, orthology, pathway, and ontology mapping,
-        functional enrichment, resistance and virulence gene annotation \\
-    Metabolic characterization
-      & Metabolic pathway and model reconstruction, primary metabolic gene
-        clusters, secondary-metabolite biosynthetic gene clusters \\
-    Study-specific analysis
-      & Custom statistical scripts, association networks, supervised
-        classification, figures, result tables, and analytical reports \\
-    Data and resource access
-      & Public sequencing metadata and reference-protein retrieval,
-        local reference resources and online annotation queries \\
+        differential-abundance analysis and covariate association testing \\
+    Functional annotation
+      & Gene and protein annotation, orthology and ontology mapping,
+        functional enrichment, and resistance and virulence gene
+        identification \\
+    Metabolic reconstruction
+      & Metabolic pathway reconstruction, genome-scale metabolic model
+        reconstruction, and identification of primary metabolic and
+        secondary-metabolite biosynthetic gene clusters \\
+    Results visualization and reporting
+      & Figures, summary tables and analytical reports \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -276,7 +278,7 @@ sequencing libraries from plant, human, and environmental microbiomes
 (Supplementary Table~\ref{tab:cases-overview}).  These case studies assessed
 the system's ability to complete the requested analyses and recover biological
 patterns reported in the source studies.  Because software versions, reference
-databases, and some statistical procedures differed, exact computational
+databases, and some statistical procedures differed (Supplementary Table~\ref{tab:software-versions}), exact computational
 reproduction was not the evaluation objective.  Instead, we assessed completion
 of the requested analyses, validity of the resulting outputs, and recovery of
 prespecified biological signals.
@@ -285,11 +287,12 @@ The three cases were selected to test MicroBioAgent on distinct combinations
 of data types and analytical tasks.  The tomato rhizosphere case combined 60
 16S amplicon libraries with 36 matched shotgun libraries to examine differences
 in microbial diversity and taxonomic composition associated with pathogen
-inoculation and cultivar resistance.  The colorectal cancer case used 128
+inoculation and cultivar resistance.  The colorectal cancer (CRC) case used 128
 faecal shotgun metagenomes from 74 patients and 54 controls to compare species
 and functional abundances and train classifiers based on gene-family and KEGG
-Orthology profiles.  The third case used six shotgun metagenomes from
-soil-derived enrichment cultures grown on low-molecular-weight polyethylene or
+Orthology (KO) profiles.  The third case used six shotgun metagenomes from
+soil-derived enrichment cultures grown on low-molecular-weight polyethylene
+(LMWPE) or
 alkane substrates to generate MAGs through assembly and binning, dereplicate
 them, characterize their taxonomic composition, and annotate
 degradation-associated genes in focal genomes.
@@ -319,7 +322,7 @@ Following \textit{Ralstonia} inoculation, Shannon diversity declined in
 susceptible cultivars but remained higher in resistant cultivars at both
 day~5 ($P=0.002$) and day~10 ($P=0.004$, \cref{fig:tomato-diversity}a).
 Community composition also separated clearly by inoculation treatment along
-the first weighted-UniFrac PCoA axis (56.3\% of variance;
+the first weighted-UniFrac principal coordinates analysis (PCoA) axis (56.3\% of variance;
 \cref{fig:tomato-diversity}b).  Separation between resistant and susceptible
 cultivars was less pronounced along the second axis (12.2\%), with partial
 overlap between groups.  Genus-level profiles linked these community shifts to
@@ -349,12 +352,13 @@ fully recovering the published taxonomic associations.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\linewidth]{Case-study-1-Fig1_diversity.png}
-  \caption{Tomato rhizosphere diversity and community composition.  (a)
-    Shannon diversity across cultivars, sampling time points, and inoculation
-    conditions.  (b) Weighted-UniFrac PCoA, coloured by resistance phenotype
-    and shaped by inoculation treatment.  (c) Genus-level composition across
-    individual samples.  Each cultivar-time-point combination contained three
-    biological replicates.}
+  \caption{Tomato rhizosphere microbial diversity and community composition.
+  (a)~Per-sample Shannon diversity across cultivars, sampling timepoints, and
+  inoculation conditions.  (b)~Principal coordinates analysis (PCoA) of
+  weighted UniFrac distances, with samples colored by resistance phenotype and
+  point shapes indicating inoculation treatment.  (c)~Genus-level relative
+  abundance across individual samples.  All groups contain $n = 3$ biological
+  replicates ($n = 60$ total 16S samples).}
   \label{fig:tomato-diversity}
 \end{figure}
 
@@ -368,21 +372,23 @@ fully recovering the published taxonomic associations.
 
 We next evaluated whether MicroBioAgent could integrate taxonomic and functional
 profiling with downstream biomarker identification, co-occurrence networks, and
-disease-predictive modeling.  The evaluation used a published colorectal cancer
-(CRC) dataset comprising 128 faecal metagenomes from the Hong Kong C1 cohort,
+disease-predictive modeling.  The evaluation used a published CRC dataset
+comprising 128 faecal metagenomes from the Hong Kong C1 cohort,
 including 74 patients with CRC and 54 controls \parencite{yu2017crc}.
 Starting from sequencing data, MicroBioAgent carried out species-level
-profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KEGG Orthology
-(KO) abundances using HUMAnN3 (\cref{fig:crc}).  These profiles served as inputs
+profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KO abundances
+using HUMAnN3 (\cref{fig:crc}).  These profiles served as inputs
 for downstream community comparisons, biomarker discovery, and cross-validated
 classification.
 
-Principal coordinates analysis of Bray--Curtis dissimilarities derived from
+PCoA of Bray--Curtis dissimilarities derived from
 species relative abundances showed no distinct separation among controls,
-early-stage CRC cases ($n=36$), and late-stage CRC cases ($n=38$).  PERMANOVA
-nevertheless detected significant differences in community composition
+early-stage CRC cases ($n=36$), and late-stage CRC cases ($n=38$).  A
+permutational multivariate analysis of variance (PERMANOVA) nevertheless
+detected significant differences in community composition
 associated with CRC status ($F=2.32$, $P=0.002$) and disease stage ($F=1.65$,
-$P=0.009$).  Potential confounding factors, including sex, age, and BMI, showed
+$P=0.009$).  Potential confounding factors, including sex, age, and body mass
+index, showed
 no significant associations with community structure.
 
 Differential abundance analysis between cases and controls identified eight
@@ -405,7 +411,8 @@ could accurately distinguish CRC cases from controls.  Using minimum redundancy
 maximum relevance (mRMR) feature selection within a nested fivefold
 cross-validation framework, the agent trained logistic regression classifiers
 on the top 15 gene-family or top 15 KO features per fold.  The gene-family
-classifier achieved a pooled out-of-fold AUROC of 0.902, substantially
+classifier achieved a pooled out-of-fold area under the receiver operating
+characteristic curve (AUROC) of 0.902, substantially
 outperforming the KO classifier (AUROC 0.632).  At decision thresholds chosen by
 Youden's index, the gene-family model achieved a sensitivity of 0.82 and a
 specificity of 0.89, compared with 0.41 and 0.87 for the KO model, confirming
@@ -415,10 +422,18 @@ discrimination.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\linewidth]{Case-study-2-Fig_composite.png}
-  \caption{Reference-based analysis of CRC faecal metagenomes.  Species-level
-    beta diversity, disease-associated taxa, co-occurrence of the
-    differentially abundant species, functional features, and nested
-    cross-validation of gene-family and KO classifiers are shown.}
+  \caption{Metagenomic profiling, biomarker discovery, and predictive modeling
+  in the CRC cohort.  (a)~PCoA of species-level Bray--Curtis dissimilarities
+  across controls, early-stage CRC, and late-stage CRC cases.  (b)~PERMANOVA
+  test statistics ($F$ values) for disease status, stage, and clinical
+  covariates (sex, age, and BMI).  (c)~Volcano plot of differentially
+  abundant species between CRC cases and controls (Benjamini--Hochberg
+  adjusted $q < 0.05$).  (d)~Spearman co-occurrence network of the ten
+  differentially abundant species ($|\rho| \geq 0.4$, $q < 0.05$),
+  highlighting the \textit{Parvimonas micra} hub.  (e)~Standardized logistic
+  regression coefficients for the top 15 gene-family and top 15 KO features
+  selected by mRMR within training folds.  (f)~ROC curves from nested
+  fivefold cross-validation comparing gene-family and KO classifiers.}
   \label{fig:crc}
 \end{figure}
 
@@ -427,11 +442,11 @@ discrimination.
 \subsubsection{A polyethylene-enrichment genome-resolved metagenomic study}
 \label{sec:case-mag}
 
-We next evaluated whether MicroBioAgent could reconstruct metagenome-assembled
-genomes (MAGs) from enrichment cultures, quantify their community abundances,
+We next evaluated whether MicroBioAgent could reconstruct MAGs from enrichment
+cultures, quantify their community abundances,
 and annotate metabolic pathways for alkane and oxidized-derivative degradation.
 The dataset comprised six Oxford Nanopore long-read metagenomes from two soil
-inocula (S1 and S2), each enriched on low-molecular-weight polyethylene (LMWPE),
+inocula (S1 and S2), each enriched on LMWPE,
 triacontane (C30), or tetracontane (C40) \parencite{sandholm2025polyethylene}.
 Starting from long-read data, automated assembly and binning yielded 372 bins,
 of which 153 met quality standards for completeness and contamination (100
@@ -468,17 +483,14 @@ across multiple recovered taxa.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\linewidth]{Case-study-3-Fig_composite.png}
-  \caption{Assembly-based analysis of enrichment metagenomes.  (a) Numbers of
-    high- and medium-quality MAGs, grouped by completeness and contamination
-    thresholds defined in Methods, before and after 95\% ANI dereplication.
-    (b) Genus-level MAG composition.  (c) Species among the five most abundant
-    MAGs in at least one sample.  (d) Numbers of genes annotated using
-    eggNOG-mapper in the 95\% ANI representative MAG of each target group
-    for alkane terminal oxidation, 2-ketone or oxidized-derivative
-    metabolism, and $\beta$-oxidation (M00087).  \textit{Achromobacter} sp.\
-    occupies two rows because it formed two ANI clusters.  Grey names are
-    medium-quality MAGs.  Counts represent annotated genes rather than
-    distinct functional types or transcript abundance.}
+  \caption{Genome-resolved metagenomic analysis of polyethylene-enrichment cultures.
+  (a)~Counts of high-quality (HQ) and medium-quality (MQ) MAGs before and
+  after 95\% ANI dereplication.  (b)~Genus-level relative abundance of MAGs
+  across the six enrichment cultures.  (c)~Relative abundances of species
+  ranked in the top five of any of the six enrichment cultures.  (d)~Gene copy numbers annotated
+  by eggNOG-mapper in 95\% ANI representative MAGs of focal taxa for alkane
+  terminal oxidation, 2-ketone or oxidized-derivative metabolism, and
+  $\beta$-oxidation; taxa in gray font denote medium-quality MAGs.}
   \label{fig:mag}
 \end{figure}
 
@@ -897,7 +909,7 @@ guides script development and command execution through \texttt{exec}.
 The execution guidance standardizes agent script authoring rules to ensure 
 operational errors are promptly captured and handled, while enabling the 
 agent to execute independent tasks in parallel and balance concurrency and 
-thread counts against available CPU and memory resources.  It also specifies 
+thread counts against available processor and memory resources.  It also specifies 
 how execution status, logs and generated files are checked after a command 
 launched through \texttt{exec} finishes. These checks determine whether 
 execution succeeded and whether the expected output files were produced.  
@@ -925,7 +937,7 @@ task continuation upon completion.
 To enable automatic continuation after background execution, we developed
 a patch for OpenClaw (v2026.7.2) that extends its event handling and
 conversation activation mechanisms. Each background command is associated
-with its originating conversation ID, ensuring completion events are
+with its originating conversation identifier, ensuring completion events are
 dispatched to the corresponding conversation. For an idle conversation,
 the patch immediately triggers a new agent loop upon command completion
 without waiting for scheduled polling or user input. If an event arrives
@@ -986,15 +998,15 @@ configuration.
 \label{sec:methods-crc}
 
 This case evaluated MicroBioAgent's ability to identify disease-associated
-microbial features and assess their predictive value for colorectal cancer
-(CRC). The analysis used the Hong Kong C1 cohort, available under accession
+microbial features and assess their predictive value for CRC. The analysis
+used the Hong Kong C1 cohort, available under accession
 PRJEB10878, comprising 128 faecal metagenomes from 74 patients with CRC and
 54 controls \parencite{yu2017crc}. The CRC group included 36 early-stage
 cases (stages I--II) and 38 late-stage cases (stages III--IV). The analysis
 tasks covered community diversity and composition, differential abundance
 of species and functional features, and associations with clinical variables.
-Functional analyses included both gene-family and KEGG Orthology (KO)
-abundance profiles. The task further required species co-occurrence network
+Functional analyses included both gene-family and KO abundance profiles. The
+task further required species co-occurrence network
 analysis to examine relationships among CRC-associated taxa, together with
 marker selection and classifier development to distinguish CRC cases from
 controls. Comparisons with the original study focused on evaluating the
@@ -1009,9 +1021,9 @@ This case evaluated MicroBioAgent's ability to recover microbial genomes
 from metagenomic data and characterize their functional potential. The
 evaluation utilized six Oxford Nanopore long-read metagenomes from project
 PRJEB97175 \parencite{sandholm2025polyethylene}, derived from two soil inocula
-enriched on low-molecular-weight polyethylene, triacontane, or tetracontane.
+enriched on LMWPE, triacontane, or tetracontane.
 The analysis tasks covered metagenomic assembly, binning, quality filtration
-for high- and medium-quality metagenome-assembled genomes (MAGs),
+for high- and medium-quality MAGs,
 dereplication, and taxonomic classification, alongside cross-culture
 abundance profiling and gene functional annotation for MAGs assigned to ten
 focal taxa from the original study. Evaluation examined whether MAGs
@@ -1029,7 +1041,7 @@ To reduce computational overhead during repeated testing, robustness and
 ablation experiments were conducted using preprocessed data from Case 1.
 The 16S dataset comprised the ASV table, representative sequences, a rooted
 phylogenetic tree, denoising statistics, and sample metadata. For shotgun
-sequencing, 36 QC-filtered and host-cleared libraries were used, each
+sequencing, 36 quality-controlled and host-cleared libraries were used, each
 subsampled to 20\% of its original read depth. These preprocessed inputs were
 used across all experimental conditions, with each session running the
 analyses independently.
@@ -1048,8 +1060,9 @@ how explicitly they specified the analytical steps and methods:
   \item \textbf{Detailed prompt:} Specified exact analytical tasks and
     diversity methods, covering dataset characterization, 16S alpha diversity
     (Shannon index after sequencing-depth normalization), 16S beta diversity
-    (weighted and unweighted UniFrac and Bray--Curtis distances,
-    weighted-UniFrac PCoA, PERMANOVA, and PERMDISP), 16S taxonomic and
+    using weighted and unweighted UniFrac and Bray--Curtis distances,
+    weighted-UniFrac PCoA, PERMANOVA, and permutational analysis of
+    multivariate dispersions (PERMDISP); 16S taxonomic and
     differential-abundance profiling, and shotgun species-level taxonomic and
     differential-abundance profiling.  For both datasets, it requested
     comparing each resistant cultivar against the susceptible group at each
@@ -1211,10 +1224,12 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
-  \caption{Differentially enriched genera in the resistant tomato parent HG64
-    and progeny HF12.  MaAsLin~3 compared each resistant cultivar with pooled
-    susceptible cultivars at each sampling point.  Shared enrichment denotes a
-    positive coefficient and $P<0.05$ in both contrasts.}
+  \caption{Genus-level differential abundance in the 16S profiles of the
+    resistant tomato parent HG64 and the resistant F1 hybrid HF12.
+    (a,~b)~Volcano plots of MaAsLin~3 coefficients for HG64 (a) and HF12 (b)
+    versus the pooled susceptible cultivars at each sampling condition.
+    (c)~Overlap of genera with a positive coefficient and $P<0.05$ in both
+    resistant cultivars.}
   \label{fig:tomato-enrichment}
 \end{figure}
 
@@ -1222,24 +1237,19 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
   \centering
   \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
   \caption{Overall task completion and differences in analytical outputs across
-    models within each prompt level.  (a)~Completion of six requested analyses.  Each cell is the
-    number of sessions, out of three, in which the analysis was completed.
-    The \texttt{glm5.3-flash} detailed shotgun cells are 2/3 because one session
-    did not analyse the shotgun libraries.  (b)~Shannon index, pairwise weighted
-    UniFrac distance, relative abundance and DESeq2 log$_2$ fold change
-    compared among models within each prompt.  Shannon points are
-    session means of per-sample indexes.  UniFrac points are session means
-    of distances between unordered sample pairs ($n = 1{,}770$).
-    Relative-abundance points are session means for sample and taxon entries
-    whose mean was at least 5\% in every compared group.  DESeq2 points are
-    means across sessions that ran DESeq2, for taxon, cultivar and timepoint
-    entries shared by the compared models
-    (Supplementary Table~\ref{tab:da-model-methods}); the medium shotgun
-    prompt had no such sessions.  Brackets are two-sided Mann--Whitney $U$
-    tests with Holm correction within each set of three pairs.  n.s.,
-    Holm-adjusted $P \geq 0.05$; *, $P < 0.05$; **, $P < 0.01$; ***,
-    $P < 0.001$.  Samples, sample pairs, taxa and contrasts come from one
-    experiment and are not independent replicates.}
+    models within each prompt level.
+    (a)~Completion of six analyses by model and prompt level; values represent
+    completed sessions out of three.
+    (b)~Comparison of 16S Shannon diversity indices, pairwise weighted UniFrac
+    distances, and relative abundances (16S genus level and shotgun species
+    level) among models under each prompt level, along with DESeq2 $\log_2$
+    fold changes in taxon abundance for 16S analyses (detailed and medium
+    prompts) and shotgun analyses (detailed prompt).  Brackets indicate
+    two-sided Mann--Whitney $U$ tests with Holm correction across the three
+    model pairs in each plot.  n.s., adjusted $P \geq 0.05$; *$P < 0.05$;
+    **$P < 0.01$; ***$P < 0.001$.  Values are derived from repeated analyses
+    of the same Case~1 dataset and do not represent independent biological
+    replicates.}
   \label{fig:robustness-models}
 \end{figure}
 
@@ -1288,7 +1298,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     CRC faecal metagenomes
       & PRJEB10878
       & 128 shotgun
-      & MetaPhlAn3, HUMAnN3, differential analysis, nested-CV classification
+      & MetaPhlAn3, HUMAnN3, differential analysis, nested cross-validation classification
       & Taxonomic and functional case--control analysis from reads \\
     Enrichment metagenomes
       & PRJEB97175
@@ -1306,7 +1316,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 
 \begin{table}[htbp]
   \centering
-  \caption{Software and reference-database versions recorded for the case-study analyses.}
+  \caption{Principal software and reference-database versions used in the three case studies.}
   \label{tab:software-versions}
   \scriptsize
   \setlength{\tabcolsep}{4pt}

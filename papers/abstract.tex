@@ -1,0 +1,45 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+\title{MicroBioAgent: an AI agent for automated microbiome analysis}
+\author{Author Name}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Microbiome data analysis requires custom analytical workflows dictated by the
+specific biological question, sequencing assay, and intermediate results.
+However, executing these workflows requires integrating disparate computational
+environments, reference databases, and multi-step bioinformatics software.
+Here, we present MicroBioAgent, an autonomous domain-specific agent that
+translates biological questions into study-specific pipelines across 16S
+amplicon, profiling-based shotgun, and assembly-based metagenomics.
+MicroBioAgent dynamically selects and executes bioinformatics tools within
+user-controlled environments, iteratively evaluating intermediate outputs to
+adapt subsequent analysis steps.
+We evaluated MicroBioAgent across three benchmark datasets: (1)~amplicon and
+shotgun profiling of tomato rhizosphere microbiomes; (2)~taxonomic and
+functional profiling with machine-learning classification in a colorectal
+cancer cohort; and (3)~de novo metagenomic assembly, binning of
+metagenome-assembled genomes (MAGs), and metabolic pathway annotation from a
+polyethylene degradation study.  Across all benchmarks, MicroBioAgent
+successfully reproduced the primary biological conclusions of the original
+studies, with minor variations in taxon detection and statistical metrics
+driven by differences in tool selection and database versions.
+In robustness evaluations across 27 independent sessions spanning three large
+language models and three prompt complexity levels, MicroBioAgent successfully
+completed 98.8\% of analytical tasks with highly consistent diversity and
+differential-abundance estimates.  Furthermore, benchmarking our background
+execution mechanism demonstrated that asynchronous task management reduced
+token consumption by over 50\%, while supporting mid-run plan adjustments and
+automated continuation upon task completion.  Overall, MicroBioAgent
+establishes a flexible, adaptive framework for end-to-end microbiome data
+analysis without relying on rigid pipeline templates.
+\end{abstract}
+
+\end{document}
