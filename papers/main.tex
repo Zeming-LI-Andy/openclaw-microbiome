@@ -1315,16 +1315,24 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     \toprule
     Software or reference database & Version or release \\
     \midrule
+    QIIME~2
+      & 2024.10.1 \\
+    DADA2
+      & 1.30.0; QIIME~2 plugin 2024.10.0 \\
+    SILVA 138.2
+      & 138.2 \\
+    KneadData
+      & 0.12.4; \texttt{hg37dec\_v0.1} \\
     MetaPhlAn
-      & 3; \texttt{mpa\_v30\_CHOCOPhlAn\_201901} \\
+      & 3.0.7; \texttt{mpa\_v30\_CHOCOPhlAn\_201901} \\
     MetaPhlAn
       & 2; \texttt{mpa\_v20\_m200} \\
     HUMAnN
-      & 3; build not recorded \\
+      & 3.0.0.alpha.4; ChocoPhlAn \texttt{v296\_201901} \\
     MaAsLin3
       & 1.2.0 \\
-    SILVA
-      & 138.2, V3--V4 \\
+    Aviary
+      & 0.13.2; assembler myloasm 0.3.0 \\
     CheckM2
       & 1.1.0 \\
     CoverM
@@ -1332,15 +1340,24 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     GTDB-Tk
       & 2.7.2; database R232 \\
     eggNOG-mapper
-      & 2.1.13; eggNOG 5.0 \\
+      & 2.1.13; eggNOG 5.0.2 \\
     \bottomrule
   \end{tabularx}
   \vspace{0.35em}
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} Versions are those written in the archived analysis outputs.
+    \textit{Notes:} Software versions are those reported by the installed tools
+    (\texttt{qiime info}, \texttt{kneaddata --version}, \texttt{metaphlan --version},
+    \texttt{humann --version}, \texttt{aviary --version}, \texttt{emapper.py --version},
+    and the Aviary pixi environments for CheckM2, CoverM, and GTDB-Tk).
+    myloasm 0.3.0 is the long-read assembler in the Aviary pixi environment.
+    DADA2 is the R package in the QIIME~2 2024.10 environment.
+    The KneadData host index is \texttt{hg37dec\_v0.1}.
     The MetaPhlAn3 database is the release named in the profile headers.
-    The MetaPhlAn2 database is the \texttt{mpa\_v20\_m200} index used by the archived profiling commands.
+    The MetaPhlAn2 row names the \texttt{mpa\_v20\_m200} index on disk;
+    no MetaPhlAn~2 executable was present in the inspected environments.
+    MaAsLin3 is R package \texttt{maaslin3} 1.2.0.
+    eggNOG-mapper reports the installed eggNOG database as version 5.0.2.
   \end{minipage}
 \end{table}
 
