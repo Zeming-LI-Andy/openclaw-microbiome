@@ -10,6 +10,7 @@
 \usepackage{tabularx}
 \usepackage{siunitx}
 \usepackage{placeins}
+\usepackage{authblk}
 \usepackage[hidelinks]{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 \usepackage[
@@ -23,43 +24,52 @@
 \AtBeginBibliography{\sloppy}
 \graphicspath{{figures/}}
 
-\title{MicroBioAgent: an AI agent for automated microbiome analysis}
-\author{Author Name}
+\title{MicroBioAgent: Closed-Loop Planning and Asynchronous Execution for Autonomous Microbiome Analysis}
+\author[1]{Zeming Li\thanks{Email: \url{cszmli@comp.hkbu.edu.hk}}}
+\author[1]{Jingjing Wang}
+\author[1]{Chonghao Wang}
+\author[1]{Yi Ding}
+\author[1]{Lu Zhang\thanks{Corresponding author. Email: \url{ericluzhang@hkbu.edu.hk}}}
+\affil[1]{Department of Computer Science, Hong Kong Baptist University, Hong Kong SAR 999077, China}
 \date{}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Microbiome data analysis requires custom analytical workflows dictated by the
-specific biological question, sequencing assay, and intermediate results.
-However, executing these workflows requires integrating disparate computational
-environments, reference databases, and multi-step bioinformatics software.
-Here, we present MicroBioAgent, an autonomous domain-specific agent that
-translates biological questions into study-specific pipelines across 16S
-amplicon, profiling-based shotgun, and assembly-based metagenomics.
-MicroBioAgent dynamically selects and executes bioinformatics tools within
-user-controlled environments, iteratively evaluating intermediate outputs to
-adapt subsequent analysis steps.
-We evaluated MicroBioAgent across three benchmark datasets: (1)~amplicon and
-shotgun profiling of tomato rhizosphere microbiomes; (2)~taxonomic and
-functional profiling with machine-learning classification in a colorectal
-cancer cohort; and (3)~de novo metagenomic assembly, binning of
-metagenome-assembled genomes (MAGs), and metabolic pathway annotation from a
-polyethylene degradation study.  Across all benchmarks, MicroBioAgent
-successfully reproduced the primary biological conclusions of the original
-studies, with minor variations in taxon detection and statistical metrics
-driven by differences in tool selection and database versions.
-In robustness evaluations across 27 independent sessions spanning three large
-language models and three prompt complexity levels, MicroBioAgent successfully
-completed 98.8\% of analytical tasks with highly consistent diversity and
-differential-abundance estimates.  Furthermore, benchmarking our background
-execution mechanism demonstrated that asynchronous task management reduced
-token consumption by over 50\%, while supporting mid-run plan adjustments and
-automated continuation upon task completion.  Overall, MicroBioAgent
-establishes a flexible, adaptive framework for end-to-end microbiome data
-analysis without relying on rigid pipeline templates.
+Microbiome data analysis demands customized workflows tailored to specific
+biological questions, sequencing modalities, and data properties.  However,
+constructing and executing these workflows requires navigating heterogeneous
+software dependencies, reference databases, and multi-step parameter tuning.
+Here, we present MicroBioAgent, an autonomous, domain-specific agent framework
+that translates high-level biological queries into executable, study-specific
+pipelines across 16S rRNA amplicon, reference-based shotgun, and de novo
+assembly-based metagenomics.  Rather than relying on static pipeline templates,
+MicroBioAgent employs a closed-loop execution architecture: it dynamically
+selects and runs bioinformatics tools within user-controlled environments while
+iteratively inspecting intermediate outputs to adapt downstream analytical
+decisions.  Furthermore, to address the long-running nature of metagenomic
+computation, we introduce an asynchronous background task-management mechanism
+that reduces LLM token consumption by over 50\% while enabling real-time plan
+adjustment and automated workflow resumption.  We systematically evaluated
+MicroBioAgent across three benchmarks of increasing complexity: (1)~paired
+amplicon and shotgun profiling of tomato rhizosphere microbiomes, (2)~taxonomic
+and functional profiling coupled with machine-learning classification in a
+colorectal cancer cohort, and (3)~de novo metagenomic assembly,
+metagenome-assembled genome (MAG) binning, and metabolic pathway reconstruction
+in a polyethylene degradation study.  Across all benchmarks, MicroBioAgent
+faithfully recapitulated the primary biological findings of the original
+studies, exhibiting high analytical concordance despite expected tool- and
+database-dependent variations.  In systematic robustness evaluations across 27
+independent runs spanning three backbone large language models and three
+prompt-complexity tiers, MicroBioAgent achieved a 98.8\% task completion rate
+and yielded highly reproducible diversity and differential-abundance estimates.
+MicroBioAgent establishes a scalable, adaptive paradigm for end-to-end
+computational microbiome research.
 \end{abstract}
+
+\vspace{0.75em}
+\noindent\textbf{Keywords:} microbiome, 16S rRNA, shotgun metagenomics, metagenome assembled genomes, bioinformatics agent
 
 %% ====================================================================
 \section{Introduction}
@@ -95,7 +105,7 @@ Large language model agents offer a way to connect these decisions with
 computational execution through natural-language interaction.  AutoBA
 combined analysis planning, code generation, execution, and automated repair
 for multi-omics tasks, while Biomni integrated tools and resources for a broad
-range of biomedical analyses \parencite{zhou2024autoba,huang2025biomni}.
+range of biomedical analyses \parencite{zhou2024autoba,huang2026biomni}.
 BioMedAgent, BioMaster, and M3A have further explored automated bioinformatics
 and human supervision of multi-step analyses
 \parencite{bu2026biomedagent,su2026biomaster,johri2026m3a}.
@@ -231,9 +241,8 @@ and local execution, while allowing users to guide ongoing analyses.
 
 \begin{table}[!htbp]
   \centering
-  \caption{MicroBioAgent analytical capabilities, grouped by scientific task.
-    Functional predictions and genome annotations describe inferred biological
-    potential.}
+  \caption{Overview of analytical capabilities supported by MicroBioAgent
+    across different microbiome task categories.}
   \label{tab:skills}
   \small
   \renewcommand{\arraystretch}{1.12}
@@ -312,9 +321,9 @@ five sampling conditions with three biological replicates per cultivar:
 pre-inoculation baseline (T1), and inoculated and uninoculated plants at day~5
 (T2 and T2C) and day~10 (T3 and T3C).  The matched shotgun libraries covered
 T1, T2C, and T2.  Starting from raw sequencing reads, MicroBioAgent carried out
-quality control, DADA2 denoising, and taxonomic assignment against the SILVA
+quality control, DADA2 denoising in QIIME~2, and taxonomic assignment against the SILVA
 database for the amplicon libraries, alongside host filtering and MetaPhlAn3
-profiling for the shotgun libraries.
+profiling for the shotgun libraries \parencite{callahan2016dada2,bolyen2019qiime2,quast2013silva,beghini2021biobakery}.
 
 For the 16S amplicon data, MicroBioAgent examined how pathogen inoculation and
 cultivar resistance shaped microbial diversity and community composition.
@@ -323,7 +332,7 @@ susceptible cultivars but remained higher in resistant cultivars at both
 day~5 ($P=0.002$) and day~10 ($P=0.004$, \cref{fig:tomato-diversity}a).
 Community composition also separated clearly by inoculation treatment along
 the first weighted-UniFrac principal coordinates analysis (PCoA) axis (56.3\% of variance;
-\cref{fig:tomato-diversity}b).  Separation between resistant and susceptible
+\cref{fig:tomato-diversity}b)\parencite{lozupone2007unifrac}.  Separation between resistant and susceptible
 cultivars was less pronounced along the second axis (12.2\%), with partial
 overlap between groups.  Genus-level profiles linked these community shifts to
 an expansion of \textit{Ralstonia}, which was most pronounced in the
@@ -334,7 +343,7 @@ original study.
 
 To identify taxa underlying these resistance-associated differences,
 MicroBioAgent compared each resistant cultivar with the pooled susceptible
-cultivars using MaAsLin~3.  In the 16S data, between 6 and 15 genera were
+cultivars using MaAsLin~3 \parencite{nickols2026maaslin3}.  In the 16S data, between 6 and 15 genera were
 consistently enriched in both resistant cultivars (HG64 and HF12) across
 individual sampling conditions (Supplementary Figure~\ref{fig:tomato-enrichment}).
 To resolve resistance-associated taxa at the species level, MicroBioAgent
@@ -344,7 +353,7 @@ enrichment of the \textit{Pseudomonas putida} group in both the resistant
 parent HG64 ($P=0.013$) and the resistant hybrid HF12 ($P=0.009$) at T1, but
 did not detect the other reported marker, \textit{Sphingopyxis unclassified}.
 Prompted by this difference, the investigator instructed MicroBioAgent to
-repeat the profiling using MetaPhlAn~2, the version used in the original study.
+repeat the profiling using MetaPhlAn~2, the version used in the original study \parencite{truong2015metaphlan2}.
 This reanalysis identified both \textit{P.~putida} and
 \textit{Sphingopyxis unclassified} as enriched in the resistant cultivars,
 fully recovering the published taxonomic associations.
@@ -377,7 +386,7 @@ comprising 128 faecal metagenomes from the Hong Kong C1 cohort,
 including 74 patients with CRC and 54 controls \parencite{yu2017crc}.
 Starting from sequencing data, MicroBioAgent carried out species-level
 profiling with MetaPhlAn3 and quantified UniRef90 gene-family and KO abundances
-using HUMAnN3 (\cref{fig:crc}).  These profiles served as inputs
+using HUMAnN3 (\cref{fig:crc})\parencite{beghini2021biobakery}.  These profiles served as inputs
 for downstream community comparisons, biomarker discovery, and cross-validated
 classification.
 
@@ -387,7 +396,7 @@ early-stage CRC cases ($n=36$), and late-stage CRC cases ($n=38$).  A
 permutational multivariate analysis of variance (PERMANOVA) nevertheless
 detected significant differences in community composition
 associated with CRC status ($F=2.32$, $P=0.002$) and disease stage ($F=1.65$,
-$P=0.009$).  Potential confounding factors, including sex, age, and body mass
+$P=0.009$)\parencite{anderson2001permanova}.  Potential confounding factors, including sex, age, and body mass
 index, showed
 no significant associations with community structure.
 
@@ -410,7 +419,7 @@ Beyond taxonomic markers, MicroBioAgent evaluated whether functional profiles
 could accurately distinguish CRC cases from controls.  Using minimum redundancy
 maximum relevance (mRMR) feature selection within a nested fivefold
 cross-validation framework, the agent trained logistic regression classifiers
-on the top 15 gene-family or top 15 KO features per fold.  The gene-family
+on the top 15 gene-family or top 15 KO features per fold \parencite{peng2005mrmr}.  The gene-family
 classifier achieved a pooled out-of-fold area under the receiver operating
 characteristic curve (AUROC) of 0.902, substantially
 outperforming the KO classifier (AUROC 0.632).  At decision thresholds chosen by
@@ -448,13 +457,13 @@ and annotate metabolic pathways for alkane and oxidized-derivative degradation.
 The dataset comprised six Oxford Nanopore long-read metagenomes from two soil
 inocula (S1 and S2), each enriched on LMWPE,
 triacontane (C30), or tetracontane (C40) \parencite{sandholm2025polyethylene}.
-Starting from long-read data, automated assembly and binning yielded 372 bins,
-of which 153 met quality standards for completeness and contamination (100
-high-quality and 53 medium-quality MAGs).  Dereplication at 95\% average
+Starting from long-read data, assembly and binning with Aviary yielded 372 bins,
+of which 153 met CheckM2 quality thresholds for completeness and contamination (100
+high-quality and 53 medium-quality MAGs)\parencite{newell2026aviary,chklovski2023checkm2,bowers2017mimag}.  Dereplication at 95\% average
 nucleotide identity (ANI) retained 75 non-redundant representative genomes (50
 high quality and 25 medium quality; \cref{fig:mag}a).  MicroBioAgent assigned
 taxonomic classifications using GTDB-Tk (release R232) and estimated MAG
-relative abundances across the six cultures via CoverM read mapping.
+relative abundances across the six cultures via CoverM read mapping \parencite{chaumeil2022gtdbtk,aroney2025coverm}.
 
 MAG abundance profiles revealed distinct dominant taxa across the enrichment
 conditions (\cref{fig:mag}b,c).  In inoculum S1, \textit{Acinetobacter guillouiae}
@@ -471,7 +480,7 @@ as \textit{Pseudomonas} in the original publication were classified here as
 
 To characterize the metabolic capabilities of these recovered organisms,
 MicroBioAgent annotated the 95\% ANI representative genomes corresponding to
-the focal taxa.  Because \textit{Achromobacter} sp.\ formed two distinct ANI
+the focal taxa with eggNOG-mapper \parencite{cantalapiedra2021eggnog,huertacepas2019eggnog}.  Because \textit{Achromobacter} sp.\ formed two distinct ANI
 clusters, both representatives were included, yielding 11 analyzed MAGs
 (\cref{fig:mag}d).  Genes for alkane terminal oxidation were identified in nine
 of these MAGs, while pathways for 2-ketone or oxidized-derivative metabolism and
@@ -508,8 +517,7 @@ preprocessed Case~1 dataset ($3 \times 3 \times 3 = 27$ independent sessions).  
 core analyses (16S alpha diversity, 16S beta diversity, 16S genus-level
 taxonomic profiling, 16S differential abundance, shotgun species-level
 taxonomic profiling and shotgun differential abundance), MicroBioAgent
-completed 160 of 162 evaluations (98.8\%; Supplementary
-Figure~\ref{fig:robustness-models}a).  \texttt{deepseek-v4-pro} and
+completed 160 of 162 evaluations (98.8\%; Figure~\ref{fig:robustness-models}a).  \texttt{deepseek-v4-pro} and
 \texttt{deepseek-v4-flash} completed all six analyses in three of three
 sessions under every prompt level, and \texttt{glm5.3-flash} completed all
 16S analyses (9/9 sessions) and 8 of 9
@@ -517,8 +525,8 @@ shotgun sessions, with one session under the detailed prompt not analysing
 the shotgun libraries.
 
 Quantitative outputs for community diversity and differential abundance were
-consistent across both models and prompt levels (Supplementary
-Figures~\ref{fig:robustness-models}b and \ref{fig:robustness-prompts}).
+consistent across both models and prompt levels (Figure~\ref{fig:robustness-models}b
+and Supplementary Figure~\ref{fig:robustness-prompts}).
 Per-sample 16S Shannon indices (median $9.59\text{--}9.83$) and pairwise
 weighted UniFrac distances (median $0.301\text{--}0.303$) did not differ
 between any pair of models under any prompt level or across prompt levels
@@ -526,7 +534,7 @@ within any model (all Holm-adjusted $P = 1$, two-sided Mann--Whitney $U$
 test).  For differential abundance, because none of the prompts specified a
 statistical test, individual sessions chose among DESeq2, MaAsLin~3,
 Wilcoxon rank-sum tests, Mann--Whitney $U$ tests and LEfSe (Supplementary
-Tables~\ref{tab:da-model-methods} and~\ref{tab:da-prompt-methods}).  Because
+Tables~\ref{tab:da-model-methods} and~\ref{tab:da-prompt-methods})\parencite{love2014deseq2,segata2011lefse}.  Because
 different tests define effect sizes on different scales, we compared
 $\log_2$ fold-change distributions across sessions that used the same test.
 Across models within each prompt level, DESeq2 was used by all three models
@@ -544,8 +552,8 @@ $P = 0.13$) or shotgun analyses using the test shared within each model
 \texttt{glm5.3-flash}, DESeq2, $P = 0.064$).
 
 For taxonomic profiling, relative abundances were more sensitive to model and
-prompt choices (Supplementary Figures~\ref{fig:robustness-models}b and
-\ref{fig:robustness-prompts}).  Across models, relative-abundance
+prompt choices (Figure~\ref{fig:robustness-models}b and Supplementary
+Figure~\ref{fig:robustness-prompts}).  Across models, relative-abundance
 distributions did not differ in 16S analyses under the simple prompt or in
 shotgun analyses under the detailed prompt (all Holm-adjusted $P = 1$), but
 differed in the remaining prompt settings (Holm-adjusted $P \le 0.05$).
@@ -565,6 +573,26 @@ Overall, MicroBioAgent maintained high task completion and consistent
 diversity and differential-abundance outputs across models and prompt levels,
 with remaining differences largely reflecting choices of analytical tools and
 software parameters.
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
+  \caption{Overall task completion and differences in analytical outputs across
+    models within each prompt level.
+    (a)~Completion of six analyses by model and prompt level; values represent
+    completed sessions out of three.
+    (b)~Comparison of 16S Shannon diversity indices, pairwise weighted UniFrac
+    distances, and relative abundances (16S genus level and shotgun species
+    level) among models under each prompt level, along with DESeq2 $\log_2$
+    fold changes in taxon abundance for 16S analyses (detailed and medium
+    prompts) and shotgun analyses (detailed prompt).  Brackets indicate
+    two-sided Mann--Whitney $U$ tests with Holm correction across the three
+    model pairs in each plot.  n.s., adjusted $P \geq 0.05$; *$P < 0.05$;
+    **$P < 0.01$; ***$P < 0.001$.  Values are derived from repeated analyses
+    of the same Case~1 dataset and do not represent independent biological
+    replicates.}
+  \label{fig:robustness-models}
+\end{figure}
 
 \FloatBarrier
 
@@ -610,51 +638,6 @@ $14.53 \times 10^6$ (range $12.92\text{--}15.84 \times 10^6$) to
 $35.08 \times 10^6$ (range $23.77\text{--}49.32 \times 10^6$) tokens per
 session (\cref{tab:e2e-ablation}).
 
-\begin{table}[htbp]
-  \centering
-  \caption{End-to-end execution and token consumption with and without the
-    runtime patch.}
-  \label{tab:e2e-ablation}
-  \scriptsize
-  \setlength{\tabcolsep}{2pt}
-  \renewcommand{\arraystretch}{1.18}
-  \resizebox{\linewidth}{!}{%
-  \begin{tabular}{@{}ll*{7}{c}@{}}
-    \toprule
-    Condition & Session
-      & \shortstack{Outputs\\(of 9)}
-      & \shortstack{Methods\\(of 8)}
-      & \shortstack{Model\\calls}
-      & \shortstack{\texttt{exec}\\calls}
-      & \shortstack{\texttt{process}\\polls}
-      & \shortstack{\texttt{yield}\\calls}
-      & \shortstack{Total tokens\\($\times 10^6$)} \\
-    \midrule
-    \texttt{full}     & Replicate 1 & 9/9 & 8/8 & 150 & 91  & 1  & 17 & 12.92 \\
-    \texttt{full}     & Replicate 2 & 9/9 & 8/8 & 124 & 74  & 21 & 5  & 14.81 \\
-    \texttt{full}     & Replicate 3 & 9/9 & 8/8 & 126 & 82  & 0  & 13 & 15.84 \\
-    \texttt{full}     & Mean / sum  & 27/27 & 24/24 & 133.3 & 82.3 & 7.3 & 11.7 & 14.53 \\
-    \addlinespace
-    \texttt{no-patch} & Replicate 1 & 8/9 & 8/8 & 211 & 77  & 102 & 0  & 23.77 \\
-    \texttt{no-patch} & Replicate 2 & 9/9 & 8/8 & 403 & 142 & 227 & 0  & 49.32 \\
-    \texttt{no-patch} & Replicate 3 & 9/9 & 8/8 & 245 & 99  & 136 & 0  & 32.15 \\
-    \texttt{no-patch} & Mean / sum  & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 \\
-    \bottomrule
-  \end{tabular}}
-  \vspace{0.35em}
-
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} \texttt{full} denotes the complete system with the runtime
-    patch, and \texttt{no-patch} denotes the ablated configuration without the
-    patch.  All sessions used \texttt{deepseek-v4-pro}, the detailed
-    Case~1 prompt, and the preprocessed Case~1 dataset.  Outputs and methods
-    in the summary rows are pooled counts across the three sessions; call
-    counts and token values in the summary rows are per-session means.  Total
-    tokens equal input plus output tokens (including reasoning tokens).
-  \end{minipage}
-\end{table}
-
 \subsubsection{Asynchronous human guidance during active computation}
 
 We next tested whether the user could revise the pending analysis plan while
@@ -676,43 +659,6 @@ instead kept the conversation occupied with repeated \texttt{process} calls to
 check whether the task had completed, neither mid-run plan revision nor
 automatic session reactivation upon command completion was achieved in any of
 the three sessions ($0/3$).
-
-\begin{table}[htbp]
-  \centering
-  \caption{Ablation of asynchronous human guidance and automatic session
-    reactivation during active computation.  Each condition was evaluated in
-    three independent sessions.}
-  \label{tab:hitl-ablation}
-  \scriptsize
-  \setlength{\tabcolsep}{6pt}
-  \renewcommand{\arraystretch}{1.18}
-  \begin{tabularx}{\linewidth}{@{}l*{2}{>{\centering\arraybackslash}X}@{}}
-    \toprule
-    Condition
-      & \shortstack{Plan updated while\\command running}
-      & \shortstack{Automatic reactivation\\upon command completion} \\
-    \midrule
-    \texttt{full}     & 3/3 & 3/3 \\
-    \texttt{no-patch} & 0/3 & 0/3 \\
-    \bottomrule
-  \end{tabularx}
-  \vspace{0.35em}
-
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} The two conditions compare the complete system
-    (\texttt{full}) with the ablated configuration without the runtime patch
-    (\texttt{no-patch}; \cref{sec:asynchronous-execution}).  Plan updated
-    while command running requires the agent to incorporate the user's mid-run
-    instruction into the pending analysis plan while the classification task is
-    still running in the background.  Automatic reactivation upon command completion
-    requires completion of the background classification command to
-    automatically reactivate the waiting session so that the agent continues
-    with the revised plan without additional user messages or repeated
-    \texttt{process} calls to check whether the command has completed.
-    Results are reported as successful sessions out of three.
-  \end{minipage}
-\end{table}
 
 \FloatBarrier
 
@@ -749,15 +695,22 @@ preserving commands, parameters, and intermediate tables within the session
 context, MicroBioAgent makes these analytical choices explicit, allowing
 researchers to inspect the results and adjust the workflow when needed.
 
-MicroBioAgent occupies a distinct position within the growing landscape of AI
-agents and workflow tools for biomedical research (Supplementary
-Table~\ref{tab:agent-capabilities}).  General-purpose biomedical agents, such
-as Biomni, combine tool retrieval with code-based execution across diverse
-domains \parencite{huang2025biomni}, but lack domain-specific skill guidance
-and configured reference databases required for end-to-end microbiome analyses
-beginning from raw sequencing reads.  Within the microbiome domain, MetaClaw
-spans upstream and downstream analyses by coupling predefined FlowHub
-workflows with customizable downstream skills \parencite{zhang2026metaclaw}.
+Several biomedical and multi-omics AI agents have been recently developed to
+automate computational workflows, including BIA \parencite{xin2024bia},
+BioChatter \parencite{lobentanzer2025biochatter}, AutoBA \parencite{zhou2024autoba},
+Biomni \parencite{huang2026biomni}, BioAgents \parencite{mehandru2025bioagents},
+M3A \parencite{johri2026m3a}, BioMedAgent \parencite{bu2026biomedagent},
+BioMaster \parencite{su2026biomaster}, and MetaClaw \parencite{zhang2026metaclaw}.
+To clarify the distinct capabilities and scope of MicroBioAgent within this
+evolving landscape, we conducted a systematic functional comparison with these
+systems (Supplementary Table~\ref{tab:agent-capabilities}).
+General-purpose agents such as Biomni combine tool retrieval with code-based
+execution across diverse domains \parencite{huang2026biomni}, but lack the
+domain-specific skill guidance and preconfigured reference databases required
+for end-to-end microbiome analyses beginning directly from raw sequencing reads.
+Within the microbiome domain, MetaClaw spans upstream and downstream analyses
+by coupling predefined FlowHub workflows with customizable downstream skills
+\parencite{zhang2026metaclaw}.
 In contrast, MicroBioAgent unifies both upstream processing and downstream
 analysis into modular skills that run entirely on the user's local
 infrastructure.  This on-premises architecture keeps raw sequencing data secure,
@@ -1020,8 +973,8 @@ markers and classifier was assessed using AUROC, sensitivity, and specificity.
 This case evaluated MicroBioAgent's ability to recover microbial genomes
 from metagenomic data and characterize their functional potential. The
 evaluation utilized six Oxford Nanopore long-read metagenomes from project
-PRJEB97175 \parencite{sandholm2025polyethylene}, derived from two soil inocula
-enriched on LMWPE, triacontane, or tetracontane.
+PRJEB97175, derived from two soil inocula
+enriched on LMWPE, triacontane, or tetracontane \parencite{sandholm2025polyethylene}.
 The analysis tasks covered metagenomic assembly, binning, quality filtration
 for high- and medium-quality MAGs,
 dereplication, and taxonomic classification, alongside cross-culture
@@ -1233,46 +1186,24 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
   \label{fig:tomato-enrichment}
 \end{figure}
 
-\begin{figure}[p]
-  \centering
-  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
-  \caption{Overall task completion and differences in analytical outputs across
-    models within each prompt level.
-    (a)~Completion of six analyses by model and prompt level; values represent
-    completed sessions out of three.
-    (b)~Comparison of 16S Shannon diversity indices, pairwise weighted UniFrac
-    distances, and relative abundances (16S genus level and shotgun species
-    level) among models under each prompt level, along with DESeq2 $\log_2$
-    fold changes in taxon abundance for 16S analyses (detailed and medium
-    prompts) and shotgun analyses (detailed prompt).  Brackets indicate
-    two-sided Mann--Whitney $U$ tests with Holm correction across the three
-    model pairs in each plot.  n.s., adjusted $P \geq 0.05$; *$P < 0.05$;
-    **$P < 0.01$; ***$P < 0.001$.  Values are derived from repeated analyses
-    of the same Case~1 dataset and do not represent independent biological
-    replicates.}
-  \label{fig:robustness-models}
-\end{figure}
-
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{by_prompt_models.png}
-  \caption{Differences in analytical outputs across prompt levels within each
-    model.  Rows are \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}
-    and \texttt{glm5.3-flash}.  The first four columns
-    follow the point definitions in Supplementary
-    Figure~\ref{fig:robustness-models}.  The differential-abundance columns
-    compare the detailed and medium prompts only.  16S values are DESeq2
-    log$_2$ fold changes.  Shotgun values are Wilcoxon, Mann--Whitney $U$
-    and DESeq2 log$_2$ fold changes for \texttt{deepseek-v4-pro},
-    \texttt{deepseek-v4-flash} and \texttt{glm5.3-flash}, respectively
-    (Supplementary Table~\ref{tab:da-prompt-methods}),
-    and are not compared across rows.  Brackets in the first four columns
-    are two-sided Mann--Whitney $U$ tests with Holm correction within each
-    set of three prompt pairs.  Each differential-abundance bracket is a
-    single pair.  n.s., adjusted $P \geq 0.05$; *, $P < 0.05$; **,
-    $P < 0.01$; ***, $P < 0.001$.  Samples, sample pairs, taxa and contrasts
-    come from one experiment and are not independent replicates.}
-  \label{fig:robustness-prompts}
+  \caption{Comparison of analytical outputs across prompt levels within each model.
+    Rows represent individual models (\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash},
+    and \texttt{glm5.3-flash}).  The first four columns display 16S Shannon diversity indices,
+    pairwise weighted UniFrac distances, 16S genus-level relative abundances, and shotgun
+    species-level relative abundances across prompt levels.  The remaining two columns
+    compare differential-abundance $\log_2$ fold changes between detailed and medium
+    prompts only (16S: DESeq2; shotgun: model-specific tests including Wilcoxon,
+    Mann--Whitney $U$, and DESeq2, as summarized in Supplementary Table~\ref{tab:da-prompt-methods}).
+    Brackets in the first four columns indicate two-sided Mann--Whitney $U$ tests with
+    Holm correction across all three prompt pairs within each model; brackets in
+    differential-abundance panels indicate pairwise comparisons between detailed and
+    medium prompts.  *$P < 0.05$; **$P < 0.01$; ***$P < 0.001$; n.s., not significant
+    (adjusted $P \ge 0.05$).  Values are derived from repeated analyses of the same
+    Case~1 dataset and do not represent independent biological replicates.}
+\label{fig:robustness-prompts}
 \end{figure}
 
 \FloatBarrier
@@ -1280,43 +1211,34 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 
 \begin{table}[htbp]
   \centering
-  \caption{Published datasets, sequencing-library counts, analysis tasks,
-    and evaluation targets for the three MicroBioAgent case studies.}
+  \caption{Overview of the three case-study datasets.}
   \label{tab:cases-overview}
   \scriptsize
   \setlength{\tabcolsep}{3pt}
   \renewcommand{\arraystretch}{1.18}
-  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.26\linewidth}l>{\raggedright\arraybackslash}p{0.30\linewidth}>{\raggedright\arraybackslash}X@{}}
     \toprule
-    Case & BioProject & Sequencing libraries & Analysis route & Primary evaluation target \\
+    Case & BioProject & Sequencing libraries & Workflow \\
     \midrule
     Tomato rhizosphere
       & PRJNA777724
       & 60 16S; 36 matched shotgun
-      & 16S diversity, taxonomy, differential abundance; MetaPhlAn profiling
-      & Recovery of inoculation- and resistance-associated community signals \\
+      & 16S and shotgun profiling \\
     CRC faecal metagenomes
       & PRJEB10878
       & 128 shotgun
-      & MetaPhlAn3, HUMAnN3, differential analysis, nested cross-validation classification
-      & Taxonomic and functional case--control analysis from reads \\
-    Enrichment metagenomes
+      & Taxonomic and functional profiling \\
+    Polyethylene enrichment
       & PRJEB97175
-      & 6 shotgun
-      & MAG construction, dereplication, taxonomic assignment, abundance, eggNOG annotation
-      & Genome-resolved taxonomic and functional characterization \\
+      & 6 long-read shotgun
+      & Genome-resolved metagenomics \\
     \bottomrule
   \end{tabularx}
-  \vspace{0.35em}
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} Sample-level run accessions are listed in Supplementary Data~1.
-  \end{minipage}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{Principal software and reference-database versions used in the three case studies.}
+  \caption{Principal software tools and reference databases used across the three case studies.}
   \label{tab:software-versions}
   \scriptsize
   \setlength{\tabcolsep}{4pt}
@@ -1353,29 +1275,12 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
       & 2.1.13; eggNOG 5.0.2 \\
     \bottomrule
   \end{tabularx}
-  \vspace{0.35em}
-  \begin{minipage}{\linewidth}
-    \footnotesize
-    \textit{Notes:} Software versions are those reported by the installed tools
-    (\texttt{qiime info}, \texttt{kneaddata --version}, \texttt{metaphlan --version},
-    \texttt{humann --version}, \texttt{aviary --version}, \texttt{emapper.py --version},
-    and the Aviary pixi environments for CheckM2, CoverM, and GTDB-Tk).
-    myloasm 0.3.0 is the long-read assembler in the Aviary pixi environment.
-    DADA2 is the R package in the QIIME~2 2024.10 environment.
-    The KneadData host index is \texttt{hg37dec\_v0.1}.
-    The MetaPhlAn3 database is the release named in the profile headers.
-    The MetaPhlAn2 row names the \texttt{mpa\_v20\_m200} index on disk;
-    no MetaPhlAn~2 executable was present in the inspected environments.
-    MaAsLin3 is R package \texttt{maaslin3} 1.2.0.
-    eggNOG-mapper reports the installed eggNOG database as version 5.0.2.
-  \end{minipage}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{Reported capabilities of bioinformatics agents relevant to end-to-end
-    microbiome analysis.  The three microbiome columns specifically
-    concern analysis beginning with sequencing reads.}
+  \caption{Comparison of reported capabilities across bioinformatics agents for
+    end-to-end microbiome analysis from raw sequencing reads.}
   \label{tab:agent-capabilities}
   \scriptsize
   \setlength{\tabcolsep}{2.5pt}
@@ -1395,23 +1300,23 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
       & On-premises analysis \\
     \midrule
     BIA
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     BioChatter
-      & \textemdash & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\times$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     AutoBA
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     \shortstack[l]{Biomni\\(open-source)}
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     BioAgents
-      & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
+      & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
     M3A
-      & $\checkmark$ & $\checkmark$ & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     BioMedAgent
-      & $\checkmark$ & \textemdash & \textemdash & \textemdash & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
     BioMaster
-      & $\checkmark$ & \textemdash & \textemdash & $\checkmark$ & \textemdash & $\checkmark$ \\
+      & $\checkmark$ & $\times$ & $\times$ & $\checkmark$ & $\times$ & $\checkmark$ \\
     MetaClaw
-      & $\checkmark$ & \textemdash & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$(partial) \\
+      & $\checkmark$ & $\times$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$* \\
     MicroBioAgent
       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
     \bottomrule
@@ -1420,18 +1325,13 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} $\checkmark$, reported support,
-    \textemdash, support not established from the reviewed sources, which
-    does not demonstrate inability. The comparison draws on the published
-    descriptions of the related systems
-    \parencite{zhou2024autoba,huang2025biomni,mehandru2025bioagents,
-    johri2026m3a,xin2024bia,lobentanzer2025biochatter,
-    bu2026biomedagent,su2026biomaster,zhang2026metaclaw}.
-    Biomni denotes the open-source release.
-    MetaClaw reports assembly and genome-resolved binning through FlowHub
-    \parencite{zhang2026metaclaw}. Its partial on-premises designation reflects
-    the use of FlowHub for upstream metagenomic processing and local containers
-    for downstream analysis. This scope comparison is not a performance benchmark.
+    \textit{Notes:} This comparison evaluates the functional scope of existing
+    bioinformatics agents based on published literature and open-source repositories,
+    highlighting MicroBioAgent's ability to unify autonomous raw-read execution,
+    interactive human guidance, and local execution across all major microbiome workflows.
+    $\checkmark$, supported; $\times$, not supported.
+    *Upstream processing requires cloud-based FlowHub, while downstream tasks run locally.
+    MAG, metagenome-assembled genome.
   \end{minipage}
 \end{table}
 
@@ -1439,9 +1339,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
 
 \begin{table}[htbp]
   \centering
-  \caption{DESeq2 sessions and shared entries included in cross-model
-    differential-abundance comparisons.  Session counts are the replicates,
-    out of three, whose DESeq2 results entered each comparison.}
+  \caption{Replicate sessions and shared entries for cross-model DESeq2 comparisons.}
   \label{tab:da-model-methods}
   \scriptsize
   \setlength{\tabcolsep}{4pt}
@@ -1462,24 +1360,17 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
   \vspace{0.35em}
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} Each entry represents the DESeq2 log$_2$ fold change of a
-    taxon for a resistant cultivar (HG64 or HF12) and sampling timepoint
-    relative to the susceptible control.  A57 and HG70 contrasts were averaged
-    within a session when reported separately.  Values were then averaged
-    across included sessions without imputing missing entries as zero, and
-    only entries reported by all three models were retained.  Shotgun results
-    under the medium prompt were not compared because no differential-abundance
-    method was shared by all three models.  One \texttt{glm5.3-flash} detailed
-    replicate did not analyse the shotgun libraries.
+    \textit{Notes:} Values for each model indicate the number of independent replicates
+    (out of three) that selected DESeq2 for differential-abundance testing.
+    Shared entries denote the number of overlapping taxa evaluated across all three models.
+    Shotgun metagenome results under the medium prompt were not compared because no
+    single differential-abundance method was selected by all three models.
   \end{minipage}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{Methods and sessions included in detailed-versus-medium prompt
-    comparisons of differential-abundance outputs.  Session counts are the
-    replicates, out of three, whose result for the indicated method entered
-    each comparison.}
+  \caption{Replicate sessions and shared entries for prompt-level differential-abundance comparisons.}
   \label{tab:da-prompt-methods}
   \scriptsize
   \setlength{\tabcolsep}{4pt}
@@ -1489,7 +1380,7 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
     Model & Method
       & \shortstack{Detailed\\sessions}
       & \shortstack{Medium\\sessions}
-      & \shortstack{Entries\\compared} \\
+      & \shortstack{Shared\\entries} \\
     \midrule
     \multicolumn{5}{@{}l}{\textit{16S rRNA gene, genus}} \\
     \addlinespace
@@ -1507,18 +1398,87 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
   \vspace{0.35em}
   \begin{minipage}{\linewidth}
     \footnotesize
-    \textit{Notes:} The simple prompt was not included.  Each entry represents
-    the log$_2$ fold change of a taxon for a resistant cultivar (HG64 or HF12)
-    and sampling timepoint relative to the susceptible control.  A57 and HG70
-    contrasts were averaged within a session when reported separately.  Values
-    were then averaged across included sessions without imputing missing
-    entries as zero, and only entries reported under both prompts were retained.
-    DESeq2 values are negative-binomial log$_2$ fold changes.  Wilcoxon and
-    Mann--Whitney $U$ values are log$_2$ ratios of group means reported with
-    the rank test, not the rank statistic.  One \texttt{deepseek-v4-flash}
-    detailed replicate reported only ASV-level DESeq2 results and was excluded
-    from the genus comparison.  One \texttt{glm5.3-flash} detailed replicate
-    did not analyse the shotgun libraries.
+    \textit{Notes:} Session counts indicate the number of independent replicates
+    (out of three) that selected the specified statistical method under each prompt level.
+    Shared entries denote the number of overlapping taxa evaluated across both prompt levels.
+  \end{minipage}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Ablation study of the runtime patch on end-to-end
+    execution efficiency and token consumption.}
+  \label{tab:e2e-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{2pt}
+  \renewcommand{\arraystretch}{1.18}
+  \resizebox{\linewidth}{!}{%
+  \begin{tabular}{@{}ll*{7}{c}@{}}
+    \toprule
+    Condition & Session
+      & \shortstack{Outputs\\(of 9)}
+      & \shortstack{Methods\\(of 8)}
+      & \shortstack{Model\\calls}
+      & \shortstack{\texttt{exec}\\calls}
+      & \shortstack{\texttt{process}\\polls}
+      & \shortstack{\texttt{yield}\\calls}
+      & \shortstack{Total tokens\\($\times 10^6$)} \\
+    \midrule
+    \texttt{full}     & Replicate 1 & 9/9 & 8/8 & 150 & 91  & 1  & 17 & 12.92 \\
+    \texttt{full}     & Replicate 2 & 9/9 & 8/8 & 124 & 74  & 21 & 5  & 14.81 \\
+    \texttt{full}     & Replicate 3 & 9/9 & 8/8 & 126 & 82  & 0  & 13 & 15.84 \\
+    \texttt{full}     & Mean / sum  & 27/27 & 24/24 & 133.3 & 82.3 & 7.3 & 11.7 & 14.53 \\
+    \addlinespace
+    \texttt{no-patch} & Replicate 1 & 8/9 & 8/8 & 211 & 77  & 102 & 0  & 23.77 \\
+    \texttt{no-patch} & Replicate 2 & 9/9 & 8/8 & 403 & 142 & 227 & 0  & 49.32 \\
+    \texttt{no-patch} & Replicate 3 & 9/9 & 8/8 & 245 & 99  & 136 & 0  & 32.15 \\
+    \texttt{no-patch} & Mean / sum  & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 \\
+    \bottomrule
+  \end{tabular}}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} \texttt{full} and \texttt{no-patch} denote the system with
+    and without the runtime patch, respectively.  All runs were conducted using
+    \texttt{deepseek-v4-pro} with the detailed Case~1 prompt on the preprocessed
+    Case~1 dataset.  Summary rows report pooled counts for outputs and methods
+    across the three replicates, whereas tool-call counts and token consumption
+    are reported as per-session means.  Total tokens represent the sum of input
+    and output tokens (including reasoning tokens).
+  \end{minipage}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Ablation study of the runtime patch on asynchronous human 
+  guidance and automatic session reactivation.}
+  \label{tab:hitl-ablation}
+  \scriptsize
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\linewidth}{@{}l*{2}{>{\centering\arraybackslash}X}@{}}
+    \toprule
+    Condition
+      & \shortstack{Plan updated while\\command running}
+      & \shortstack{Automatic reactivation\\upon command completion} \\
+    \midrule
+    \texttt{full}     & 3/3 & 3/3 \\
+    \texttt{no-patch} & 0/3 & 0/3 \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{0.35em}
+
+  \begin{minipage}{\linewidth}
+    \footnotesize
+    \textit{Notes:} \texttt{full} and \texttt{no-patch} denote the system with
+    and without the runtime patch, respectively.  `Plan updated while command
+    running' indicates whether the agent successfully incorporated mid-run user
+    instructions into the pending analysis plan during background execution.
+    `Automatic reactivation upon command completion' indicates whether the
+    waiting session automatically resumed upon background task completion to
+    proceed with the revised plan, without requiring additional user prompts.
+    Results are reported as successful sessions out of three ($n = 3$).
   \end{minipage}
 \end{table}
 

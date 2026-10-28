@@ -1,0 +1,106 @@
+{
+  "id": "default",
+  "name": "全栈多引擎协同流水线",
+  "viewport": {
+    "x": 50,
+    "y": 50,
+    "zoom": 1
+  },
+  "status": "idle",
+  "createdAt": 1793156077157,
+  "updatedAt": 1793156107428,
+  "nodes": [
+    {
+      "id": "node_architect",
+      "title": "架构总指挥 (Lead)",
+      "role": "architect",
+      "x": 80,
+      "y": 180,
+      "width": 300,
+      "engine": "pi",
+      "model": "openmodel/openmodel/gemini-3.8-flash",
+      "cwd": ".",
+      "useWorktree": false,
+      "systemPromptOverride": "你是团队首席架构师。负责拆解需求、明确模块边界与接口契约，向前后端开发派发清晰的任务卡。",
+      "instruction": "把业务需求拆解为前后端清晰的技术规约与数据契约，可用 {{上游摘要}} 引用输入，派发任务卡给下游。",
+      "status": "idle"
+    },
+    {
+      "id": "node_fe",
+      "title": "前端界面工程师",
+      "role": "coder",
+      "x": 480,
+      "y": 60,
+      "width": 300,
+      "engine": "dsh",
+      "model": "openmodel/openmodel/gemini-3.8-flash",
+      "cwd": "web",
+      "useWorktree": true,
+      "systemPromptOverride": "你是前端专家。使用 DSH 极速 Hashline 补丁引擎，根据契约编写 React/Vite 界面与交互。",
+      "instruction": "基于上游契约 {{上游摘要}} 快速编写组件与交互，保持最小改动。",
+      "status": "idle"
+    },
+    {
+      "id": "node_be",
+      "title": "后端与核心引擎",
+      "role": "coder",
+      "x": 480,
+      "y": 320,
+      "width": 300,
+      "engine": "claude",
+      "model": "openmodel/openmodel/gemini-3.8-flash",
+      "cwd": "server",
+      "useWorktree": true,
+      "systemPromptOverride": "你是后端服务专家。使用 Claude Code 引擎负责 Node/Express/WS 路由实现、数据持久化与核心逻辑处理。",
+      "instruction": "按上游数据契约 {{上游摘要}} 实现后端路由与核心逻辑，保证可运行。",
+      "status": "idle"
+    },
+    {
+      "id": "node_qa",
+      "title": "测试与自愈运维",
+      "role": "tester",
+      "x": 880,
+      "y": 180,
+      "width": 300,
+      "engine": "durable",
+      "model": "openmodel/openmodel/gemini-3.8-flash",
+      "cwd": ".",
+      "useWorktree": false,
+      "systemPromptOverride": "你是测试与自愈运维专家。使用 Durable 引擎持久化运行单元测试、类型检查与端到端验证，发现 Bug 即时自愈纠错。",
+      "instruction": "运行测试套件并自动修复失败项，把验证结论交接归档。",
+      "status": "idle"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_arch_to_fe",
+      "sourceNodeId": "node_architect",
+      "targetNodeId": "node_fe",
+      "type": "handoff",
+      "label": "派发前端需求与 UI 契约"
+    },
+    {
+      "id": "edge_arch_to_be",
+      "sourceNodeId": "node_architect",
+      "targetNodeId": "node_be",
+      "type": "handoff",
+      "label": "派发后端路由与数据契约"
+    },
+    {
+      "id": "edge_fe_to_qa",
+      "sourceNodeId": "node_fe",
+      "targetNodeId": "node_qa",
+      "type": "handoff",
+      "label": "前端产物提交验证"
+    },
+    {
+      "id": "edge_be_to_qa",
+      "sourceNodeId": "node_be",
+      "targetNodeId": "node_qa",
+      "type": "handoff",
+      "label": "后端接口提交测试"
+    }
+  ],
+  "rev": 2,
+  "executionMode": "real"
+}

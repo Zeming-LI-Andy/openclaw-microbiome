@@ -1,0 +1,184 @@
+{
+  "__settings__": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793194316818
+      },
+      {
+        "path": "/Users/lizeming",
+        "lastUsed": 1793183975191
+      }
+    ],
+    "quickPhrasesSeeded": true,
+    "settings": {
+      "promptMode": "append",
+      "customSystemPrompt": "",
+      "promptTemplate": "",
+      "promptOverrides": {},
+      "promptDisabled": [],
+      "toolPromptOverrides": {},
+      "disabledSkills": [],
+      "disabledExtensions": [],
+      "disabledAgentTools": [
+        "terminal_create",
+        "terminal_list",
+        "terminal_close",
+        "terminal_input",
+        "terminal_key",
+        "terminal_read",
+        "terminal_wait",
+        "edit_soft"
+      ],
+      "disabledPluginTools": [],
+      "terminalToolsEnabled": false,
+      "terminalBash": false,
+      "terminalBashIdleMs": 15000,
+      "terminalBashMaxForegroundMs": 60000,
+      "toolWatchdogTimeoutMs": 1200000,
+      "readDirEnabled": true,
+      "bgAutoCleanupMin": 0,
+      "toolLazyLoading": false,
+      "codemodeMode": "on",
+      "codemodeInlineBudget": 3000,
+      "toolApprovalEnabled": true,
+      "editSoftEnabled": false,
+      "questionnaireEnabled": true,
+      "goalModeEnabled": true,
+      "parallelReminderEnabled": true,
+      "thinkingWrap": false,
+      "toolsWrap": true,
+      "toolImagesEnabled": true,
+      "keepRecentMessages": 15,
+      "reversePagination": false,
+      "showForkedParentSessions": false,
+      "retainFinishedConversations": false,
+      "openRecentSessionOnProjectSwitch": true,
+      "skillsFullText": [],
+      "skillsCatalogMaxDesc": 250,
+      "skillsCatalogShowLocation": false,
+      "skillsCatalogBudget": 20000,
+      "visionBridgeEnabled": true,
+      "visionBridgeModel": null,
+      "subagentDefaultModel": null,
+      "subagentMaxDepth": 0,
+      "subagentAutoWakeMaxTurns": 5,
+      "retryMaxAttempts": 6,
+      "softCapTokens": 0,
+      "softCapByModel": {},
+      "visionBridgePromptMode": "append",
+      "visionBridgePrompt": "",
+      "scmCommitMsgPromptMode": "append",
+      "scmCommitMsgPrompt": "",
+      "planModePromptMode": "append",
+      "planModePrompt": "",
+      "reviewPrompt": "",
+      "reviewDisabledSkills": [],
+      "disabledPlugins": [],
+      "uiLayout": {},
+      "quickPhrases": [
+        "继续",
+        "总结一下",
+        "详细解释一下",
+        "检查并修复问题",
+        "补充测试覆盖",
+        "发布上传"
+      ],
+      "quickPhrasesEnabled": true,
+      "minimalNewChat": false,
+      "preserveDraftAcrossConversations": false,
+      "defaultAgentPreset": "standard",
+      "defaultPermissionPreset": "workspace-write-never"
+    }
+  },
+  "99eb3741-19dc-4e3e-be82-3f00bef88edb": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793156179803
+      },
+      {
+        "path": "/Users/lizeming",
+        "lastUsed": 1793156176509
+      }
+    ],
+    "lastActive": 1793156935256,
+    "locale": "zh",
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:5844d79d": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793156077138
+      }
+    ],
+    "lastActive": 1793156077138,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:cda3a864": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793156935304
+      }
+    ],
+    "lastActive": 1793156935304,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "13a3f5af-62a6-4b0d-86fc-7eea7d2b4783": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793194316818
+      },
+      {
+        "path": "/Users/lizeming",
+        "lastUsed": 1793183975191
+      }
+    ],
+    "lastActive": 1793194316818,
+    "locale": "zh",
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:544872f4": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793156188555
+      }
+    ],
+    "lastActive": 1793156188555,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:329d8dd8": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793156188628
+      }
+    ],
+    "lastActive": 1793156188628,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:dfe473f7": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793183963679
+      }
+    ],
+    "lastActive": 1793183963679,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  },
+  "canvas:159750fc": {
+    "projects": [
+      {
+        "path": "/Users/lizeming/Documents/Codes/openclaw-microbiome",
+        "lastUsed": 1793183964160
+      }
+    ],
+    "lastActive": 1793183964160,
+    "lastCwd": "/Users/lizeming/Documents/Codes/openclaw-microbiome"
+  }
+}
