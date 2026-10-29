@@ -129,10 +129,9 @@ engines require explicit, predefined execution graphs and pipeline
 specifications; researchers must still determine which analyses to run,
 manually structure workflow scripts, and interpret intermediate findings.
 Concurrently, LLM agents have demonstrated substantial promise in general
-biomedical problem solving and automated code execution, as seen in
-AutoBA~\cite{zhou2024autoba}, Biomni~\cite{huang2026biomni},
-BioMedAgent~\cite{bu2026biomedagent}, BioMaster~\cite{su2026biomaster}, and
-M3A~\cite{johri2026m3a}.
+biomedical problem solving and automated code execution, as seen in AutoBA,
+Biomni, BioMedAgent, BioMaster, and
+M3A~\cite{zhou2024autoba,huang2026biomni,bu2026biomedagent,su2026biomaster,johri2026m3a}.
 
 In the microbiome domain, MetaClaw recently introduced an agent framework that
 bridges predefined cloud-based upstream workflows (hosted on FlowHub) with
@@ -198,27 +197,25 @@ verification and continuation within the same session.}
 \end{figure}
 
 At the start of each analysis, the agent initializes a dedicated job directory
-via \texttt{mgx_create_job} to bind the active session with its analytical
+via \texttt{mgx\_create\_job} to bind the active session with its analytical
 artifacts. Within this workspace, method-specific skills guide analytical
 steps, while runtime and reference registries resolve the resources needed to
 compose study-specific analyses. Analytical domain knowledge is modularized
 into discrete skills, each containing a \texttt{SKILL.md} document describing
 its purpose, required inputs, software dependencies, reference resources,
 analytical procedures, and expected outputs. Skills encompass 16S amplicon
-processing (QIIME~2~\cite{bolyen2019qiime2}, DADA2~\cite{callahan2016dada2}),
-shotgun taxonomic profiling (MetaPhlAn~\cite{beghini2021biobakery}), functional
-quantification (HUMAnN~\cite{beghini2021biobakery}), de novo metagenomic
-assembly and binning (Aviary~\cite{newell2026aviary},
-CheckM2~\cite{chklovski2023checkm2}), taxonomic placement
-(GTDB-Tk~\cite{chaumeil2022gtdbtk}), coverage calculation
-(CoverM~\cite{aroney2025coverm}), functional annotation
-(eggNOG-mapper~\cite{cantalapiedra2021eggnog,huertacepas2019eggnog}), and
-statistical analysis (MaAsLin~3~\cite{nickols2026maaslin3},
-DESeq2~\cite{love2014deseq2}). Two centralized registry files decouple tool
+processing (QIIME~2, DADA2), shotgun taxonomic profiling (MetaPhlAn), functional
+quantification (HUMAnN), de novo metagenomic assembly and binning (Aviary,
+CheckM2), taxonomic placement (GTDB-Tk), coverage calculation (CoverM),
+functional annotation (eggNOG-mapper), and statistical analysis (MaAsLin~3,
+DESeq2)~\cite{bolyen2019qiime2,callahan2016dada2,beghini2021biobakery,%
+newell2026aviary,chklovski2023checkm2,chaumeil2022gtdbtk,aroney2025coverm,%
+cantalapiedra2021eggnog,huertacepas2019eggnog,nickols2026maaslin3,%
+love2014deseq2}. Two centralized registry files decouple tool
 logic from local hardware paths: \texttt{runtimes.yaml} maps each analytical
 skill to its dedicated Conda environment, while \texttt{references.yaml} maps
-required reference databases (e.g., SILVA~\cite{quast2013silva}, ChocoPhlAn,
-UniRef, GTDB) to their absolute filesystem paths.
+required reference databases (e.g., SILVA, ChocoPhlAn, UniRef, GTDB) to their
+absolute filesystem paths~\cite{quast2013silva}.
 
 The system selects tools and parameters from the study objective and domain
 skills, executes analytical commands and scripts, and records execution status,
@@ -334,11 +331,10 @@ on shared, preprocessed Case 1 data comprising a 16S ASV table, representative
 sequences, a rooted phylogenetic tree, denoising statistics, sample metadata,
 and 36 quality-controlled, host-cleared shotgun metagenomic libraries
 subsampled to 20\% read depth. The Detailed prompt explicitly prescribed
-specific metrics (Shannon index, weighted/unweighted
-UniFrac~\cite{lozupone2007unifrac}, Bray--Curtis,
-PERMANOVA~\cite{anderson2001permanova}, PERMDISP); the Medium prompt defined
-analytical scope but left tool selection to the agent; the Simple prompt stated
-only the high-level biological goal. Performance was scored across six core
+specific metrics (Shannon index, weighted/unweighted UniFrac, Bray--Curtis,
+PERMANOVA, and PERMDISP); the Medium prompt defined analytical scope but left
+tool selection to the agent; the Simple prompt stated only the high-level
+biological goal~\cite{lozupone2007unifrac,anderson2001permanova}. Performance was scored across six core
 tasks: 16S alpha diversity, 16S beta diversity, 16S genus profiling, 16S
 differential abundance, shotgun species profiling, and shotgun differential
 abundance. A task was scored as completed when the corresponding quantitative
@@ -700,7 +696,7 @@ reads are publicly available under BioProject accessions PRJNA777724 (tomato
 rhizosphere), PRJEB10878 (CRC cohort), and PRJEB97175 (polyethylene enrichment).
 
 \clearpage
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \bibliography{../refs}
 
 \input{appendix}
