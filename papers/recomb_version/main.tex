@@ -1,0 +1,259 @@
+% RECOMB 2027 draft manuscript.
+% Expanded from planning scaffold using outline.md and main.tex.
+% Official CFP checked 2026-10-29: Letter, >=10pt, 1in margins, <=10 main pages.
+\documentclass[10pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,booktabs}
+\graphicspath{{../figures/}}
+\usepackage{tabularx}
+\usepackage{caption}
+\captionsetup{font=footnotesize,skip=4pt}
+\usepackage{float}
+\usepackage[skins,breakable]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\newtcolorbox{promptbox}[1]{%
+  enhanced,
+  breakable,
+  colback=black!2,
+  colframe=black!60,
+  boxrule=0.65pt,
+  arc=1.4pt,
+  left=8pt,
+  right=8pt,
+  top=5pt,
+  bottom=6pt,
+  title={#1},
+  fonttitle=\bfseries\small,
+  coltitle=black,
+  colbacktitle=black!8,
+  before upper={\small\setlength{\parskip}{0.35em}},
+}
+\newenvironment{promptitems}{%
+  \begin{itemize}%
+    \setlength{\itemsep}{0.15em}%
+    \setlength{\parsep}{0pt}%
+    \setlength{\topsep}{0.25em}%
+    \setlength{\leftmargin}{1.2em}%
+}{\end{itemize}}
+\newcommand{\prompthead}[1]{\par\smallskip\noindent\textbf{#1}\par}
+
+\title{MicroBioAgent: Closed-Loop Planning and Asynchronous Execution for Autonomous Microbiome Analysis}
+\author{Zeming Li\thanks{Email: \url{cszmli@comp.hkbu.edu.hk}} \and Jingjing Wang \and Chonghao Wang \and Yi Ding \and Lu Zhang\thanks{Corresponding author. Email: \url{ericluzhang@hkbu.edu.hk}}}
+\date{Department of Computer Science, Hong Kong Baptist University\\Hong Kong SAR 999077, China}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\begin{abstract}
+    Microbiome data analysis demands customized workflows tailored to specific
+    biological questions, sequencing modalities, and data properties.  However,
+    constructing and executing these workflows requires navigating heterogeneous
+    software dependencies, reference databases, and multi-step parameter tuning.
+    Here, we present MicroBioAgent, an autonomous, domain-specific agent framework
+    that translates high-level biological queries into executable, study-specific
+    pipelines across 16S rRNA amplicon, reference-based shotgun, and de novo
+    assembly-based metagenomics.  Rather than relying on static pipeline templates,
+    MicroBioAgent employs a closed-loop execution architecture: it dynamically
+    selects and runs bioinformatics tools within user-controlled environments while
+    iteratively inspecting intermediate outputs to adapt downstream analytical
+    decisions.  Furthermore, to address the long-running nature of metagenomic
+    computation, we introduce an asynchronous background task-management mechanism
+    that reduces large language model (LLM) token consumption by over 50\% while enabling real-time plan
+    adjustment and automated workflow resumption.  We systematically evaluated
+    MicroBioAgent across three benchmarks of increasing complexity: (1)~paired
+    amplicon and shotgun profiling of tomato rhizosphere microbiomes, (2)~taxonomic
+    and functional profiling coupled with machine-learning classification in a
+    colorectal cancer cohort, and (3)~de novo metagenomic assembly,
+    metagenome-assembled genome (MAG) binning, and metabolic pathway reconstruction
+    in a polyethylene degradation study.  Across all benchmarks, MicroBioAgent
+    faithfully recapitulated the primary biological findings of the original
+    studies, exhibiting high analytical concordance despite expected tool- and
+    database-dependent variations.  In systematic robustness evaluations across 27
+    independent runs spanning three backbone LLMs and three
+    prompt-complexity tiers, MicroBioAgent achieved a 98.8\% task completion rate
+    and yielded highly reproducible diversity and differential-abundance estimates.
+    MicroBioAgent establishes a scalable, adaptive paradigm for end-to-end
+    computational microbiome research.
+\end{abstract}
+\vfill
+\noindent\textbf{Keywords:} microbiome analysis, 16S rRNA, shotgun metagenomics, MAGs, AI agent, asynchronous execution
+\end{titlepage}
+\setcounter{page}{1}
+
+\section{Introduction}
+
+Microbiome studies connect sequencing-data processing with taxonomic and functional characterization and downstream statistics, requiring researchers to select tools and configure software and reference resources~\cite{knight2018bestpractices}. Advances in high-throughput sequencing have enabled comprehensive profiling of microbial communities across plant, human, and environmental ecosystems. However, converting raw sequencing reads into reliable scientific findings demands multi-stage analytical workflows. Researchers must select appropriate computational algorithms, maintain complex software dependencies across isolated package environments, configure massive reference databases, write custom post-processing scripts, and execute downstream statistical tests. These multifaceted technical and bioinformatic hurdles present substantial barriers for life scientists without specialized computational training, often limiting their ability to explore alternate analytical strategies or conduct customized investigations independently~\cite{tong2020genepiper,liu2021practical}.
+
+Workflow managers and biomedical agents provide foundations for analysis automation, motivating their integration with microbiome-specific methods to support diverse study objectives. Computational workflow systems such as Snakemake and Nextflow offer reproducible, scalable dependency tracking and parallel execution~\cite{koster2012snakemake,ditommaso2017nextflow}. Nevertheless, these engines require explicit, predefined execution graphs and pipeline specifications; researchers must still determine which analyses to run, manually structure workflow scripts, and interpret intermediate findings. Concurrently, LLM agents have demonstrated substantial promise in general biomedical problem solving and automated code execution, as seen in AutoBA~\cite{zhou2024autoba}, Biomni~\cite{huang2026biomni}, BioMedAgent~\cite{bu2026biomedagent}, BioMaster~\cite{su2026biomaster}, and M3A~\cite{johri2026m3a}.
+
+For microbiome research, this study focuses on composing upstream processing and downstream analyses in user-controlled computing environments across data types and study objectives. MetaClaw connects predefined cloud-based FlowHub pipelines for upstream tasks with customizable local downstream skills~\cite{zhang2026metaclaw}. Analyses that keep raw sequencing reads on the user's machine need both upstream and downstream steps to run locally, without upload to an external platform. During execution, MetaClaw monitors long-running tasks through repeated status checks in the active conversation. When tasks require hours of processing, continuous polling occupies conversational bandwidth, inflates token overhead, and locks the dialogue, preventing researchers from providing real-time feedback or revising downstream analytical strategies while computation is underway.
+
+We investigate how microbiome research objectives and input data can be translated into executable analyses spanning sequence processing, community and functional comparisons, and genome reconstruction. Specifically, we examine whether a domain-specific agent can formulate study-tailored analysis plans, invoke established command-line bioinformatics utilities alongside custom analytical scripts, and manage multi-step analytical state on local infrastructure without relying on hardcoded end-to-end templates. Furthermore, we investigate how background task execution and conversation handling can be coordinated so that long computations do not monopolize model attention, allowing researchers to interactively refine pending analyses while preserving reliable, automated task resumption upon process completion. The inputs are sequencing reads, sample metadata, and a natural-language study objective; the outputs are abundance matrices, statistical tables, figures, and analysis records.
+
+MicroBioAgent integrates domain skills, execution environments, and reference resources, with three case studies evaluating microbiome analysis capabilities and additional experiments assessing robustness and execution support. We evaluate the framework across 230 sequencing libraries from three published datasets covering paired amplicon and shotgun profiling, functional metagenomic classification, and long-read genome reconstruction. To evaluate operational stability, we conduct 27 repeated sessions crossing three LLMs and three prompt granularities on shared preprocessed inputs. Finally, controlled execution ablations quantify the computational overhead and interactive steering capabilities of our event-driven coordination mechanism against an ablated polling baseline.
+
+\section{Method}
+
+MicroBioAgent connects microbiome domain skills with local tools and reference resources to compose workflows from sequencing-data processing to community, functional, and genome-resolved analyses (Figure~\ref{fig:architecture}). Hosted on the open-source OpenClaw runtime, MicroBioAgent operates as a domain-specific conversational agent. When a user provides a research objective, the agent interprets the experimental context and formulates a structured execution plan. Rather than invoking an inflexible pipeline or an external cloud workflow manager, the agent runs shell commands and analysis scripts on the host.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{microbioagent-architecture-image2-v7.png}
+\caption{MicroBioAgent architecture and workflow execution. A natural-language research request initiates an analysis workspace, where the agent formulates an analytical plan, selects domain-specific skills, and links local software environments and reference databases across 16S amplicon, reference-based shotgun, and assembly-based metagenomic workflows. Analysis commands, parameters, intermediate tables, and logs are organized within the session directory. During background computation, users can revise pending tasks without interrupting active processes, and task completion triggers output verification and continuation within the same session.}
+\label{fig:architecture}
+\end{figure}
+
+With a session identifier, \texttt{mgx\_create\_job} binds a conversation to a reusable job directory that organizes inputs, outputs, scripts, and logs across analytical steps.
+
+Method-specific skills guide analytical steps, while runtime and reference registries resolve the resources needed to compose study-specific analyses. Analytical domain knowledge is modularized into discrete skills, each containing a \texttt{SKILL.md} document describing its purpose, required inputs, software dependencies, reference resources, analytical procedures, and expected outputs. Skills encompass 16S amplicon processing (QIIME~2~\cite{bolyen2019qiime2}, DADA2~\cite{callahan2016dada2}), shotgun taxonomic profiling (MetaPhlAn~\cite{beghini2021biobakery}), functional quantification (HUMAnN~\cite{beghini2021biobakery}), de novo metagenomic assembly and binning (Aviary~\cite{newell2026aviary}, CheckM2~\cite{chklovski2023checkm2}), taxonomic placement (GTDB-Tk~\cite{chaumeil2022gtdbtk}), coverage calculation (CoverM~\cite{aroney2025coverm}), functional annotation (eggNOG-mapper~\cite{cantalapiedra2021eggnog,huertacepas2019eggnog}), and statistical analysis (MaAsLin~3~\cite{nickols2026maaslin3}, DESeq2~\cite{love2014deseq2}). Two centralized registry files decouple tool logic from local hardware paths: \texttt{runtimes.yaml} maps each analytical skill to its dedicated Conda environment, while \texttt{references.yaml} maps required reference databases (e.g., SILVA~\cite{quast2013silva}, ChocoPhlAn, UniRef, GTDB) to their absolute filesystem paths.
+
+The system selects tools and parameters from the study objective and domain skills, executes analytical commands and scripts, and records execution status, logs, and generated files for researcher inspection. Guided by workspace instructions (\texttt{AGENTS.md}, \texttt{TOOLS.md}, \texttt{CODING.md}), the agent consults relevant skills before executing tasks via the \texttt{exec} tool. Execution rules mandate capturing standard output and error streams into designated log files, validating process exit codes, and inspecting generated files upon process completion. If a command fails or the expected files are not produced, the agent reviews the logs and outputs and determines which parts of the analysis to rerun. These checks enforce operational discipline and procedural accountability, while allowing researchers to audit every executed command and intermediate table.
+
+Commands that outlast the initial wait continue in the background while the agent yields its turn, allowing user feedback to revise pending analyses during computation. MicroBioAgent configures \texttt{exec} with a 30-second initial wait and no overall execution time limit. Commands that finish within 30 seconds return their results synchronously. Commands that exceed 30 seconds transition to background execution. The agent then calls \texttt{sessions\_yield} to yield its turn. During this background phase, the dialogue interface remains fully responsive, allowing users to revise pending analyses.
+
+Event-driven execution coordination routes completion events to the originating session and arranges their processing according to active-run state so that the agent can inspect outputs and continue analysis. To implement this mechanism, we developed a version-pinned runtime extension for OpenClaw. The extension tracks the conversation ID of every launched background process. When a background process terminates, an event listener intercepts the exit event, reads the exit code and final log lines, and dispatches a structured completion notification to the parent conversation. If the session is idle, the extension immediately triggers an agent turn, presenting the completion event as a conversational turn event. If the session is active (e.g., streaming a response or processing a user instruction), the notification is placed in a session-specific queue and delivered as soon as the active turn settles. The design does not require the agent to poll for completion.
+
+Analytical steps produce abundance profiles, diversity and differential-abundance results, classifiers, or genome annotations, with figures and reports presenting outputs relevant to the study objective. Across analytical workflows, MicroBioAgent synthesizes results into interpretable scientific deliverables. In amplicon studies, it generates ASV tables, alpha and beta diversity matrices, ordination plots, and taxonomic barplots. In shotgun metagenomics, it outputs relative abundance tables across taxonomic ranks, functional pathway abundances, and differential-abundance statistics. In genome-resolved studies, it produces dereplicated MAG catalogs, quality assessment summaries, taxonomic assignments, and metabolic pathway matrices. Finally, it compiles key findings, methodological parameters, and visual figures into an overarching analytical report.
+
+\section{Experimental design}
+
+\subsection{Study-specific analytical capability}
+
+Three published datasets comprising 230 sequencing libraries assess paired amplicon and shotgun analysis, colorectal cancer (CRC) functional classification, and long-read genome-resolved metagenomics (Table~\ref{tab:cases}). The tomato rhizosphere dataset (PRJNA777724) evaluates paired amplicon and shotgun profiling across 60 16S (V3--V4) libraries and 36 matched shotgun libraries, spanning four tomato cultivars (two resistant, two susceptible) across baseline and post-inoculation conditions ($n = 3$ biological replicates per group)~\cite{yin2022tomato}. The CRC dataset (PRJEB10878) assesses taxonomic and functional profiling across 128 human faecal shotgun metagenomes from 74 CRC patients and 54 controls~\cite{yu2017crc}. The environmental plastic-degradation dataset (PRJEB97175) evaluates de novo genome reconstruction using six Oxford Nanopore long-read metagenomic libraries derived from soil enrichment cultures grown on low-molecular-weight polyethylene (LMWPE) or alkane substrates~\cite{sandholm2025polyethylene}. In all three cases, the agent was powered by \texttt{deepseek-v4-pro} and supplied with raw sequencing reads, sample metadata, and biological objectives without pre-written execution scripts. Evaluation examined analytical task completion and the recovery of primary biological patterns reported in the original studies. The existence of output files was evaluated separately from output validity and parameter correctness.
+
+\begin{table}[t]
+\centering
+\caption{Overview of the three case-study datasets.}
+\label{tab:cases}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.28\linewidth}l>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Case & BioProject & Sequencing libraries & Workflow \\
+\midrule
+Tomato rhizosphere
+  & PRJNA777724
+  & 60 16S; 36 matched shotgun
+  & 16S and shotgun profiling \\
+CRC faecal metagenomes
+  & PRJEB10878
+  & 128 shotgun
+  & Taxonomic and functional profiling \\
+Polyethylene enrichment
+  & PRJEB97175
+  & 6 long-read shotgun
+  & Genome-resolved metagenomics \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Robustness across models and prompts}
+
+To systematically evaluate operational stability while reducing redundant computational overhead, we evaluated three LLMs (\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, and \texttt{glm5.3-flash}) crossed with three prompt complexity levels (Detailed, Medium, Simple), with three independent sessions per condition ($3 \times 3 \times 3 = 27$ sessions). All runs operated on shared, preprocessed Case 1 data comprising a 16S ASV table, representative sequences, a rooted phylogenetic tree, denoising statistics, sample metadata, and 36 quality-controlled, host-cleared shotgun metagenomic libraries subsampled to 20\% read depth. The Detailed prompt explicitly prescribed specific metrics (Shannon index, weighted/unweighted UniFrac~\cite{lozupone2007unifrac}, Bray--Curtis, PERMANOVA~\cite{anderson2001permanova}, PERMDISP); the Medium prompt defined analytical scope but left tool selection to the agent; the Simple prompt stated only the high-level biological goal. Performance was scored across six core tasks: 16S alpha diversity, 16S beta diversity, 16S genus profiling, 16S differential abundance, shotgun species profiling, and shotgun differential abundance. A task was scored as completed when the corresponding quantitative matrix was successfully generated. Quantitative consistency was evaluated on aligned subsets using two-sided Mann--Whitney $U$ tests with Holm correction.
+
+\subsection{Execution coordination: overhead and completion}
+
+Using \texttt{deepseek-v4-pro}, the Detailed Case 1 prompt, and the preprocessed Case 1 inputs, we conducted three independent replicates under the full system (\texttt{full}) and three replicates under an ablated configuration lacking the event-driven runtime extension (\texttt{no-patch}). In the \texttt{no-patch} configuration, background commands continue running, but the runtime does not dispatch automated completion events, and tool instructions do not guide the model to yield its turn via \texttt{sessions\_yield}. All other components---including skills, software environments, and reference databases---were identical. Sessions ran with no user messages following initial plan confirmation. Task completion was scored across nine requested outputs (alpha diversity, beta diversity, 16S genus table, 16S differential abundance, shotgun species table, shotgun differential abundance, figures, execution scripts, and an analytical report), and method adherence was evaluated against the eight diversity and statistical requirements named in the detailed prompt (sequencing-depth normalization, Shannon diversity, weighted UniFrac, unweighted UniFrac, Bray--Curtis dissimilarity, weighted-UniFrac PCoA, PERMANOVA, and PERMDISP). Model calls, tool invocations (\texttt{exec}, \texttt{process}, \texttt{sessions\_yield}), and total token consumption (input, output, and reasoning tokens) were recorded from full session transcripts.
+
+\subsection{Guidance during active computation}
+
+In long-running workflows, researchers frequently need to steer downstream steps while compute-heavy tasks run in the background. We tested this human-in-the-loop capability during the active QIIME~2 taxonomic classification step of Case 1, which requires several minutes of computation. Once the classification job was confirmed running, a standardized user message was sent requesting to maintain the running classification task, switch the subsequent 16S differential-abundance method to DESeq2, and generate a heatmap of significant genera upon completion. No further prompts were provided. Each session was evaluated on two independent success criteria: (1) whether the agent acknowledged the user instruction and updated the pending analysis plan while the background classification process remained actively running; and (2) whether, upon command completion, the session automatically reactivated without user prompting and continued execution in accordance with the revised plan. Three independent sessions were tested for each of the \texttt{full} and \texttt{no-patch} configurations.
+
+\section{Results}
+
+\subsection{Study-specific analytical capability}
+
+The tomato reanalysis linked amplicon and shotgun results, while recovering the second reported species marker required investigator-guided reanalysis with the original MetaPhlAn2 version~\cite{truong2015metaphlan2}. For 16S amplicon data, MicroBioAgent executed quality filtering, DADA2 denoising, taxonomic classification against SILVA 138.2, and diversity analysis. Pathogen inoculation caused a marked decline in Shannon diversity among susceptible cultivars (A57 and HG70), whereas resistant cultivars (HG64 and HF12) maintained higher diversity post-inoculation at both day 5 ($P = 0.002$) and day 10 ($P = 0.004$; Figure~\ref{fig:tomato}). Weighted-UniFrac PCoA separated samples primarily by inoculation status along PCoA 1 (56.3\% explained variance), reflecting an expansion of \textit{Ralstonia} that dominated susceptible plants. Differential-abundance analysis using MaAsLin~3 identified 6 to 15 genera consistently enriched in both resistant cultivars across sampling conditions. In the matched shotgun metagenomes, profiling with MetaPhlAn3 identified enrichment of the \textit{Pseudomonas putida} group in resistant cultivars at baseline (HG64: $P = 0.013$; HF12: $P = 0.009$). However, MetaPhlAn3 failed to detect the second published marker, \textit{Sphingopyxis unclassified}. Upon observing this discrepancy, the researcher prompted the agent to re-analyze the libraries using MetaPhlAn2 (the version used in the 2022 publication). That reanalysis identified both \textit{P.~putida} and \textit{Sphingopyxis unclassified} as enriched in resistant cultivars.
+
+The CRC analysis connected species and functional profiling to nested cross-validated classification, with pooled out-of-fold AUROCs of 0.902 for gene families and 0.632 for KO features (Figure~\ref{fig:crc}). MicroBioAgent processed 128 faecal shotgun metagenomes using MetaPhlAn3 for taxonomic profiling and HUMAnN3 for UniRef90 gene family and KEGG Orthology (KO) quantification. Species-level Bray--Curtis PCoA showed no distinct clustering between controls ($n = 54$), early-stage CRC ($n = 36$), and late-stage CRC ($n = 38$), yet PERMANOVA identified significant community differences associated with CRC status ($F = 2.32, P = 0.002$) and disease stage ($F = 1.65, P = 0.009$), whereas clinical covariates (sex, age, BMI) showed no significant effects. Differential-abundance testing identified eight CRC-enriched species and two control-enriched species (Benjamini--Hochberg adjusted $q < 0.05$). Key enriched species---\textit{Parvimonas micra}, \textit{Peptostreptococcus stomatis}, \textit{Fusobacterium nucleatum}, and \textit{Solobacterium moorei}---and the control-enriched species \textit{Eubacterium ventriosum} showed the same direction of association as in the original cohort study. A co-occurrence network constructed from these ten species revealed 16 positive correlations ($|\rho| \geq 0.4, q < 0.05$), with \textit{P.~micra} serving as a central hub connected to six other species, including \textit{F.~nucleatum} ($\rho = 0.49$) and \textit{S.~moorei} ($\rho = 0.53$). In predictive modeling, the agent implemented nested five-fold cross-validation with within-fold mRMR feature selection, training logistic regression classifiers on the top 15 features~\cite{peng2005mrmr}. The gene-family classifier achieved a pooled out-of-fold AUROC of 0.902 (sensitivity 0.82, specificity 0.89 at Youden's threshold), substantially outperforming the KO-based classifier (AUROC 0.632, sensitivity 0.41, specificity 0.87), confirming that fine-grained gene-family abundances provided superior diagnostic discrimination.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.60\linewidth]{Case-study-1-Fig1_diversity.png}
+\caption{Tomato rhizosphere microbial diversity and community composition. (a)~Per-sample Shannon diversity across cultivars, sampling timepoints, and inoculation conditions. (b)~PCoA of weighted UniFrac distances, with samples colored by resistance phenotype and point shapes indicating inoculation treatment. (c)~Genus-level relative abundance across individual samples. All groups contain $n = 3$ biological replicates ($n = 60$ total 16S samples).}
+\label{fig:tomato}
+\vspace{0.6em}
+\includegraphics[width=0.60\linewidth]{Case-study-2-Fig_composite.png}
+\caption{Metagenomic profiling, biomarker discovery, and predictive modeling in the CRC cohort. (a)~PCoA of species-level Bray--Curtis dissimilarities across controls, early-stage CRC, and late-stage CRC cases. (b)~PERMANOVA test statistics ($F$ values) for disease status, stage, and clinical covariates (sex, age, and BMI). (c)~Volcano plot of differentially abundant species between CRC cases and controls (Benjamini--Hochberg adjusted $q < 0.05$). (d)~Spearman co-occurrence network of the ten differentially abundant species ($|\rho| \geq 0.4$, $q < 0.05$), highlighting the \textit{P.~micra} hub. (e)~Standardized logistic regression coefficients for the top 15 gene-family and top 15 KO features selected by mRMR within training folds. (f)~ROC curves from nested fivefold cross-validation comparing gene-family and KO classifiers.}
+\label{fig:crc}
+\end{figure}
+
+The environmental analysis recovered 75 dereplicated representative genomes from six long-read libraries and annotated focal taxa (Figure~\ref{fig:mag}). From six Nanopore metagenomic libraries, de novo assembly and binning with Aviary yielded 372 initial bins. CheckM2 quality filtering identified 153 qualifying MAGs (100 high-quality and 53 medium-quality under MIMAG standards~\cite{bowers2017mimag}). Dereplication at 95\% average nucleotide identity (ANI) yielded 75 non-redundant representative MAGs (50 high-quality, 25 medium-quality). Taxonomic assignment via GTDB-Tk (release R232) and relative abundance estimation via CoverM mapped community structures across carbon sources. In inoculum S1, \textit{Acinetobacter guillouiae} dominated LMWPE (64\%) and C30 (67\%) enrichments, whereas \textit{Aquipseudomonas} dominated C40 (66\%). In inoculum S2, \textit{Aquipseudomonas} sp003050835 was most abundant in LMWPE (42\%), \textit{Mesorhizobium\_M} sp900116595 and \textit{Aquipseudomonas moorei} in C30 (16\% each), and \textit{Mesorhizobium\_M} sp900116595 and \textit{Aquipseudomonas fluorescens\_BJ} in C40 (27\% and 25\%). MicroBioAgent recovered all ten focal taxonomic groups highlighted in the original study (with taxa designated \textit{Pseudomonas} in that study classified here as \textit{Aquipseudomonas}, consistent with updated GTDB taxonomic boundaries). Metabolic annotation with eggNOG-mapper across 11 representative MAGs corresponding to focal taxa identified alkane terminal oxidation genes in 9 MAGs, while pathways for 2-ketone/oxidized-derivative metabolism and the $\beta$-oxidation module were identified in all 11 MAGs. Nine MAGs carried genes spanning all three functional categories, indicating that the genetic potential for complete hydrocarbon utilization was distributed across multiple recovered taxa.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{Case-study-3-Fig_composite.png}
+\caption{Genome-resolved metagenomic analysis of polyethylene-enrichment cultures. (a)~Counts of high-quality and medium-quality MAGs before and after 95\% ANI dereplication. (b)~Genus-level relative abundance of MAGs across the six enrichment cultures. (c)~Relative abundances of species ranked in the top five of any of the six enrichment cultures. (d)~Gene copy numbers annotated by eggNOG-mapper in 95\% ANI representative MAGs of focal taxa for alkane terminal oxidation, 2-ketone or oxidized-derivative metabolism, and $\beta$-oxidation; taxa in gray font denote medium-quality MAGs.}
+\label{fig:mag}
+\end{figure}
+
+\subsection{Robustness across models and prompts}
+
+Across 27 model--prompt sessions, 160 of 162 task evaluations were completed, with both omissions arising from one session that skipped shotgun analysis (Figure~\ref{fig:robustness-models}). Both \texttt{deepseek-v4-pro} and \texttt{deepseek-v4-flash} completed all six analyses in three of three sessions under every prompt level. \texttt{glm5.3-flash} completed all 16S analyses (9/9 sessions) and 8/9 shotgun analyses, omitting the shotgun analysis in a single session under the Detailed prompt. These results show that the framework's domain skills and runtime registries provide stable operational guidance across diverse LLM reasoning engines and varying degrees of prompt specification.
+
+Comparing per-sample Shannon diversity ($n = 60$) and pairwise weighted UniFrac distances ($n = 1{,}770$) across completed replicates revealed no statistically significant differences between any pair of models under any prompt level, or across prompt levels within any model (all Holm-adjusted $P = 1.0$, two-sided Mann--Whitney $U$ test). In differential-abundance analyses, individual sessions chose among DESeq2, MaAsLin~3, Wilcoxon rank-sum, Mann--Whitney $U$, or LEfSe~\cite{segata2011lefse}. Restricting cross-model comparisons to sessions that utilized DESeq2 revealed no significant distributional differences in estimated $\log_2$ fold changes across models (all Holm-adjusted $P \geq 0.059$). Similarly, within-model comparisons between Detailed and Medium prompts using matched statistical tests showed consistent effect-size distributions (all Holm-adjusted $P \geq 0.064$). Relative abundances were more sensitive to the model and the prompt. Across models, genus or species abundances did not differ for 16S analyses under the simple prompt or for shotgun analyses under the detailed prompt (all Holm-adjusted $P = 1$), but differed in the other prompt settings (Holm-adjusted $P \le 0.05$). Within models, abundances were consistent across prompts for \texttt{glm5.3-flash} in the 16S analyses and for \texttt{deepseek-v4-pro} and \texttt{deepseek-v4-flash} in the shotgun analyses (all Holm-adjusted $P = 1$); the remaining within-model comparisons differed (Holm-adjusted $P \le 0.025$). These comparisons do not establish numerical equivalence of the abundance tables.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.62\linewidth]{case1_completion_models.png}
+\caption{Overall task completion and differences in analytical outputs across models within each prompt level. (a)~Completion of six analyses by model and prompt level; values represent completed sessions out of three. (b)~Comparison of 16S Shannon diversity indices, pairwise weighted UniFrac distances, and relative abundances (16S genus level and shotgun species level) among models under each prompt level, along with DESeq2 $\log_2$ fold changes in taxon abundance for 16S analyses (detailed and medium prompts) and shotgun analyses (detailed prompt). Brackets indicate two-sided Mann--Whitney $U$ tests with Holm correction across the three model pairs in each plot. n.s., adjusted $P \geq 0.05$; *$P < 0.05$; **$P < 0.01$; ***$P < 0.001$. Values are derived from repeated analyses of the same Case~1 dataset and do not represent independent biological replicates.}
+\label{fig:robustness-models}
+\end{figure}
+
+Differences in amplicon-region selection, feature-identifier alignment, and MetaPhlAn normalization expose output-validity failures that task-completion counts alone do not capture. Detailed inspection of session transcripts and generated data matrices revealed three recurring procedural discrepancies despite successful file generation. First, in several 16S amplicon sessions, the agent applied a V4 classifier rather than a V3--V4 classifier. Second, an occasional script merged taxonomic abundance tables across samples by row position rather than matching feature identifiers. Third, absent explicit prompt constraints, MetaPhlAn execution varied regarding whether the \texttt{--unknown\_estimation} flag was enabled, altering whether relative abundances were normalized to total reads or classified reads. These findings emphasize that file generation metrics alone are insufficient to guarantee scientific validity, underscoring the necessity of human inspection in agent-assisted bioinformatics.
+
+\subsection{Execution coordination: overhead and completion}
+
+Across three sessions per configuration, \texttt{full} reduced mean model calls from 286.3 to 133.3 and mean total tokens from 35.08 million to 14.53 million relative to \texttt{no-patch}. In \texttt{full}, when a long-running computational command exceeded the 30-second initial wait, the agent invoked \texttt{sessions\_yield} (mean $11.7$ calls per session, range $5\text{--}17$) to yield conversational control. The agent rarely called \texttt{process} (mean $7.3$ calls, range $0\text{--}21$, with two sessions executing $\le 1$ call). In contrast, the ablated \texttt{no-patch} configuration never invoked \texttt{sessions\_yield} ($0$ calls across all sessions) and instead repeatedly checked command status, issuing an average of $155.0$ \texttt{process} queries per session (range $102\text{--}227$). Because each polling round prompted a full LLM invocation that re-read the expanding conversation transcript, total model calls more than doubled in \texttt{no-patch} (mean $286.3$, range $211\text{--}403$) compared to \texttt{full} (mean $133.3$, range $124\text{--}150$). Consequently, average token consumption rose by 141.5\% (a 2.4-fold increase), jumping from $14.53 \times 10^6$ tokens in \texttt{full} to $35.08 \times 10^6$ tokens in \texttt{no-patch} (Table~\ref{tab:ablation-summary}).
+
+\texttt{full} and \texttt{no-patch} produced 27/27 and 26/27 requested outputs, respectively, while both met 24/24 method requirements. Across three replicates, \texttt{full} generated all 9 requested outputs in every session (27/27 total outputs) and adhered to all 8 methodological requirements specified in the prompt (24/24 total requirements). The \texttt{no-patch} configuration also fulfilled all 24 method requirements and produced 26/27 outputs, omitting only the archived analysis scripts in one replicate. Removing asynchronous execution coordination therefore did not prevent completion of the workflow named in the prompt, but it substantially altered how long-running commands were managed.
+
+\begin{table}[t]
+\centering
+\caption{End-to-end execution ablation and asynchronous steering performance ($n = 3$ independent sessions per condition on preprocessed Case 1).}
+\label{tab:ablation-summary}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lcccccccc@{}}
+\toprule
+Condition & Outputs & Methods & Model calls & \texttt{exec} & \texttt{process} & \texttt{yield} & Total tokens & Steering / Resumption \\
+\midrule
+\texttt{full} & 27/27 & 24/24 & 133.3 & $82.3$ & $7.3$ & $11.7$ & $14.53 \times 10^6$ & 3/3 / 3/3 \\
+\texttt{no-patch} & 26/27 & 24/24 & 286.3 & $106.0$ & $155.0$ & $0.0$ & $35.08 \times 10^6$ & 0/3 / 0/3 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\subsection{Guidance during active computation}
+
+During the minutes-scale classification task, mid-run revision and automatic continuation each succeeded in 3/3 \texttt{full} sessions and 0/3 \texttt{no-patch} sessions. When the user submitted an instruction to switch downstream differential abundance to DESeq2 and add a genus-level heatmap while QIIME 2 taxonomic classification was running, \texttt{full} successfully processed the user message and updated the pending analysis plan in all three sessions ($3/3$) without terminating or interrupting the active command. When the background classification process terminated, the runtime extension intercepted the completion event and automatically triggered a new agent turn, allowing the agent to inspect the taxonomic results and continue execution according to the revised plan without further human prompting ($3/3$). In contrast, in the \texttt{no-patch} configuration, the agent did not yield its turn and kept the conversation occupied with repeated \texttt{process} calls, so neither mid-run plan revision nor automatic workflow resumption upon process termination occurred across all three sessions ($0/3$).
+
+\section{Discussion}
+
+The case studies demonstrate support for amplicon, reference-based, and genome-resolved analyses, while repeated sessions characterize completion and output variation and ablations assess asynchronous execution support. By integrating domain skills, runtime registries, and local execution tools, MicroBioAgent successfully automates complex multi-modal microbiome investigations across diverse biological environments. The framework proves capable of executing full analytical lifecycles---from raw sequence denoising to ecological diversity, predictive machine learning, and genome-resolved functional annotation---while preserving intermediate tables and logs for researcher inspection. The repeated evaluations across 27 sessions confirm that domain guidance enables consistent task execution across diverse LLM backbones.
+
+A direct comparison with a resource-matched general coding agent and component-wise ablations are needed to isolate the contributions of domain skills, tool guidance, and event handling. While our ablation demonstrated the operational advantages of event-driven coordination over status polling, the comparison was conducted at the package level, removing the entire runtime extension. Further controlled experiments are required to dissect the relative contributions of individual components. Additionally, benchmarking MicroBioAgent against general-purpose coding agents supplied with identical command-line tools would explicitly quantify the marginal value provided by microbiome-specific skill libraries.
+
+Robustness and ablation tests are concentrated on preprocessed inputs from one case, and observed output discrepancies underscore the need for researcher verification and evaluation across further datasets and use conditions. Although the system demonstrated high task completion, the observed procedural failures---such as primer-region mismatch, feature table misalignment, and normalization discrepancies---highlight that LLM reasoning remains vulnerable to subtle bioinformatic errors. Local execution protects sensitive sequencing data, but it does not guarantee that LLM-generated code or parameters are biologically sound.
+
+\section{Conclusion}
+
+MicroBioAgent supports study-specific microbiome analysis from research objectives and sequencing data, with reanalyses demonstrating task coverage and biological outputs and additional evaluations characterizing robustness and execution support. By coupling domain-specific procedural skills with local execution runtimes and event-driven asynchronous coordination, the framework enables autonomous, multi-modal microbiome workflows while keeping the conversation open for interactive researcher guidance. Systematic evaluations across plant, clinical, and environmental datasets establish its analytical coverage, while execution ablations confirm substantial efficiency gains during computationally demanding analyses.
+
+\section*{Code and data availability}
+
+Code, skills, prompts, environment specifications, and the version-pinned runtime patch are provided through the project repository. \url{https://github.com/Zeming-LI-Andy/openclaw-microbiome}. Raw sequencing reads are publicly available under BioProject accessions PRJNA777724 (tomato rhizosphere), PRJEB10878 (CRC cohort), and PRJEB97175 (polyethylene enrichment).
+
+\clearpage
+\bibliographystyle{plain}
+\bibliography{../refs}
+
+\input{appendix}
+\end{document}
