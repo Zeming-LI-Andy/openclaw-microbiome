@@ -1,11 +1,13 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[10pt,letterpaper]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{siunitx}
@@ -354,13 +356,14 @@ parent HG64 ($P=0.013$) and the resistant hybrid HF12 ($P=0.009$) at T1, but
 did not detect the other reported marker, \textit{Sphingopyxis unclassified}.
 Prompted by this difference, the investigator instructed MicroBioAgent to
 repeat the profiling using MetaPhlAn~2, the version used in the original study \parencite{truong2015metaphlan2}.
-This reanalysis identified both \textit{P.~putida} and
-\textit{Sphingopyxis unclassified} as enriched in the resistant cultivars,
-fully recovering the published taxonomic associations.
+This reanalysis identified both \textit{P.~putida} ($P < 0.05$) and
+\textit{Sphingopyxis unclassified} ($P < 0.1$, consistent with the significance
+threshold of the original LEfSe analysis; \cref{sec:methods-tomato}) as enriched
+in the resistant cultivars, recapitulating the published taxonomic biomarker signals.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig1_diversity.png}
+  \includegraphics[width=0.82\linewidth]{Case-study-1-Fig1_diversity.png}
   \caption{Tomato rhizosphere microbial diversity and community composition.
   (a)~Per-sample Shannon diversity across cultivars, sampling timepoints, and
   inoculation conditions.  (b)~Principal coordinates analysis (PCoA) of
@@ -428,9 +431,9 @@ specificity of 0.89, compared with 0.41 and 0.87 for the KO model, confirming
 that fine-grained gene-family abundances provided superior diagnostic
 discrimination.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-2-Fig_composite.png}
+  \includegraphics[width=0.72\linewidth]{Case-study-2-Fig_composite.png}
   \caption{Metagenomic profiling, biomarker discovery, and predictive modeling
   in the CRC cohort.  (a)~PCoA of species-level Bray--Curtis dissimilarities
   across controls, early-stage CRC, and late-stage CRC cases.  (b)~PERMANOVA
@@ -453,7 +456,8 @@ discrimination.
 
 We next evaluated whether MicroBioAgent could reconstruct MAGs from enrichment
 cultures, quantify their community abundances,
-and annotate metabolic pathways for alkane and oxidized-derivative degradation.
+and annotate metabolic pathways for alkane terminal oxidation, 2-ketone or 
+oxidized-derivative metabolism, and $\beta$-oxidation.
 The dataset comprised six Oxford Nanopore long-read metagenomes from two soil
 inocula (S1 and S2), each enriched on LMWPE,
 triacontane (C30), or tetracontane (C40) \parencite{sandholm2025polyethylene}.
@@ -483,15 +487,12 @@ MicroBioAgent annotated the 95\% ANI representative genomes corresponding to
 the focal taxa with eggNOG-mapper \parencite{cantalapiedra2021eggnog,huertacepas2019eggnog}.  Because \textit{Achromobacter} sp.\ formed two distinct ANI
 clusters, both representatives were included, yielding 11 analyzed MAGs
 (\cref{fig:mag}d).  Genes for alkane terminal oxidation were identified in nine
-of these MAGs, while pathways for 2-ketone or oxidized-derivative metabolism and
+of these MAGs, while genes for 2-ketone or oxidized-derivative metabolism and
 the $\beta$-oxidation module were detected in all 11 genomes.
-Nine MAGs carried genes spanning all three functional categories, indicating
-that the genetic potential for complete hydrocarbon utilization was distributed
-across multiple recovered taxa.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-3-Fig_composite.png}
+  \includegraphics[width=0.78\linewidth]{Case-study-3-Fig_composite.png}
   \caption{Genome-resolved metagenomic analysis of polyethylene-enrichment cultures.
   (a)~Counts of high-quality (HQ) and medium-quality (MQ) MAGs before and
   after 95\% ANI dereplication.  (b)~Genus-level relative abundance of MAGs
@@ -524,8 +525,8 @@ sessions under every prompt level, and \texttt{glm5.3-flash} completed all
 shotgun sessions, with one session under the detailed prompt not analysing
 the shotgun libraries.
 
-Quantitative outputs for community diversity and differential abundance were
-consistent across both models and prompt levels (Figure~\ref{fig:robustness-models}b
+Community diversity and differential-abundance estimates exhibited broadly
+concordant distributions across models and prompt levels (Figure~\ref{fig:robustness-models}b
 and Supplementary Figure~\ref{fig:robustness-prompts}).
 Per-sample 16S Shannon indices (median $9.59\text{--}9.83$) and pairwise
 weighted UniFrac distances (median $0.301\text{--}0.303$) did not differ
@@ -569,14 +570,14 @@ identifiers when merging sample profiles into a taxonomic abundance table; and
 (3)~without prompt constraints on MetaPhlAn parameters, sessions differed in
 whether \texttt{--unknown\_estimation} was enabled, changing whether species
 relative abundances were normalized to total reads or only classified reads.
-Overall, MicroBioAgent maintained high task completion and consistent
-diversity and differential-abundance outputs across models and prompt levels,
-with remaining differences largely reflecting choices of analytical tools and
-software parameters.
+Overall, MicroBioAgent maintained high execution completion and broadly
+reproducible diversity and differential-abundance profiles across models and
+prompt settings, while variations in taxonomic relative abundances highlighted
+the sensitivity of downstream outputs to autonomous tool and parameter selections.
 
-\begin{figure}[p]
+\begin{figure}[H]
   \centering
-  \includegraphics[height=0.58\textheight,keepaspectratio]{case1_completion_models.png}
+  \includegraphics[width=0.55\linewidth]{case1_completion_models.png}
   \caption{Overall task completion and differences in analytical outputs across
     models within each prompt level.
     (a)~Completion of six analyses by model and prompt level; values represent
@@ -604,7 +605,7 @@ software parameters.
 To evaluate how background-execution coordination affects end-to-end
 analysis, we compared the complete system (\texttt{full}) against an ablated
 configuration without the runtime patch (\texttt{no-patch};
-\cref{tab:e2e-ablation,sec:asynchronous-execution}).  Both conditions used
+Supplementary Table~\ref{tab:e2e-ablation} and \cref{sec:asynchronous-execution}).  Both conditions used
 \texttt{deepseek-v4-pro}, the detailed Case~1 prompt, and the preprocessed
 Case~1 dataset across three independent sessions, with no user messages after
 initial plan confirmation.
@@ -636,7 +637,7 @@ in \texttt{full} to $286.3$ (range $211\text{--}403$) in \texttt{no-patch},
 and mean total token consumption rose by $141.5\%$ ($2.4$-fold), from
 $14.53 \times 10^6$ (range $12.92\text{--}15.84 \times 10^6$) to
 $35.08 \times 10^6$ (range $23.77\text{--}49.32 \times 10^6$) tokens per
-session (\cref{tab:e2e-ablation}).
+session (Supplementary Table~\ref{tab:e2e-ablation}).
 
 \subsubsection{Asynchronous human guidance during active computation}
 
@@ -650,7 +651,7 @@ differential-abundance analysis and generate a heatmap of significant genera.
 In the complete system (\texttt{full}), after starting the classification
 task, the agent paused its conversation turn via \texttt{sessions\_\-yield}
 and updated the pending plan in response to the user's instruction while the
-task was still running ($3/3$ sessions; \cref{tab:hitl-ablation}).  Once the
+task was still running ($3/3$ sessions; Supplementary Table~\ref{tab:hitl-ablation}).  Once the
 classification task finished, the session was automatically reactivated to
 continue the analysis without additional user input or repeated
 \texttt{process} checks ($3/3$ sessions).  In \texttt{no-patch}, by contrast,
@@ -740,7 +741,7 @@ outputs fully inspectable, the system enables researchers to readily verify
 analytical decisions and refine workflows without constructing them manually.
 
 The ablation experiments evaluate the operational contribution of the runtime
-patch during long-running microbiome computations (\cref{tab:e2e-ablation,tab:hitl-ablation}).
+patch during long-running microbiome computations (Supplementary Tables~\ref{tab:e2e-ablation} and~\ref{tab:hitl-ablation}).
 In conventional agent setups without the patch, monitoring an active process
 occupies the conversational turn with repeated status checks, which increased
 mean model calls from 133.3 to 286.3 and inflated total token consumption by
@@ -941,11 +942,12 @@ In the initial stage, the agent independently performed sequence processing,
 diversity profiling, community composition comparisons, and identification
 of taxa enriched in resistant cultivars relative to susceptible controls.
 Comparisons with the source study focused on inoculation-induced diversity
-shifts and biomarker identification at the genus and species levels. In the 
-second stage, to evaluate the impact of profiler version on taxonomic 
-recovery, researchers prompted a follow-up reanalysis using MetaPhlAn2 to align 
-with the original study's tool rather than the agent's default MetaPhlAn3 
-configuration.
+shifts and the recovery of published resistance biomarkers, which were originally
+identified via LEfSe using an alpha cutoff of $P < 0.1$ and a logarithmic LDA
+score threshold $> 2.0$ \parencite{yin2022tomato}. In the second stage, to evaluate
+how profiler versions influence taxonomic recovery, the investigator prompted
+a follow-up reanalysis using MetaPhlAn2 to align directly with the original
+study's profiling environment.
 
 \subsubsection{Case 2 --- Colorectal cancer faecal metagenomic analysis}
 \label{sec:methods-crc}
@@ -1171,9 +1173,9 @@ included in the accompanying archive.
 
 Case-study accessions and statistics are provided in Supplementary Data~1.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
+  \includegraphics[width=0.70\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
   \caption{Genus-level differential abundance in the 16S profiles of the
     resistant tomato parent HG64 and the resistant F1 hybrid HF12.
     (a,~b)~Volcano plots of MaAsLin~3 coefficients for HG64 (a) and HF12 (b)
@@ -1183,9 +1185,9 @@ Case-study accessions and statistics are provided in Supplementary Data~1.
   \label{fig:tomato-enrichment}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{by_prompt_models.png}
+  \includegraphics[width=0.75\linewidth]{by_prompt_models.png}
   \caption{Comparison of analytical outputs across prompt levels within each model.
     Rows represent individual models (\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash},
     and \texttt{glm5.3-flash}).  The first four columns display 16S Shannon diversity indices,

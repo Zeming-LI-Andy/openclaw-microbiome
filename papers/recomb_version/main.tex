@@ -391,10 +391,11 @@ resistant cultivars at baseline (HG64: $P = 0.013$; HF12: $P = 0.009$), but did
 not detect the second published marker, \textit{Sphingopyxis unclassified}.
 Prompted by this discrepancy, the researcher instructed the agent to re-analyze
 the libraries using MetaPhlAn2 (the version used in the original
-publication)~\cite{truong2015metaphlan2}. This guided reanalysis successfully
-identified both \textit{P.~putida} and \textit{Sphingopyxis unclassified} as
-enriched in resistant cultivars, faithfully recovering the reported taxonomic
-signatures.
+publication)~\cite{truong2015metaphlan2}. 
+This guided reanalysis identified both \textit{P.~putida} ($P < 0.05$) and
+\textit{Sphingopyxis unclassified} ($P < 0.1$, matching the source study's
+threshold) as enriched in resistant cultivars, recapitulating the
+published taxonomic biomarkers.
 
 In the second benchmark, we evaluated MicroBioAgent on a published colorectal
 cancer (CRC) cohort comprising 128 human faecal shotgun metagenomes (74 CRC
@@ -477,11 +478,8 @@ designated \textit{Pseudomonas} in the original study classified here as
 \textit{Aquipseudomonas}, consistent with updated GTDB taxonomic boundaries).
 Functional annotation using eggNOG-mapper across 11 representative MAGs of
 these focal taxa identified alkane terminal oxidation genes in nine MAGs,
-while pathways for 2-ketone/oxidized-derivative metabolism and the
-$\beta$-oxidation module were detected in all 11 genomes. Nine MAGs carried
-genes spanning all three functional categories, indicating that the genetic
-potential for complete hydrocarbon utilization was distributed across
-multiple recovered taxa.
+while genes for 2-ketone/oxidized-derivative metabolism and the
+$\beta$-oxidation module were detected in all 11 genomes. 
 
 \begin{figure}[H]
 \centering
@@ -515,8 +513,8 @@ that the framework's domain skills and runtime registries provide stable
 operational guidance across diverse reasoning backbones and varying degrees
 of prompt specification.
 
-Quantitative outputs for community diversity and differential abundance were
-highly consistent across experimental conditions
+Quantitative outputs for community diversity and differential abundance exhibited
+broadly concordant distributions across experimental conditions
 (Figure~\ref{fig:robustness-models}b). Per-sample 16S Shannon diversity
 indices (median $9.59\text{--}9.83$) and pairwise weighted UniFrac distances
 (median $0.301\text{--}0.303$) showed no statistically significant
