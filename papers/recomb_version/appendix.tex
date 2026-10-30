@@ -12,16 +12,8 @@
 \subsection{Implementation and reproducibility}
 \label{app:implementation}
 
-The framework is implemented as an extension for OpenClaw. The tool
-\texttt{mgx\_create\_job} binds each conversation to a dedicated filesystem
-workspace under a designated root directory. Domain skills under
-\texttt{skills/} provide analytical guidance and, for some steps, reference
-scripts for QIIME~2, DADA2, MetaPhlAn, HUMAnN, Aviary, CheckM2, GTDB-Tk, CoverM,
-eggNOG-mapper, and statistical packages including MaAsLin~3 and DESeq2.
-Computing environments and reference database versions are locked via Conda
-environment files and centralized YAML registries (\texttt{runtimes.yaml} and
-\texttt{references.yaml}). Software and database versions used in the case
-studies are listed in Table~\ref{tab:software-versions}.
+Software and database versions used across the case studies are listed in
+Table~\ref{tab:software-versions}.
 
 \begin{table}[H]
 \centering
@@ -52,36 +44,20 @@ eggNOG-mapper & 2.1.13; eggNOG 5.0.2 \\
 \end{tabularx}
 \end{table}
 
-The runtime coordination mechanism is implemented as a version-pinned patch set
-applied to OpenClaw (v2026.7.2). The extension modifies tool execution handling
-such that commands executed via \texttt{exec} return control after 30 seconds if
-the process is still running. It registers an asynchronous background process
-listener that maps active job IDs to originating session IDs. Upon command
-termination, the listener captures the exit status and dispatches an event
-notification directly into the originating session's message stream. If the
-session is currently idle, the notification triggers an immediate agent loop; if
-the session is currently streaming or processing user input, the notification is
-queued and delivered as soon as the active turn finishes. In the ablated
-\texttt{no-patch} configuration, this event listener, completion dispatcher, and
-turn-yielding instructions are removed, and the agent checks completion with
-\texttt{process}.
-
 \subsection{Case-study details and extended results}
 \label{app:case-studies}
 
-Sequencing reads from PRJNA777724 were processed across four cultivars:
-susceptible cultivars A57 and HG70, resistant parent HG64, and resistant hybrid
-HF12. Samples spanned baseline (T1), inoculated day 5 (T2), uninoculated control
-day 5 (T2C), inoculated day 10 (T3), and uninoculated control day 10 (T3C), with
-$n = 3$ biological replicates per group. Shotgun profiling with MetaPhlAn3 used
-database \texttt{mpa\_v30\_CHOCOPhlAn\_201901}. When MetaPhlAn3 detected
-\textit{P.~putida} but not \textit{Sphingopyxis unclassified}, the investigator
-instructed the agent to re-run the profiling with MetaPhlAn2
-(\texttt{mpa\_v20\_m200}), which recovered both markers. Genus-level MaAsLin~3
-coefficients for HG64 and HF12 are shown in Figure~\ref{fig:tomato-enrichment}.
+The tomato rhizosphere samples (PRJNA777724~\cite{yin2022tomato}) covered five
+sampling conditions. These were baseline (T1), inoculated day~5 (T2),
+uninoculated control day~5 (T2C), inoculated day~10 (T3), and uninoculated
+control day~10 (T3C). Figure~\ref{fig:tomato-enrichment} provides genus-level
+MaAsLin~3 comparisons for the resistant cultivars.
 
-% Keep the large figure ahead of the next case-study paragraph.
-\clearpage
+The CRC classifiers used $L_2$-regularized logistic regression, with feature
+selection and model fitting confined to each training fold before held-out
+evaluation.
+
+% Keep the extended tomato figure with the case-study details.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
@@ -93,46 +69,13 @@ coefficients for HG64 and HF12 are shown in Figure~\ref{fig:tomato-enrichment}.
 \label{fig:tomato-enrichment}
 \end{figure}
 
-\begin{samepage}
-The Hong Kong C1 cohort (PRJEB10878) comprised 128 faecal shotgun metagenomic
-samples (74 CRC patients and 54 controls). Shotgun reads were profiled with
-MetaPhlAn3 and HUMAnN3. In predictive modeling, five-fold cross-validation was
-nested: in each fold, feature selection using minimum redundancy maximum
-relevance (mRMR) was conducted on the training data to select the top 15
-features, followed by logistic regression training. The fitted model was then
-evaluated on the held-out fold. Out-of-fold predictions pooled across all five
-folds yielded an AUROC of 0.902 for UniRef90 gene families and 0.632 for KOs.
-\par
-\end{samepage}
-
-\begin{samepage}
-Oxford Nanopore long-read libraries from PRJEB97175 were assembled and binned
-using Aviary (incorporating the myloasm assembler), generating 372 raw bins.
-CheckM2 assessed completeness and contamination, identifying 100 high-quality
-and 53 medium-quality MAGs. Dereplication at 95\% ANI produced 75 non-redundant
-representative genomes. Taxonomic assignment with GTDB-Tk R232 and coverage
-quantification via CoverM mapped the abundance of 11 focal MAGs across the six
-enrichment cultures. eggNOG-mapper annotated alkane terminal oxidation,
-metabolism of 2-ketones or oxidized derivatives, and $\beta$-oxidation.
-\par
-\end{samepage}
-
+\clearpage
 \subsection{Additional evaluation details}
 \label{app:evaluation}
 
-The 27 robustness sessions were executed using identical preprocessed Case 1
-inputs to eliminate stochastic differences in upstream DADA2 denoising or read
-trimming. The preprocessed package contained the feature table, representative
-sequences, rooted phylogenetic tree, and 36 shotgun libraries subsampled to 20\%
-depth. Three prompts (Detailed, Medium, Simple) crossed with three models
-(\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, \texttt{glm5.3-flash})
-were tested across three replicates. All 162 task evaluations were scored based
-on the presence of valid quantitative output tables. One session under the
-Detailed prompt with \texttt{glm5.3-flash} omitted shotgun analysis, yielding
-160/162 completed evaluations (98.8\%). The prompts used in these sessions are
-reproduced below.
+The full Detailed, Medium, and Simple prompts used in the robustness evaluation
+are reproduced below.
 
-% Split the long prompt between complete analytical tasks.
 % Tighten list spacing without changing the 10 pt text size.
 \renewenvironment{promptitems}{%
   \begin{itemize}%
@@ -178,7 +121,6 @@ rRNA and shotgun metagenomic profiling.
   homogeneity of multivariate dispersion with PERMDISP before interpreting
   PERMANOVA.
 \end{promptitems}
-\tcbbreak
 \prompthead{16S Taxonomic Profiling and Differential Abundance Analysis}
 \begin{promptitems}
 \item Conduct taxonomic classification and abundance-composition analysis.
@@ -192,6 +134,7 @@ rRNA and shotgun metagenomic profiling.
 \item Visualize composition with stacked bar plots and differential taxa with
   volcano plots or heatmaps; summarize shared biomarkers with an UpSet plot.
 \end{promptitems}
+\tcbbreak
 \prompthead{Shotgun Metagenome Taxonomic and Differential Abundance Analysis}
 \begin{promptitems}
 \item Perform species-level taxonomic annotation and abundance profiling.
@@ -247,19 +190,18 @@ and identify microbiome patterns associated with wilt resistance, using both 16S
 and shotgun profiles.
 \end{promptbox}
 
-For alpha and beta diversity comparisons, per-sample Shannon indices ($n = 60$)
-and pairwise weighted UniFrac distances ($n = 1{,}770$) were aligned across
-sessions. Taxonomic abundances were compared on shared sample--taxon entries
-whose session-mean relative abundance was at least 5\% in every group being
-compared. Differential-abundance comparisons included shared taxa without that
-threshold and were evaluated exclusively across sessions utilizing identical
+% Keep the comparison methods and their two supporting tables together.
+\clearpage
+Analytical outputs were averaged across completed replicate sessions and aligned
+on shared entries before comparison. Diversity comparisons included per-sample
+Shannon indices ($n = 60$) and pairwise weighted UniFrac distances ($n =
+1{,}770$). Taxonomic abundance comparisons used shared sample--taxon entries
+with a session-mean relative abundance of at least 5\% in every compared group.
+This filter limited the influence of fluctuations in rare taxa on rank-based
+comparisons. Differential-abundance comparisons included all shared taxa without
+an abundance threshold and were restricted to sessions using identical
 statistical software (Tables~\ref{tab:da-model-methods}
 and~\ref{tab:da-prompt-methods}; Figure~\ref{fig:robustness-prompts}).
-Procedural failures identified in transcripts included: (1) using a V4
-classifier rather than a V3--V4 classifier; (2) misalignment of feature
-identifiers when merging sample profiles; and (3) omission of the
-\texttt{--unknown\_estimation} parameter in MetaPhlAn, altering the denominator
-of relative abundance calculations.
 
 \begin{table}[H]
 \centering
@@ -349,15 +291,9 @@ Model & Method
 
 % Keep the ablation description and its table on the same page.
 \clearpage
-Both \texttt{full} and \texttt{no-patch} used \texttt{deepseek-v4-pro}, the
-Detailed prompt, and the preprocessed Case 1 inputs ($n = 3$ sessions per
-condition). Across all runs, model calls, tool calls (\texttt{exec},
-\texttt{process}, \texttt{sessions\_yield}), and token usage (prompt,
-completion, and reasoning tokens) were recorded. In \texttt{full}, the three
-replicates recorded 150, 124, and 126 model calls, consuming 12.92M, 14.81M, and
-15.84M tokens. In \texttt{no-patch}, the three replicates recorded 211, 403, and
-245 model calls, consuming 23.77M, 49.32M, and 32.15M tokens
-(Table~\ref{tab:ablation-replicates}).
+Table~\ref{tab:ablation-replicates} provides per-session outputs, method
+adherence, model and tool calls, and token consumption for the execution
+ablation.
 
 \begin{table}[H]
 \centering
@@ -412,12 +348,3 @@ Condition & Session
   sessions. Tool-call counts and token consumption in those rows are per-session
   means. Total tokens are input plus output tokens, including reasoning tokens.}
 \end{table}
-
-In the human-in-the-loop experiment, the user sent a standardized steering
-command while QIIME 2 taxonomy classification was executing in the background.
-In all three \texttt{full} sessions, the agent received the message, updated the
-pending plan to adopt DESeq2 and add a heatmap, yielded its turn, and
-automatically resumed upon receiving the process completion event. In all three
-\texttt{no-patch} sessions, the agent continued calling \texttt{process}; the
-mid-run instruction was not applied, and the session did not resume
-automatically.

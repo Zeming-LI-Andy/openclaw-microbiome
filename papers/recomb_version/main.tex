@@ -25,9 +25,9 @@
 \setcounter{topnumber}{3}
 \setcounter{bottomnumber}{3}
 \setcounter{totalnumber}{6}
-\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
-\setlength{\floatsep}{10pt plus 2pt minus 2pt}
-\setlength{\intextsep}{12pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
 \setlength{\emergencystretch}{1em}
 
 % Keep abstract text and author footnotes at the 10 pt submission minimum.
@@ -512,8 +512,8 @@ $\beta$-oxidation module were detected in all 11 genomes.
 \centering
 \includegraphics[width=0.78\linewidth]{Case-study-3-Fig_composite.png}
 \caption{Genome-resolved metagenomic analysis of polyethylene-enrichment
-cultures. (a)~Counts of high-quality and medium-quality MAGs before and after
-95\% ANI dereplication. (b)~Genus-level relative abundance of MAGs across the
+cultures. (a)~Counts of high-quality (HQ) and medium-quality (MQ) MAGs before
+and after 95\% ANI dereplication. (b)~Genus-level relative abundance of MAGs across the
 six enrichment cultures. (c)~Relative abundances of species ranked in the top
 five of any of the six enrichment cultures. (d)~Gene copy numbers annotated by
 eggNOG-mapper in 95\% ANI representative MAGs of focal taxa for alkane terminal
@@ -550,12 +550,13 @@ prompt levels within any model (all Holm-adjusted $P = 1.0$, two-sided
 Mann--Whitney $U$ test). In differential-abundance analyses, individual
 sessions autonomously chose among DESeq2, MaAsLin~3, Wilcoxon rank-sum,
 Mann--Whitney $U$, or LEfSe~\cite{segata2011lefse}. Restricting cross-model
-comparisons to sessions utilizing DESeq2 revealed no significant
+comparisons to sessions utilizing DESeq2 (Table~\ref{tab:da-model-methods})
+revealed no significant
 distributional differences in estimated $\log_2$ fold changes across models
-(all Holm-adjusted $P \geq 0.059$; Table~\ref{tab:da-model-methods}). Similarly, within-model comparisons
-between Detailed and Medium prompts using matched statistical tests yielded
-consistent effect-size distributions (all Holm-adjusted $P \geq 0.064$;
-Table~\ref{tab:da-prompt-methods}).
+(all Holm-adjusted $P \geq 0.059$). Similarly, within-model comparisons
+between Detailed and Medium prompts using matched statistical tests
+(Table~\ref{tab:da-prompt-methods}) yielded consistent effect-size distributions
+(all Holm-adjusted $P \geq 0.064$).
 
 \begin{figure}[htbp]
 \centering
@@ -644,6 +645,18 @@ Condition & Outputs & Methods & \shortstack{Model\\calls}
 \texttt{no-patch} & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 & 0/3 / 0/3 \\
 \bottomrule
 \end{tabular*}
+\par\vspace{0.4em}
+\begin{minipage}{\linewidth}
+\normalsize
+\textit{Notes:} Conditions include (\texttt{full}) or omit
+(\texttt{no-patch}) the runtime patch. All runs used
+\texttt{deepseek-v4-pro} with the Detailed prompt. Outputs/methods are pooled
+counts; model/tool calls and tokens are per-session means. Total tokens comprise
+input and output tokens, including reasoning tokens. The \texttt{yield} column
+counts \texttt{sessions\_yield} calls. Steering/resumption give successful
+sessions out of three for plan updates while a task runs and automatic
+continuation upon completion without further user prompts, respectively.
+\end{minipage}
 \end{table}
 
 \subsection{Interactive plan revision during background computation}
@@ -726,7 +739,7 @@ end-to-end computational microbiome research. By integrating modular
 analytical skills, local software environments, and reference registries, the
 framework translates natural-language biological goals into executable
 multi-stage workflows without relying on hardcoded pipeline templates.
-Furthermore, its event-driven task management mechanism decouples
+Furthermore, its background task management mechanism decouples
 long-running bioinformatics computations from conversational dialogue,
 reducing token overhead by over 50\% while enabling seamless, interactive
 human steering and automated workflow resumption. Across diverse plant,
@@ -737,11 +750,10 @@ transparent foundation for autonomous microbiome analysis.
 \section*{Code and data availability}
 
 Code, skills, prompts, environment specifications, and the version-pinned
-runtime patch are provided through the project repository.
-\url{https://github.com/Zeming-LI-Andy/openclaw-microbiome}. Raw sequencing
-reads are publicly available under BioProject accessions PRJNA777724 (tomato
-rhizosphere), PRJEB10878 (CRC cohort), and PRJEB97175 (polyethylene enrichment).
-The LLMs were accessed through Volcano Engine.
+runtime patch are publicly available at \url{https://github.com/Zeming-LI-Andy/openclaw-microbiome}.
+Raw sequencing reads are publicly available under BioProject accessions
+PRJNA777724 (tomato rhizosphere), PRJEB10878 (CRC cohort), and PRJEB97175
+(polyethylene enrichment). The LLMs were accessed through Volcano Engine.
 
 \clearpage
 \bibliographystyle{unsrt}
