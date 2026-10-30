@@ -4,18 +4,31 @@
 \renewcommand{\thetable}{A\arabic{table}}
 \setcounter{figure}{0}
 \setcounter{table}{0}
+\raggedbottom
 
 \section{Supplementary methods and results}
+\label{app:supplementary}
 
 \subsection{Implementation and reproducibility}
+\label{app:implementation}
 
-The framework is implemented as an extension for OpenClaw. The tool \texttt{mgx\_create\_job} binds each conversation to a dedicated filesystem workspace under a designated root directory. Domain skills under \texttt{skills/} provide analytical guidance and, for some steps, reference scripts for QIIME~2, DADA2, MetaPhlAn, HUMAnN, Aviary, CheckM2, GTDB-Tk, CoverM, eggNOG-mapper, and statistical packages including MaAsLin~3 and DESeq2. Computing environments and reference database versions are locked via Conda environment files and centralized YAML registries (\texttt{runtimes.yaml} and \texttt{references.yaml}). Software and database versions used in the case studies are listed in Table~\ref{tab:software-versions}.
+The framework is implemented as an extension for OpenClaw. The tool
+\texttt{mgx\_create\_job} binds each conversation to a dedicated filesystem
+workspace under a designated root directory. Domain skills under
+\texttt{skills/} provide analytical guidance and, for some steps, reference
+scripts for QIIME~2, DADA2, MetaPhlAn, HUMAnN, Aviary, CheckM2, GTDB-Tk, CoverM,
+eggNOG-mapper, and statistical packages including MaAsLin~3 and DESeq2.
+Computing environments and reference database versions are locked via Conda
+environment files and centralized YAML registries (\texttt{runtimes.yaml} and
+\texttt{references.yaml}). Software and database versions used in the case
+studies are listed in Table~\ref{tab:software-versions}.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\caption{Principal software tools and reference databases used across the three case studies.}
+\caption{Principal software tools and reference databases used across the three
+  case studies.}
 \label{tab:software-versions}
-\footnotesize
+\normalsize
 \setlength{\tabcolsep}{6pt}
 \renewcommand{\arraystretch}{1.12}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.36\linewidth}>{\raggedright\arraybackslash}X@{}}
@@ -39,95 +52,221 @@ eggNOG-mapper & 2.1.13; eggNOG 5.0.2 \\
 \end{tabularx}
 \end{table}
 
-The runtime coordination mechanism is implemented as a version-pinned patch set applied to OpenClaw (v2026.7.2). The extension modifies tool execution handling such that commands executed via \texttt{exec} return control after 30 seconds if the process is still running. It registers an asynchronous background process listener that maps active job IDs to originating session IDs. Upon command termination, the listener captures the exit status and dispatches an event notification directly into the originating session's message stream. If the session is currently idle, the notification triggers an immediate agent loop; if the session is currently streaming or processing user input, the notification is queued and delivered as soon as the active turn finishes. In the ablated \texttt{no-patch} configuration, this event listener, completion dispatcher, and turn-yielding instructions are removed, and the agent checks completion with \texttt{process}.
+The runtime coordination mechanism is implemented as a version-pinned patch set
+applied to OpenClaw (v2026.7.2). The extension modifies tool execution handling
+such that commands executed via \texttt{exec} return control after 30 seconds if
+the process is still running. It registers an asynchronous background process
+listener that maps active job IDs to originating session IDs. Upon command
+termination, the listener captures the exit status and dispatches an event
+notification directly into the originating session's message stream. If the
+session is currently idle, the notification triggers an immediate agent loop; if
+the session is currently streaming or processing user input, the notification is
+queued and delivered as soon as the active turn finishes. In the ablated
+\texttt{no-patch} configuration, this event listener, completion dispatcher, and
+turn-yielding instructions are removed, and the agent checks completion with
+\texttt{process}.
 
 \subsection{Case-study details and extended results}
+\label{app:case-studies}
 
-Sequencing reads from PRJNA777724 were processed across four cultivars: susceptible cultivars A57 and HG70, resistant parent HG64, and resistant hybrid HF12. Samples spanned baseline (T1), inoculated day 5 (T2), uninoculated control day 5 (T2C), inoculated day 10 (T3), and uninoculated control day 10 (T3C), with $n = 3$ biological replicates per group. Shotgun profiling with MetaPhlAn3 used database \texttt{mpa\_v30\_CHOCOPhlAn\_201901}. When MetaPhlAn3 detected \textit{P.~putida} but not \textit{Sphingopyxis unclassified}, the investigator instructed the agent to re-run the profiling with MetaPhlAn2 (\texttt{mpa\_v20\_m200}), which recovered both markers. Genus-level MaAsLin~3 coefficients for HG64 and HF12 are shown in Figure~\ref{fig:tomato-enrichment}.
+Sequencing reads from PRJNA777724 were processed across four cultivars:
+susceptible cultivars A57 and HG70, resistant parent HG64, and resistant hybrid
+HF12. Samples spanned baseline (T1), inoculated day 5 (T2), uninoculated control
+day 5 (T2C), inoculated day 10 (T3), and uninoculated control day 10 (T3C), with
+$n = 3$ biological replicates per group. Shotgun profiling with MetaPhlAn3 used
+database \texttt{mpa\_v30\_CHOCOPhlAn\_201901}. When MetaPhlAn3 detected
+\textit{P.~putida} but not \textit{Sphingopyxis unclassified}, the investigator
+instructed the agent to re-run the profiling with MetaPhlAn2
+(\texttt{mpa\_v20\_m200}), which recovered both markers. Genus-level MaAsLin~3
+coefficients for HG64 and HF12 are shown in Figure~\ref{fig:tomato-enrichment}.
 
-\begin{figure}[htbp]
+% Keep the large figure ahead of the next case-study paragraph.
+\clearpage
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.94\linewidth]{Case-study-1-Fig2_16s_genus_enrichment.png}
-\caption{Genus-level differential abundance in the 16S profiles of the resistant tomato parent HG64 and the resistant F1 hybrid HF12. (a,~b)~Volcano plots of MaAsLin~3 coefficients for HG64 (a) and HF12 (b) versus the pooled susceptible cultivars at each sampling condition. (c)~Overlap of genera with a positive coefficient and $P<0.05$ in both resistant cultivars.}
+\caption{Genus-level differential abundance in the 16S profiles of the resistant
+  tomato parent HG64 and the resistant F1 hybrid HF12. (a,~b)~Volcano plots of
+  MaAsLin~3 coefficients for HG64 (a) and HF12 (b) versus the pooled susceptible
+  cultivars at each sampling condition. (c)~Overlap of genera with a positive
+  coefficient and $P<0.05$ in both resistant cultivars.}
 \label{fig:tomato-enrichment}
 \end{figure}
 
-The Hong Kong C1 cohort (PRJEB10878) comprised 128 faecal shotgun metagenomic samples (74 CRC patients and 54 controls). Shotgun reads were profiled with MetaPhlAn3 and HUMAnN3. In predictive modeling, five-fold cross-validation was nested: in each fold, feature selection using minimum redundancy maximum relevance (mRMR) was conducted on the training data to select the top 15 features, followed by logistic regression training. The fitted model was then evaluated on the held-out fold. Out-of-fold predictions pooled across all five folds yielded an AUROC of 0.902 for UniRef90 gene families and 0.632 for KOs.
+\begin{samepage}
+The Hong Kong C1 cohort (PRJEB10878) comprised 128 faecal shotgun metagenomic
+samples (74 CRC patients and 54 controls). Shotgun reads were profiled with
+MetaPhlAn3 and HUMAnN3. In predictive modeling, five-fold cross-validation was
+nested: in each fold, feature selection using minimum redundancy maximum
+relevance (mRMR) was conducted on the training data to select the top 15
+features, followed by logistic regression training. The fitted model was then
+evaluated on the held-out fold. Out-of-fold predictions pooled across all five
+folds yielded an AUROC of 0.902 for UniRef90 gene families and 0.632 for KOs.
+\par
+\end{samepage}
 
-Oxford Nanopore long-read libraries from PRJEB97175 were assembled and binned using Aviary (incorporating the myloasm assembler), generating 372 raw bins. CheckM2 assessed completeness and contamination, identifying 100 high-quality and 53 medium-quality MAGs. Dereplication at 95\% ANI produced 75 non-redundant representative genomes. Taxonomic assignment with GTDB-Tk R232 and coverage quantification via CoverM mapped the abundance of 11 focal MAGs across the six enrichment cultures. eggNOG-mapper annotated alkane terminal oxidation, metabolism of 2-ketones or oxidized derivatives, and $\beta$-oxidation.
+\begin{samepage}
+Oxford Nanopore long-read libraries from PRJEB97175 were assembled and binned
+using Aviary (incorporating the myloasm assembler), generating 372 raw bins.
+CheckM2 assessed completeness and contamination, identifying 100 high-quality
+and 53 medium-quality MAGs. Dereplication at 95\% ANI produced 75 non-redundant
+representative genomes. Taxonomic assignment with GTDB-Tk R232 and coverage
+quantification via CoverM mapped the abundance of 11 focal MAGs across the six
+enrichment cultures. eggNOG-mapper annotated alkane terminal oxidation,
+metabolism of 2-ketones or oxidized derivatives, and $\beta$-oxidation.
+\par
+\end{samepage}
 
 \subsection{Additional evaluation details}
+\label{app:evaluation}
 
-The 27 robustness sessions were executed using identical preprocessed Case 1 inputs to eliminate stochastic differences in upstream DADA2 denoising or read trimming. The preprocessed package contained the feature table, representative sequences, rooted phylogenetic tree, and 36 shotgun libraries subsampled to 20\% depth. Three prompts (Detailed, Medium, Simple) crossed with three models (\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, \texttt{glm5.3-flash}) were tested across three replicates. All 162 task evaluations were scored based on the presence of valid quantitative output tables. One session under the Detailed prompt with \texttt{glm5.3-flash} omitted shotgun analysis, yielding 160/162 completed evaluations (98.8\%). The prompts used in these sessions are reproduced below.
+The 27 robustness sessions were executed using identical preprocessed Case 1
+inputs to eliminate stochastic differences in upstream DADA2 denoising or read
+trimming. The preprocessed package contained the feature table, representative
+sequences, rooted phylogenetic tree, and 36 shotgun libraries subsampled to 20\%
+depth. Three prompts (Detailed, Medium, Simple) crossed with three models
+(\texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, \texttt{glm5.3-flash})
+were tested across three replicates. All 162 task evaluations were scored based
+on the presence of valid quantitative output tables. One session under the
+Detailed prompt with \texttt{glm5.3-flash} omitted shotgun analysis, yielding
+160/162 completed evaluations (98.8\%). The prompts used in these sessions are
+reproduced below.
 
+% Split the long prompt between complete analytical tasks.
+% Tighten list spacing without changing the 10 pt text size.
+\renewenvironment{promptitems}{%
+  \begin{itemize}%
+  \setlength{\itemsep}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\topsep}{0.15em}%
+  \setlength{\leftmargin}{1.2em}%
+}{\end{itemize}}
+\tcbset{before upper={\normalsize\setlength{\parskip}{0.15em}},
+  title after break={Detailed prompt (continued)}}
 \begin{promptbox}{Detailed prompt}
-You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA gene amplicon data from a tomato bacterial-wilt experiment. Conduct a comprehensive exploratory and comparative microbiome analysis covering both 16S rRNA and shotgun metagenomic profiling.
+You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA
+gene amplicon data from a tomato bacterial-wilt experiment. Conduct a
+comprehensive exploratory and comparative microbiome analysis covering both 16S
+rRNA and shotgun metagenomic profiling.
 \prompthead{Data Characterization and Quality Control}
 \begin{promptitems}
-\item Describe all available metadata variables and the hierarchical structure of the dataset: cultivar genotype, resistance phenotype, sampling timepoint, inoculation treatment, biological replicate.
-\item Visualize the experimental design, sequencing depth, and QC retention using sample-flow diagrams and distribution plots stratified by cultivar, timepoint, and treatment.
+\item Describe all available metadata variables and the hierarchical structure
+  of the dataset: cultivar genotype, resistance phenotype, sampling timepoint,
+  inoculation treatment, biological replicate.
+\item Visualize the experimental design, sequencing depth, and QC retention
+  using sample-flow diagrams and distribution plots stratified by cultivar,
+  timepoint, and treatment.
 \end{promptitems}
 \prompthead{16S rRNA Alpha Diversity Analysis}
 \begin{promptitems}
-\item Calculate Shannon diversity for each sample from the post-QC, non-chimeric ASV feature table after sequencing-depth normalization.
-\item At each sampling timepoint, compare Shannon diversity among cultivars and between resistant and susceptible phenotype groups.
-\item Visualize Shannon diversity with box/violin plots by cultivar and resistance phenotype, faceted by timepoint and treatment.
+\item Calculate Shannon diversity for each sample from the post-QC, non-chimeric
+  ASV feature table after sequencing-depth normalization.
+\item At each sampling timepoint, compare Shannon diversity among cultivars and
+  between resistant and susceptible phenotype groups.
+\item Visualize Shannon diversity with box/violin plots by cultivar and
+  resistance phenotype, faceted by timepoint and treatment.
 \end{promptitems}
 \prompthead{16S rRNA Beta Diversity Analysis}
 \begin{promptitems}
-\item Quantify between-sample dissimilarity from the post-QC ASV feature table using \textbf{Weighted UniFrac}, \textbf{Unweighted UniFrac}, and \textbf{Bray--Curtis}.
-\item Visualize weighted-UniFrac PCoA with samples colored by phenotype and shaped or faceted by cultivar, timepoint, and treatment.
-\item Use PERMANOVA to assess resistance phenotype, cultivar, inoculation treatment, sampling timepoint, and prespecified interaction terms. Assess homogeneity of multivariate dispersion with PERMDISP before interpreting PERMANOVA.
+\item Quantify between-sample dissimilarity from the post-QC ASV feature table
+  using \textbf{Weighted UniFrac}, \textbf{Unweighted UniFrac}, and
+  \textbf{Bray--Curtis}.
+\item Visualize weighted-UniFrac PCoA with samples colored by phenotype and
+  shaped or faceted by cultivar, timepoint, and treatment.
+\item Use PERMANOVA to assess resistance phenotype, cultivar, inoculation
+  treatment, sampling timepoint, and prespecified interaction terms. Assess
+  homogeneity of multivariate dispersion with PERMDISP before interpreting
+  PERMANOVA.
 \end{promptitems}
+\tcbbreak
 \prompthead{16S Taxonomic Profiling and Differential Abundance Analysis}
 \begin{promptitems}
 \item Conduct taxonomic classification and abundance-composition analysis.
-\item At each independent sampling timepoint, identify taxa with significantly different abundances between each resistant focal cultivar and the susceptible control group.
-\item Screen and summarize microbial markers significantly enriched in both resistant cultivars \textbf{HG64} and \textbf{HF12} at \textbf{T1}, \textbf{T2C}, and \textbf{T2}. Define these shared taxa as core resistance-associated biomarkers.
-\item Visualize composition with stacked bar plots and differential taxa with volcano plots or heatmaps; summarize shared biomarkers with an UpSet plot.
+\item At each independent sampling timepoint, identify taxa with significantly
+  different abundances between each resistant focal cultivar and the susceptible
+  control group.
+\item Screen and summarize microbial markers significantly enriched in both
+  resistant cultivars \textbf{HG64} and \textbf{HF12} at \textbf{T1},
+  \textbf{T2C}, and \textbf{T2}. Define these shared taxa as core
+  resistance-associated biomarkers.
+\item Visualize composition with stacked bar plots and differential taxa with
+  volcano plots or heatmaps; summarize shared biomarkers with an UpSet plot.
 \end{promptitems}
 \prompthead{Shotgun Metagenome Taxonomic and Differential Abundance Analysis}
 \begin{promptitems}
 \item Perform species-level taxonomic annotation and abundance profiling.
-\item At each independent sampling timepoint, identify taxa with significantly different abundances between each resistant focal cultivar and the susceptible control group.
-\item Screen and summarize markers significantly enriched in both \textbf{HG64} and \textbf{HF12} at \textbf{T1}, \textbf{T2C}, and \textbf{T2} as core resistance-associated biomarkers.
-\item Visualize species-level composition with stacked bar plots and differential species with volcano plots or heatmaps; summarize shared markers with an UpSet plot.
+\item At each independent sampling timepoint, identify taxa with significantly
+  different abundances between each resistant focal cultivar and the susceptible
+  control group.
+\item Screen and summarize markers significantly enriched in both \textbf{HG64}
+  and \textbf{HF12} at \textbf{T1}, \textbf{T2C}, and \textbf{T2} as core
+  resistance-associated biomarkers.
+\item Visualize species-level composition with stacked bar plots and
+  differential species with volcano plots or heatmaps; summarize shared markers
+  with an UpSet plot.
 \end{promptitems}
 \end{promptbox}
 
+\tcbset{title after break={Medium prompt (continued)}}
 \begin{promptbox}{Medium prompt}
-You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA gene amplicon data from a tomato bacterial-wilt experiment. Conduct a comprehensive exploratory and comparative microbiome analysis covering both 16S rRNA and shotgun metagenomic profiling.
+You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA
+gene amplicon data from a tomato bacterial-wilt experiment. Conduct a
+comprehensive exploratory and comparative microbiome analysis covering both 16S
+rRNA and shotgun metagenomic profiling.
 \prompthead{Data characterization}
 \begin{promptitems}
 \item Describe the dataset structure and assess quality.
-\item Visualize experimental design, sequencing depth, and QC, stratified by cultivar, timepoint, and treatment.
+\item Visualize experimental design, sequencing depth, and QC, stratified by
+  cultivar, timepoint, and treatment.
 \end{promptitems}
 \prompthead{16S diversity, taxonomy, and differential abundance}
 \begin{promptitems}
-\item Compare alpha and beta diversity among cultivars and between resistant and susceptible groups, stratified by timepoint.
+\item Compare alpha and beta diversity among cultivars and between resistant and
+  susceptible groups, stratified by timepoint.
 \item Profile taxonomic composition.
-\item At each timepoint, identify taxa that differ between each resistant focal cultivar and the susceptible control.
-\item Identify markers enriched in both \textbf{HG64} and \textbf{HF12} at \textbf{T1}, \textbf{T2C}, and \textbf{T2}.
+\item At each timepoint, identify taxa that differ between each resistant focal
+  cultivar and the susceptible control.
+\item Identify markers enriched in both \textbf{HG64} and \textbf{HF12} at
+  \textbf{T1}, \textbf{T2C}, and \textbf{T2}.
 \end{promptitems}
 \prompthead{Shotgun taxonomy and differential abundance}
 \begin{promptitems}
 \item Profile species-level composition.
-\item At each timepoint, identify species that differ between each resistant focal cultivar and the susceptible control.
-\item Identify markers enriched in both \textbf{HG64} and \textbf{HF12} at \textbf{T1}, \textbf{T2C}, and \textbf{T2}.
+\item At each timepoint, identify species that differ between each resistant
+  focal cultivar and the susceptible control.
+\item Identify markers enriched in both \textbf{HG64} and \textbf{HF12} at
+  \textbf{T1}, \textbf{T2C}, and \textbf{T2}.
 \end{promptitems}
 \end{promptbox}
 
+\tcbset{title after break={Simple prompt (continued)}}
 \begin{promptbox}{Simple prompt}
-You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA gene amplicon data from a tomato bacterial-wilt experiment. Analyze the dataset and identify microbiome patterns associated with wilt resistance, using both 16S and shotgun profiles.
+You are provided with rhizosphere shotgun metagenomic data and matched 16S rRNA
+gene amplicon data from a tomato bacterial-wilt experiment. Analyze the dataset
+and identify microbiome patterns associated with wilt resistance, using both 16S
+and shotgun profiles.
 \end{promptbox}
 
-For alpha and beta diversity comparisons, per-sample Shannon indices ($n = 60$) and pairwise weighted UniFrac distances ($n = 1{,}770$) were aligned across sessions. Taxonomic abundances were compared on shared sample--taxon entries whose session-mean relative abundance was at least 5\% in every group being compared. Differential-abundance comparisons included shared taxa without that threshold and were evaluated exclusively across sessions utilizing identical statistical software (Tables~\ref{tab:da-model-methods} and~\ref{tab:da-prompt-methods}; Figure~\ref{fig:robustness-prompts}). Procedural failures identified in transcripts included: (1) using a V4 classifier rather than a V3--V4 classifier; (2) misalignment of feature identifiers when merging sample profiles; and (3) omission of the \texttt{--unknown\_estimation} parameter in MetaPhlAn, altering the denominator of relative abundance calculations.
+For alpha and beta diversity comparisons, per-sample Shannon indices ($n = 60$)
+and pairwise weighted UniFrac distances ($n = 1{,}770$) were aligned across
+sessions. Taxonomic abundances were compared on shared sample--taxon entries
+whose session-mean relative abundance was at least 5\% in every group being
+compared. Differential-abundance comparisons included shared taxa without that
+threshold and were evaluated exclusively across sessions utilizing identical
+statistical software (Tables~\ref{tab:da-model-methods}
+and~\ref{tab:da-prompt-methods}; Figure~\ref{fig:robustness-prompts}).
+Procedural failures identified in transcripts included: (1) using a V4
+classifier rather than a V3--V4 classifier; (2) misalignment of feature
+identifiers when merging sample profiles; and (3) omission of the
+\texttt{--unknown\_estimation} parameter in MetaPhlAn, altering the denominator
+of relative abundance calculations.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\caption{Replicate sessions and shared entries for cross-model DESeq2 comparisons.}
+\caption{Replicate sessions and shared entries for cross-model DESeq2
+  comparisons.}
 \label{tab:da-model-methods}
-\footnotesize
+\normalsize
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.12}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xlcccc@{}}
@@ -144,14 +283,19 @@ Shotgun metagenome, species & Detailed & 1/3 & 2/3 & 2/3 & 228 \\
 \bottomrule
 \end{tabularx}
 \par\vspace{0.4em}
-{\footnotesize Values for each model indicate the number of independent replicates (out of three) that selected DESeq2. Shared entries are the taxa evaluated across all three models. Shotgun results under the medium prompt were not compared because no single differential-abundance method was selected by all three models.}
+{\normalsize Values for each model indicate the number of independent replicates
+  (out of three) that selected DESeq2. Shared entries are the taxa evaluated
+  across all three models. Shotgun results under the medium prompt were not
+  compared because no single differential-abundance method was selected by all
+  three models.}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\caption{Replicate sessions and shared entries for prompt-level differential-abundance comparisons.}
+\caption{Replicate sessions and shared entries for prompt-level
+  differential-abundance comparisons.}
 \label{tab:da-prompt-methods}
-\footnotesize
+\normalsize
 \setlength{\tabcolsep}{6pt}
 \renewcommand{\arraystretch}{1.12}
 \begin{tabular}{@{}llccc@{}}
@@ -175,49 +319,105 @@ Model & Method
 \bottomrule
 \end{tabular}
 \par\vspace{0.4em}
-{\footnotesize Session counts indicate the number of independent replicates (out of three) that selected the specified statistical method under each prompt level. Shared entries are the taxa evaluated across both prompt levels.}
+{\normalsize Session counts indicate the number of independent replicates (out
+  of three) that selected the specified statistical method under each prompt
+  level. Shared entries are the taxa evaluated across both prompt levels.}
 \end{table}
 
-\begin{figure}[p]
+% Keep this comparison figure before the execution-ablation material.
+\clearpage
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.92\linewidth]{by_prompt_models.png}
-\caption{Comparison of analytical outputs across prompt levels within each model. Rows represent \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash}, and \texttt{glm5.3-flash}. The first four columns display 16S Shannon diversity indices, pairwise weighted UniFrac distances, 16S genus-level relative abundances, and shotgun species-level relative abundances across prompt levels. The remaining two columns compare differential-abundance $\log_2$ fold changes between the detailed and medium prompts (16S: DESeq2; shotgun: the test shared within each model, Table~\ref{tab:da-prompt-methods}). Brackets in the first four columns indicate two-sided Mann--Whitney $U$ tests with Holm correction across the three prompt pairs within each model; brackets in the differential-abundance panels indicate comparisons between the detailed and medium prompts. *$P < 0.05$; **$P < 0.01$; ***$P < 0.001$; n.s., adjusted $P \ge 0.05$. Values are derived from repeated analyses of the same Case~1 dataset and do not represent independent biological replicates.}
+\caption{Comparison of analytical outputs across prompt levels within each
+  model. Rows represent \texttt{deepseek-v4-pro}, \texttt{deepseek-v4-flash},
+  and \texttt{glm5.3-flash}. The first four columns display 16S Shannon
+  diversity indices, pairwise weighted UniFrac distances, 16S genus-level
+  relative abundances, and shotgun species-level relative abundances across
+  prompt levels. The remaining two columns compare differential-abundance
+  $\log_2$ fold changes between the detailed and medium prompts (16S: DESeq2;
+  shotgun: the test shared within each model,
+  Table~\ref{tab:da-prompt-methods}). Brackets in the first four columns
+  indicate two-sided Mann--Whitney $U$ tests with Holm correction across the
+  three prompt pairs within each model; brackets in the differential-abundance
+  panels indicate comparisons between the detailed and medium prompts. *$P <
+  0.05$; **$P < 0.01$; ***$P < 0.001$; n.s., adjusted $P \ge 0.05$. Values are
+  derived from repeated analyses of the same Case~1 dataset and do not represent
+  independent biological replicates.}
 \label{fig:robustness-prompts}
 \end{figure}
 
-Both \texttt{full} and \texttt{no-patch} used \texttt{deepseek-v4-pro}, the Detailed prompt, and the preprocessed Case 1 inputs ($n = 3$ sessions per condition). Across all runs, model calls, tool calls (\texttt{exec}, \texttt{process}, \texttt{sessions\_yield}), and token usage (prompt, completion, and reasoning tokens) were recorded. In \texttt{full}, the three replicates recorded 150, 124, and 126 model calls, consuming 12.92M, 14.81M, and 15.84M tokens. In \texttt{no-patch}, the three replicates recorded 211, 403, and 245 model calls, consuming 23.77M, 49.32M, and 32.15M tokens (Table~\ref{tab:ablation-replicates}).
+% Keep the ablation description and its table on the same page.
+\clearpage
+Both \texttt{full} and \texttt{no-patch} used \texttt{deepseek-v4-pro}, the
+Detailed prompt, and the preprocessed Case 1 inputs ($n = 3$ sessions per
+condition). Across all runs, model calls, tool calls (\texttt{exec},
+\texttt{process}, \texttt{sessions\_yield}), and token usage (prompt,
+completion, and reasoning tokens) were recorded. In \texttt{full}, the three
+replicates recorded 150, 124, and 126 model calls, consuming 12.92M, 14.81M, and
+15.84M tokens. In \texttt{no-patch}, the three replicates recorded 211, 403, and
+245 model calls, consuming 23.77M, 49.32M, and 32.15M tokens
+(Table~\ref{tab:ablation-replicates}).
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\caption{Per-session outputs, method adherence, tool calls, and token consumption in the execution ablation.}
+\caption{Per-session outputs, method adherence, tool calls, and token
+  consumption in the execution ablation.}
 \label{tab:ablation-replicates}
-\scriptsize
-\setlength{\tabcolsep}{3.5pt}
+\normalsize
+\setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.12}
-\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llccccccc@{}}
+\textbf{(a) Outputs, method adherence, and model calls}\par\smallskip
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llccc@{}}
 \toprule
 Condition & Session
   & \shortstack{Outputs\\(of 9)}
   & \shortstack{Methods\\(of 8)}
-  & \shortstack{Model\\calls}
-  & \shortstack{\texttt{exec}}
+  & \shortstack{Model\\calls} \\
+\midrule
+\texttt{full} & 1 & 9/9 & 8/8 & 150 \\
+\texttt{full} & 2 & 9/9 & 8/8 & 124 \\
+\texttt{full} & 3 & 9/9 & 8/8 & 126 \\
+\texttt{full} & Mean / sum & 27/27 & 24/24 & 133.3 \\
+\addlinespace
+\texttt{no-patch} & 1 & 8/9 & 8/8 & 211 \\
+\texttt{no-patch} & 2 & 9/9 & 8/8 & 403 \\
+\texttt{no-patch} & 3 & 9/9 & 8/8 & 245 \\
+\texttt{no-patch} & Mean / sum & 26/27 & 24/24 & 286.3 \\
+\bottomrule
+\end{tabular*}
+\par\medskip
+\textbf{(b) Tool calls and token consumption}\par\smallskip
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llcccc@{}}
+\toprule
+Condition & Session
+  & \texttt{exec}
   & \shortstack{\texttt{process}}
   & \shortstack{\texttt{yield}}
   & \shortstack{Tokens\\($\times 10^6$)} \\
 \midrule
-\texttt{full} & 1 & 9/9 & 8/8 & 150 & 91 & 1 & 17 & 12.92 \\
-\texttt{full} & 2 & 9/9 & 8/8 & 124 & 74 & 21 & 5 & 14.81 \\
-\texttt{full} & 3 & 9/9 & 8/8 & 126 & 82 & 0 & 13 & 15.84 \\
-\texttt{full} & Mean / sum & 27/27 & 24/24 & 133.3 & 82.3 & 7.3 & 11.7 & 14.53 \\
+\texttt{full} & 1 & 91 & 1 & 17 & 12.92 \\
+\texttt{full} & 2 & 74 & 21 & 5 & 14.81 \\
+\texttt{full} & 3 & 82 & 0 & 13 & 15.84 \\
+\texttt{full} & Mean / sum & 82.3 & 7.3 & 11.7 & 14.53 \\
 \addlinespace
-\texttt{no-patch} & 1 & 8/9 & 8/8 & 211 & 77 & 102 & 0 & 23.77 \\
-\texttt{no-patch} & 2 & 9/9 & 8/8 & 403 & 142 & 227 & 0 & 49.32 \\
-\texttt{no-patch} & 3 & 9/9 & 8/8 & 245 & 99 & 136 & 0 & 32.15 \\
-\texttt{no-patch} & Mean / sum & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 \\
+\texttt{no-patch} & 1 & 77 & 102 & 0 & 23.77 \\
+\texttt{no-patch} & 2 & 142 & 227 & 0 & 49.32 \\
+\texttt{no-patch} & 3 & 99 & 136 & 0 & 32.15 \\
+\texttt{no-patch} & Mean / sum & 106.0 & 155.0 & 0.0 & 35.08 \\
 \bottomrule
 \end{tabular*}
 \par\vspace{0.4em}
-{\footnotesize Summary rows pool outputs and method requirements across the three sessions. Tool-call counts and token consumption in those rows are per-session means. Total tokens are input plus output tokens, including reasoning tokens.}
+{\normalsize Summary rows pool outputs and method requirements across the three
+  sessions. Tool-call counts and token consumption in those rows are per-session
+  means. Total tokens are input plus output tokens, including reasoning tokens.}
 \end{table}
 
-In the human-in-the-loop experiment, the user sent a standardized steering command while QIIME 2 taxonomy classification was executing in the background. In all three \texttt{full} sessions, the agent received the message, updated the pending plan to adopt DESeq2 and add a heatmap, yielded its turn, and automatically resumed upon receiving the process completion event. In all three \texttt{no-patch} sessions, the agent continued calling \texttt{process}; the mid-run instruction was not applied, and the session did not resume automatically.
+In the human-in-the-loop experiment, the user sent a standardized steering
+command while QIIME 2 taxonomy classification was executing in the background.
+In all three \texttt{full} sessions, the agent received the message, updated the
+pending plan to adopt DESeq2 and add a heatmap, yielded its turn, and
+automatically resumed upon receiving the process completion event. In all three
+\texttt{no-patch} sessions, the agent continued calling \texttt{process}; the
+mid-run instruction was not applied, and the session did not resume
+automatically.

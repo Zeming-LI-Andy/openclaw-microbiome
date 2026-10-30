@@ -11,11 +11,30 @@
 \graphicspath{{../figures/}}
 \usepackage{tabularx}
 \usepackage{caption}
-\captionsetup{font=footnotesize,skip=4pt}
+\captionsetup{font=normalsize,skip=4pt}
 \usepackage{float}
 \usepackage[skins,breakable]{tcolorbox}
 \usepackage[hidelinks]{hyperref}
 \usepackage{cite}
+
+% Let full-size figures share pages with text while keeping the required margins.
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{12pt plus 2pt minus 2pt}
+\setlength{\emergencystretch}{1em}
+
+% Keep abstract text and author footnotes at the 10 pt submission minimum.
+\makeatletter
+\renewcommand\small{\@setfontsize\small{10}{12}}
+\renewcommand\footnotesize{\@setfontsize\footnotesize{10}{12}}
+\makeatother
 
 \newtcolorbox{promptbox}[1]{%
   enhanced,
@@ -29,10 +48,10 @@
   top=5pt,
   bottom=6pt,
   title={#1},
-  fonttitle=\bfseries\small,
+  fonttitle=\bfseries\normalsize,
   coltitle=black,
   colbacktitle=black!8,
-  before upper={\small\setlength{\parskip}{0.35em}},
+  before upper={\normalsize\setlength{\parskip}{0.35em}},
 }
 \newenvironment{promptitems}{%
   \begin{itemize}%
@@ -181,7 +200,9 @@ infrastructure; and (3)~an task management mechanism that
 decouples long-running bioinformatics computations from the conversational
 dialogue. By executing shell commands and custom scripts directly on the host
 system, MicroBioAgent eliminates dependencies on external cloud platforms or
-rigid, hardcoded pipeline templates.
+rigid, hardcoded pipeline templates. Implementation details and software/database
+versions are provided in Appendix~\ref{app:implementation} and
+Table~\ref{tab:software-versions}.
 
 \begin{figure}[t]
 \centering
@@ -279,13 +300,14 @@ substrates~\cite{sandholm2025polyethylene}. In all three cases, the agent was
 powered by \texttt{deepseek-v4-pro} and supplied with raw sequencing reads,
 sample metadata, and biological objectives without pre-written execution
 scripts. Evaluation examined analytical task completion and the recovery of
-primary biological patterns reported in the original studies. 
+primary biological patterns reported in the original studies. Case-study
+procedures are detailed in Appendix~\ref{app:case-studies}.
 
 \begin{table}[t]
 \centering
 \caption{Overview of the three case-study datasets.}
 \label{tab:cases}
-\footnotesize
+\normalsize
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.12}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.28\linewidth}l>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}X@{}}
@@ -329,6 +351,8 @@ differential abundance, shotgun species profiling, and shotgun differential
 abundance. A task was scored as completed when the corresponding quantitative
 output was successfully generated. Quantitative consistency was evaluated on
 aligned subsets using two-sided Mann--Whitney $U$ tests with Holm correction.
+Complete prompts and additional evaluation procedures are provided in
+Appendix~\ref{app:evaluation}.
 
 \subsection{Ablation of runtime extension}
 
@@ -385,7 +409,7 @@ primarily by inoculation status along PCoA~1 (56.3\% explained variance),
 driven by an expansion of pathogenic \textit{Ralstonia} that dominated
 susceptible plants. Differential-abundance analysis using MaAsLin~3 further
 identified 6 to 15 genera consistently enriched in resistant cultivars across
-sampling conditions. In the matched shotgun metagenomes, profiling with
+sampling conditions (Figure~\ref{fig:tomato-enrichment}). In the matched shotgun metagenomes, profiling with
 MetaPhlAn3 identified enrichment of the \textit{Pseudomonas putida} group in
 resistant cultivars at baseline (HG64: $P = 0.013$; HF12: $P = 0.009$), but did
 not detect the second published marker, \textit{Sphingopyxis unclassified}.
@@ -426,7 +450,7 @@ index), substantially outperforming the KO-based classifier (AUROC 0.632,
 sensitivity 0.41, specificity 0.87), confirming that fine-grained gene-family
 abundances provided superior diagnostic discrimination.
 
-\begin{figure}[p]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.60\linewidth]{Case-study-1-Fig1_diversity.png}
 \caption{Tomato rhizosphere microbial diversity and community composition.
@@ -436,7 +460,10 @@ colored by resistance phenotype and point shapes indicating inoculation
 treatment. (c)~Genus-level relative abundance across individual samples. All
 groups contain $n = 3$ biological replicates ($n = 60$ total 16S samples).}
 \label{fig:tomato}
-\vspace{0.6em}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
 \includegraphics[width=0.60\linewidth]{Case-study-2-Fig_composite.png}
 \caption{Metagenomic profiling, biomarker discovery, and predictive modeling in
 the CRC cohort. (a)~PCoA of species-level Bray--Curtis dissimilarities across
@@ -481,7 +508,7 @@ these focal taxa identified alkane terminal oxidation genes in nine MAGs,
 while genes for 2-ketone/oxidized-derivative metabolism and the
 $\beta$-oxidation module were detected in all 11 genomes. 
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.78\linewidth]{Case-study-3-Fig_composite.png}
 \caption{Genome-resolved metagenomic analysis of polyethylene-enrichment
@@ -515,7 +542,7 @@ of prompt specification.
 
 Quantitative outputs for community diversity and differential abundance exhibited
 broadly concordant distributions across experimental conditions
-(Figure~\ref{fig:robustness-models}b). Per-sample 16S Shannon diversity
+(Figures~\ref{fig:robustness-models}b and~\ref{fig:robustness-prompts}). Per-sample 16S Shannon diversity
 indices (median $9.59\text{--}9.83$) and pairwise weighted UniFrac distances
 (median $0.301\text{--}0.303$) showed no statistically significant
 differences between any pair of models under any prompt level, or across
@@ -525,11 +552,12 @@ sessions autonomously chose among DESeq2, MaAsLin~3, Wilcoxon rank-sum,
 Mann--Whitney $U$, or LEfSe~\cite{segata2011lefse}. Restricting cross-model
 comparisons to sessions utilizing DESeq2 revealed no significant
 distributional differences in estimated $\log_2$ fold changes across models
-(all Holm-adjusted $P \geq 0.059$). Similarly, within-model comparisons
+(all Holm-adjusted $P \geq 0.059$; Table~\ref{tab:da-model-methods}). Similarly, within-model comparisons
 between Detailed and Medium prompts using matched statistical tests yielded
-consistent effect-size distributions (all Holm-adjusted $P \geq 0.064$).
+consistent effect-size distributions (all Holm-adjusted $P \geq 0.064$;
+Table~\ref{tab:da-prompt-methods}).
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.62\linewidth]{case1_completion_models.png}
 \caption{Overall task completion and differences in analytical outputs across
@@ -595,21 +623,25 @@ expanding conversation transcript, total model calls more than doubled in
 \texttt{full} (mean $133.3$, range $124\text{--}150$). Consequently, mean total
 token consumption rose by 141.5\% (a 2.4-fold increase), jumping from
 $14.53 \times 10^6$ tokens in \texttt{full} to $35.08 \times 10^6$ tokens in
-\texttt{no-patch}.
+\texttt{no-patch} (per-session records in Table~\ref{tab:ablation-replicates}).
 
 \begin{table}[t]
 \centering
 \caption{End-to-end execution ablation and asynchronous steering performance
 ($n = 3$ independent sessions per condition on preprocessed Case 1).}
 \label{tab:ablation-summary}
-\footnotesize
-\setlength{\tabcolsep}{3.5pt}
+\normalsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.12}
 \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lcccccccc@{}}
 \toprule
-Condition & Outputs & Methods & Model calls & \texttt{exec} & \texttt{process} & \texttt{yield} & Total tokens & Steering / Resumption \\
+Condition & Outputs & Methods & \shortstack{Model\\calls}
+  & \texttt{exec} & \texttt{process} & \texttt{yield}
+  & \shortstack{Tokens\\($\times 10^6$)}
+  & \shortstack{Steering /\\Resumption} \\
 \midrule
-\texttt{full} & 27/27 & 24/24 & 133.3 & $82.3$ & $7.3$ & $11.7$ & $14.53 \times 10^6$ & 3/3 / 3/3 \\
-\texttt{no-patch} & 26/27 & 24/24 & 286.3 & $106.0$ & $155.0$ & $0.0$ & $35.08 \times 10^6$ & 0/3 / 0/3 \\
+\texttt{full} & 27/27 & 24/24 & 133.3 & 82.3 & 7.3 & 11.7 & 14.53 & 3/3 / 3/3 \\
+\texttt{no-patch} & 26/27 & 24/24 & 286.3 & 106.0 & 155.0 & 0.0 & 35.08 & 0/3 / 0/3 \\
 \bottomrule
 \end{tabular*}
 \end{table}
