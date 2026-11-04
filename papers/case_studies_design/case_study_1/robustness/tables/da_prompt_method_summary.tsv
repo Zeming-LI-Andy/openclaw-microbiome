@@ -1,7 +1,0 @@
-analysis	model	method	detailed_sessions	medium_sessions	detailed_values	medium_values
-16S rRNA gene, genus	deepseek-v4-pro	DESeq2	1/3	1/3	891	891
-16S rRNA gene, genus	deepseek-v4-flash	DESeq2	2/3	2/3	5108	5108
-16S rRNA gene, genus	glm5.3-flash	DESeq2	3/3	1/3	3984	3984
-Shotgun metagenome, species	deepseek-v4-pro	Wilcoxon	1/3	1/3	39	39
-Shotgun metagenome, species	deepseek-v4-flash	Mann-Whitney U	1/3	1/3	120	120
-Shotgun metagenome, species	glm5.3-flash	DESeq2	2/3	1/3	52	52
